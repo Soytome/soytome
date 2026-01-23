@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Soy Tomé - Control Maestro</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { 
+                        gold: { 500: '#f59e0b' }, 
+                        brand: { bg: '#050505', card: '#121212' }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'ping-slow': 'ping 2s cubic-bezier(0, 0, 0.2, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <script type="importmap">
+    {
+        "imports": {
+            "react": "https://esm.sh/react@18.2.0",
+            "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+            "lucide-react": "https://esm.sh/lucide-react@0.330.0",
+            "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
+            "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js",
+            "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"
+        }
+    }
+    </script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body { background-color: #050505; color: #fff; margin: 0; overflow: hidden; -webkit-tap-highlight-color: transparent; }
+        .leaflet-container { background: #000 !important; width: 100%; height: 100%; z-index: 1; }
+        .glass { background: rgba(18, 18, 18, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.08); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        
+        /* PIN PERSONALIZADO EN CSS */
+        .custom-pin {
+            display: flex; align-items: center; justify-content: center;
+        }
+        .pin-inner {
+            width: 16px; height: 16px; border-radius: 50%; border: 2px solid white;
+            box-shadow: 0 0 10px currentColor; position: relative; z-index: 2;
+        }
+        .pin-pulse {
+            position: absolute; width: 40px; height: 40px; border-radius: 50%;
+            background: currentColor; opacity: 0.3; animation: ping-slow 2s infinite; z-index: 1;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel" data-type="module">
+        import React, { useState, useEffect, useRef } from 'react';
+        import { createRoot } from 'react-dom/client';
+        import { Siren, Map as MapIcon, Shield, Flame, Dog, FileText, AlertTriangle, Plus, X, MapPin, Loader2, Menu, ArrowLeft, Camera, Lock, Trash2, Save, LogOut, Settings, Navigation } from 'lucide-react';
+        import { initializeApp } from 'firebase/app';
+        import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, updateDoc } from 'firebase/firestore';
+        import { getAuth, signInAnonymously } from 'firebase/auth';
+
+        // --------------------------------------------------------
+        // ⚠️ ZONA DE CONEXIÓN: PEGA TUS DATOS AQUÍ ⚠️
+        // --------------------------------------------------------
+        const firebaseConfig = {
+            apiKey: "", 
+            authDomain: "",
+            projectId: "",
+            storageBucket: "",
+            messagingSenderId: "",
+            appId: ""
+        };
+
+        let db = null;
+        try {
+            if (firebaseConfig.apiKey) {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                const auth = getAuth(app);
+                signInAnonymously(auth).catch(console.error);
+            }
+        } catch (e) { console.error("Error Firebase:", e); }
+
+        // UTILS
+        const safeLoad = (key, def) => { try { return JSON.parse(localStorage.getItem(key)) || def; } catch { return def; } };
+        const compressImage = (file) => new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (e) => {
+                const img = new window.Image();
+                img.src = e.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const scale = 600 / img.width; 
+                    canvas.width = 600; canvas.height = img.height * scale;
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    resolve(canvas.toDataURL('image/jpeg', 0.6));
+                }
+            }
+        });
+
+        // CONSTANTES
+        const REPORT_TYPES = [
+            { id: 'accident', label: 'Accidente', icon: Siren, color: '#ef4444' }, // Rojo
+            { id: 'fire', label: 'Incendio', icon: Flame, color: '#f97316' }, // Naranja
+            { id: 'security', label: 'Seguridad', icon: Shield, color: '#3b82f6' }, // Azul
+            { id: 'pet', label: 'Mascota', icon: Dog, color: '#eab308' }, // Amarillo
+            { id: 'docs', label: 'Documentos', icon: FileText, color: '#a855f7' }, // Morado
+            { id: 'other', label: 'Otro', icon: AlertTriangle, color: '#71717a' }, // Gris
+        ];
+
+        // --- COMPONENTE: MAPA TURBO (LEAFLET) ---
+        const LeafletMap = ({ markers, onPickLocation, pickMode, userLocation }) => {
+            const mapRef = useRef(null);
+            const mapInstance = useRef(null);
+            const markerRef = useRef(null);
+
+            // Efecto de inicialización y actualización
+            useEffect(() => {
+                if (!mapInstance.current && mapRef.current) {
+                    // Carga rápida con coordenadas por defecto (Tomé)
+                    const map = L.map(mapRef.current, { 
+                        zoomControl: false,
+                        attributionControl: false 
+                    }).setView([-36.6158, -72.9575], 14);
+                    
+                    // Capa Ultra Rápida (CartoDB Dark)
+                    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                        maxZoom: 19,
+                        subdomains: 'abcd'
+                    }).addTo(map);
+
+                    mapInstance.current = map;
+
+                    // Evento click para marcar ubicación manual
+                    if (pickMode) {
+                        map.on('click', (e) => {
+                            updatePickMarker(e.latlng.lat, e.latlng.lng);
+                            onPickLocation({ lat: e.latlng.lat, lng: e.latlng.lng });
+                        });
+                    }
+                }
+
+                const map = mapInstance.current;
+                if (!map) return;
+
+                // Si hay ubicación de usuario y estamos en modo crear, volar ahí
+                if (pickMode && userLocation && !markerRef.current) {
+                    map.flyTo([userLocation.lat, userLocation.lng], 16, { duration: 1.5 });
+                    updatePickMarker(userLocation.lat, userLocation.lng);
+                    onPickLocation(userLocation); // Auto-set location
+                }
+
+                // Renderizar Iconos Minimalistas (Solo en modo ver)
+                if (!pickMode) {
+                    // Limpiar marcadores viejos
+                    map.eachLayer((layer) => {
+                        if (layer instanceof L.Marker) map.removeLayer(layer);
+                    });
+
+                    markers.forEach(m => {
+                        if(m.lat && m.lng) {
+                            const typeInfo = REPORT_TYPES.find(t => t.id === m.type) || REPORT_TYPES[5];
+                            // HTML del Icono Lindo
+                            const iconHtml = `
+                                <div class="custom-pin" style="color: ${typeInfo.color}">
+                                    <div class="pin-pulse"></div>
+                                    <div class="pin-inner" style="background-color: ${typeInfo.color}"></div>
+                                </div>
+                            `;
+                            const customIcon = L.divIcon({ 
+                                className: '', 
+                                html: iconHtml,
+                                iconSize: [40, 40],
+                                iconAnchor: [20, 20] 
+                            });
+                            
+                            L.marker([m.lat, m.lng], { icon: customIcon })
+                                .addTo(map)
+                                .bindPopup(`
+                                    <div style="font-family: sans-serif; text-align: center;">
+                                        <strong style="color:${typeInfo.color}; text-transform: uppercase;">${typeInfo.label}</strong><br>
+                                        ${m.desc}<br>
+                                        <small style="color:#888">${m.date}</small>
+                                    </div>
+                                `);
+                        }
+                    });
+                }
+            }, [markers, pickMode, userLocation]);
+
+            const updatePickMarker = (lat, lng) => {
+                if (markerRef.current) markerRef.current.remove();
+                // Marcador simple para cuando el usuario elige
+                markerRef.current = L.marker([lat, lng], { draggable: true }).addTo(mapInstance.current);
+            };
+
+            return <div ref={mapRef} className="w-full h-full" style={{background: '#111'}} />;
+        };
+
+        // --- PANEL CONTROL MAESTRO ---
+        const ControlMaestro = ({ onClose }) => {
+            const [activeTab, setActiveTab] = useState('reports');
+            const [data, setData] = useState([]);
+
+            useEffect(() => {
+                if(!db) return setData(safeLoad(activeTab === 'reports' ? 'st_cnt_reports' : 'st_cnt_posts', []));
+                
+                const colName = activeTab === 'reports' ? 'reports' : 'posts';
+                const q = query(collection(db, colName), orderBy('id', 'desc'));
+                const unsub = onSnapshot(q, (s) => setData(s.docs.map(d => ({ fireId: d.id, ...d.data() }))));
+                return () => unsub();
+            }, [activeTab]);
+
+            const deleteItem = async (item) => {
+                if(!confirm("¿Eliminar definitivamente?")) return;
+                if(db) await deleteDoc(doc(db, activeTab === 'reports' ? 'reports' : 'posts', item.fireId));
+                else {
+                    const n = data.filter(i => i.id !== item.id);
+                    setData(n);
+                    localStorage.setItem(activeTab === 'reports' ? 'st_cnt_reports' : 'st_cnt_posts', JSON.stringify(n));
+                }
+            };
+
+            return (
+                <div className="fixed inset-0 z-[100] bg-black/95 text-white flex flex-col animate-fade-in backdrop-blur-xl">
+                    <div className="p-6 border-b border-white/10 flex justify-between items-center bg-zinc-900">
+                        <h2 className="text-2xl font-black text-gold-500 tracking-tighter flex items-center gap-2">
+                            <Settings className="animate-spin-slow"/> CONTROL MAESTRO
+                        </h2>
+                        <button onClick={onClose} className="p-2 bg-red-900/30 text-red-500 rounded hover:bg-red-900"><LogOut/></button>
+                    </div>
+                    
+                    <div className="flex border-b border-white/10">
+                        <button onClick={()=>setActiveTab('reports')} className={`flex-1 p-4 font-bold ${activeTab==='reports'?'bg-white text-black':'text-zinc-500'}`}>REPORTES</button>
+                        <button onClick={()=>setActiveTab('posts')} className={`flex-1 p-4 font-bold ${activeTab==='posts'?'bg-white text-black':'text-zinc-500'}`}>NOTICIAS</button>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto p-6 bg-black">
+                        {data.map(item => (
+                            <div key={item.id} className="bg-zinc-900 border border-white/5 p-4 rounded-xl mb-3 flex justify-between items-start">
+                                <div>
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <span className="text-[10px] font-bold bg-white/10 px-2 py-0.5 rounded uppercase text-gold-500">
+                                            {item.type || item.category}
+                                        </span>
+                                        <span className="text-xs text-zinc-500">{item.date}</span>
+                                    </div>
+                                    <h4 className="font-bold text-lg leading-tight">{item.desc || item.title}</h4>
+                                    {item.location && <p className="text-xs text-zinc-400 mt-1 flex items-center gap-1"><MapPin size={10}/> {item.location}</p>}
+                                </div>
+                                <button onClick={()=>deleteItem(item)} className="p-3 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition">
+                                    <Trash2 size={18}/>
+                                </button>
+                            </div>
+                        ))}
+                        {data.length === 0 && <p className="text-center text-zinc-600 mt-10">Sin registros activos.</p>}
+                    </div>
+                </div>
+            );
+        };
+
+        // --- APP PRINCIPAL ---
+        const App = () => {
+            const [view, setView] = useState('map'); 
+            const [reports, setReports] = useState([]);
+            const [showCreate, setShowCreate] = useState(false);
+            const [showControl, setShowControl] = useState(false);
+            const [userLoc, setUserLoc] = useState(null);
+
+            // Cargar Reportes (Tiempo Real)
+            useEffect(() => {
+                if(db) {
+                    const q = query(collection(db, 'reports'));
+                    onSnapshot(q, s => setReports(s.docs.map(d=>({id:d.id, ...d.data()}))) );
+                } else {
+                    setReports(safeLoad('st_cnt_reports', []));
+                }
+            }, []);
+
+            // Obtener GPS al iniciar
+            useEffect(() => {
+                if(navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+                        (err) => console.log("GPS Error", err),
+                        { enableHighAccuracy: true } // 🔥 GPS ALTA PRECISIÓN
+                    );
+                }
+            }, []);
+
+            const handleLogin = () => {
+                const pass = prompt("🔑 Clave de Acceso:");
+                if(pass === "soytome1") setShowControl(true);
+                else alert("Acceso Denegado");
+            };
+
+            const saveReport = async (data) => {
+                const final = { ...data, id: Date.now(), date: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) };
+                if(db) await addDoc(collection(db, 'reports'), final);
+                else {
+                    const n = [final, ...reports];
+                    setReports(n); localStorage.setItem('st_cnt_reports', JSON.stringify(n));
+                }
+                setShowCreate(false);
+            };
+
+            return (
+                <div className="h-[100dvh] flex flex-col bg-black font-sans text-white">
+                    {/* Barra Superior */}
+                    <nav className="h-16 shrink-0 bg-zinc-900/90 backdrop-blur flex items-center justify-between px-4 border-b border-white/5 z-20">
+                        <h1 className="font-black text-xl tracking-tighter text-white italic">SOY TOMÉ <span className="text-red-500 not-italic text-xs align-top">●</span></h1>
+                        <div className="flex gap-3">
+                            <button onClick={handleLogin} className="p-2 text-zinc-600 hover:text-white transition"><Settings size={20}/></button>
+                            <button onClick={()=>setShowCreate(true)} className="bg-red-600 text-white px-5 py-2 rounded-full text-xs font-bold flex items-center gap-2 shadow-[0_0_15px_rgba(220,38,38,0.5)] animate-pulse-slow">
+                                <Plus size={16} strokeWidth={3}/> REPORTAR
+                            </button>
+                        </div>
+                    </nav>
+
+                    {/* Mapa Full */}
+                    <div className="flex-1 relative">
+                        <LeafletMap markers={reports} pickMode={false} userLocation={userLoc} />
+                        
+                        {/* Feed Flotante (Abajo) */}
+                        <div className="absolute bottom-0 left-0 w-full p-4 z-10 pointer-events-none">
+                            <div className="flex flex-col gap-2 max-h-[30vh] overflow-y-auto pointer-events-auto no-scrollbar">
+                                {reports.slice(-3).reverse().map(r => (
+                                    <div key={r.id} className="glass p-3 rounded-xl border-l-4 flex gap-3 animate-fade-in" style={{borderLeftColor: REPORT_TYPES.find(t=>t.id===r.type)?.color || '#555'}}>
+                                        <div className="text-white pt-1">
+                                            {React.createElement(REPORT_TYPES.find(t=>t.id===r.type)?.icon || AlertTriangle, {size:16})}
+                                        </div>
+                                        <div>
+                                            <span className="text-[10px] text-zinc-400 uppercase font-bold">{r.date}</span>
+                                            <p className="text-sm font-bold leading-tight">{r.desc}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Modal Crear */}
+                    {showCreate && (
+                        <div className="fixed inset-0 z-50 bg-black flex flex-col animate-fade-in">
+                            <div className="p-4 flex justify-between items-center bg-zinc-900 border-b border-white/10">
+                                <h3 className="font-bold text-white">Nuevo Reporte</h3>
+                                <button onClick={()=>setShowCreate(false)}><X/></button>
+                            </div>
+                            <CreateReportForm onClose={()=>setShowCreate(false)} onSave={saveReport} userLoc={userLoc} />
+                        </div>
+                    )}
+
+                    {/* Panel Admin */}
+                    {showControl && <ControlMaestro onClose={()=>setShowControl(false)} />}
+                </div>
+            );
+        };
+
+        // --- SUB-COMPONENTE: FORMULARIO ---
+        const CreateReportForm = ({ onClose, onSave, userLoc }) => {
+            const [step, setStep] = useState(1);
+            const [data, setData] = useState({ type: 'security', desc: '', lat: null, lng: null });
+
+            return (
+                <div className="flex-1 flex flex-col">
+                    {step === 1 && (
+                        <div className="flex-1 relative">
+                            <LeafletMap pickMode={true} markers={[]} userLocation={userLoc} onPickLocation={(loc)=>setData({...data, lat:loc.lat, lng:loc.lng})} />
+                            <div className="absolute bottom-10 w-full flex justify-center pointer-events-none z-[400]">
+                                {data.lat ? (
+                                    <button onClick={()=>setStep(2)} className="pointer-events-auto bg-white text-black font-black px-8 py-4 rounded-full shadow-xl text-lg animate-bounce">
+                                        CONFIRMAR UBICACIÓN
+                                    </button>
+                                ) : (
+                                    <span className="bg-black/80 text-white px-4 py-2 rounded-full text-xs font-bold">Toca el mapa para marcar</span>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {step === 2 && (
+                        <div className="flex-1 p-6 bg-zinc-900 overflow-y-auto">
+                            <h4 className="text-zinc-500 text-xs font-bold uppercase mb-4 tracking-widest">Selecciona Categoría</h4>
+                            <div className="grid grid-cols-3 gap-3 mb-6">
+                                {REPORT_TYPES.map(t => (
+                                    <button key={t.id} onClick={()=>setData({...data, type:t.id})} 
+                                        className={`p-4 rounded-xl border flex flex-col items-center gap-2 transition-all ${data.type===t.id ? 'bg-white text-black border-white scale-105 shadow-lg' : 'border-zinc-800 text-zinc-500 hover:bg-zinc-800'}`}>
+                                        <t.icon size={24}/>
+                                        <span className="text-[10px] font-black uppercase">{t.label}</span>
+                                    </button>
+                                ))}
+                            </div>
+                            <textarea value={data.desc} onChange={e=>setData({...data, desc:e.target.value})} 
+                                className="w-full bg-black p-4 rounded-xl border border-zinc-800 mb-6 h-32 text-lg focus:border-white outline-none transition" placeholder="¿Qué está pasando?" autoFocus></textarea>
+                            
+                            <button onClick={()=>onSave(data)} className="w-full bg-red-600 text-white font-black py-4 rounded-xl shadow-lg shadow-red-900/40 text-lg">PUBLICAR ALERTA</button>
+                        </div>
+                    )}
+                </div>
+            )
+        }
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
