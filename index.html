@@ -41,7 +41,8 @@
             "lucide-react": "https://esm.sh/lucide-react@0.330.0",
             "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
             "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js",
-            "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"
+            "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js",
+            "firebase/analytics": "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js"
         }
     }
     </script>
@@ -79,30 +80,28 @@
         import { initializeApp } from 'firebase/app';
         import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from 'firebase/auth';
+        import { getAnalytics } from "firebase/analytics";
 
         // --------------------------------------------------------
-        // ⚠️ ZONA DE CONEXIÓN: PEGA TUS DATOS DE FIREBASE AQUÍ ⚠️
-        // Si esto está vacío (""), Google Login NO funcionará.
+        // 🔥 ZONA SEGURA: TUS CREDENCIALES YA ESTÁN INTEGRADAS 🔥
         // --------------------------------------------------------
         const firebaseConfig = {
-            apiKey: "", 
-            authDomain: "",
-            projectId: "",
-            storageBucket: "",
-            messagingSenderId: "",
-            appId: ""
+            apiKey: "AIzaSyCSljrHBziUyLcTGjyx1ignV8NB8rCsL2U",
+            authDomain: "soy-tome-web.firebaseapp.com",
+            projectId: "soy-tome-web",
+            storageBucket: "soy-tome-web.firebasestorage.app",
+            messagingSenderId: "1074104457245",
+            appId: "1:1074104457245:web:f5e2ffc4b9b72285a28ef4",
+            measurementId: "G-CFLWJG3WB4"
         };
 
         // INICIALIZACIÓN
-        let db, auth;
+        let db, auth, analytics;
         try {
-            if (firebaseConfig.apiKey) {
-                const app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-            } else {
-                console.warn("FALTAN LAS LLAVES DE FIREBASE");
-            }
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            analytics = getAnalytics(app);
         } catch (e) { console.error("Firebase Error:", e); }
 
         // UTILS
