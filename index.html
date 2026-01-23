@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Soy Tomé - Comunidad en Vivo</title>
+    <title>Soy Tomé - Gana Puntos Ayudando</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -12,21 +12,19 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
 
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: { sans: ['Outfit', 'sans-serif'] },
                     colors: { 
-                        brand: { bg: '#09090b', card: '#18181b', accent: '#f59e0b' }
+                        brand: { bg: '#f3f4f6', card: '#ffffff', accent: '#6366f1', dark: '#1e293b' }
                     },
                     animation: {
-                        'float': 'float 3s ease-in-out infinite',
-                        'pulse-glow': 'pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                    },
-                    keyframes: {
-                        float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-5px)' } },
-                        pulseGlow: { '0%, 100%': { opacity: 1, transform: 'scale(1)' }, '50%': { opacity: .8, transform: 'scale(1.1)' } }
+                        'bounce-slow': 'bounce 3s infinite',
+                        'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                     }
                 }
             }
@@ -41,77 +39,80 @@
             "lucide-react": "https://esm.sh/lucide-react@0.330.0",
             "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
             "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js",
-            "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js",
-            "firebase/analytics": "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js"
+            "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"
         }
     }
     </script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
     <style>
-        body { background-color: #09090b; color: #fff; margin: 0; overflow: hidden; -webkit-tap-highlight-color: transparent; }
-        .leaflet-container { background: #09090b !important; width: 100%; height: 100%; z-index: 1; }
-        .glass { background: rgba(24, 24, 27, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); }
+        body { background-color: #f3f4f6; color: #1e293b; margin: 0; overflow: hidden; -webkit-tap-highlight-color: transparent; }
+        .leaflet-container { width: 100%; height: 100%; z-index: 1; background: #e5e7eb; }
+        
+        /* Glassmorphism Light */
+        .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); }
+        .glass-dark { background: rgba(30, 41, 59, 0.9); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); color: white; }
+        
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
         /* PIN ESTILIZADO */
-        .pin-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .pin-wrapper { display: flex; flex-direction: column; align-items: center; justify-content: center; transition: transform 0.2s; }
+        .pin-wrapper:hover { transform: scale(1.1); z-index: 1000; }
         .pin-icon { 
-            width: 36px; height: 36px; border-radius: 50%; 
+            width: 40px; height: 40px; border-radius: 50%; 
             display: flex; align-items: center; justify-content: center;
-            color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            border: 2px solid white; transition: transform 0.2s;
+            color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            border: 3px solid white; 
         }
-        .pin-icon:active { transform: scale(0.9); }
-        .pin-shadow { width: 10px; height: 4px; background: rgba(0,0,0,0.5); border-radius: 50%; margin-top: 2px; filter: blur(2px); }
+        .pin-shadow { width: 12px; height: 4px; background: rgba(0,0,0,0.3); border-radius: 50%; margin-top: 2px; filter: blur(2px); }
         
         /* POPUP MAPA */
-        .leaflet-popup-content-wrapper { background: rgba(24, 24, 27, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 12px; }
-        .leaflet-popup-tip { background: rgba(24, 24, 27, 0.95); }
+        .leaflet-popup-content-wrapper { background: white; border-radius: 16px; padding: 0; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .leaflet-popup-content { margin: 0; width: auto !important; }
+        .leaflet-popup-tip { background: white; }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel" data-type="module">
-        import React, { useState, useEffect, useRef, useMemo } from 'react';
+        import React, { useState, useEffect, useRef } from 'react';
         import { createRoot } from 'react-dom/client';
-        import { Siren, Shield, Flame, Dog, FileText, AlertTriangle, Plus, X, MapPin, Loader2, MessageCircle, Send, User, LogOut, Settings, Camera, Navigation, LogIn } from 'lucide-react';
+        import { Siren, Shield, Flame, Dog, FileText, AlertTriangle, Plus, X, MapPin, Loader2, MessageCircle, Send, User, LogOut, Settings, Camera, Navigation, LogIn, RefreshCw, Trophy, Star } from 'lucide-react';
         import { initializeApp } from 'firebase/app';
-        import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+        import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, updateDoc, arrayUnion, setDoc, getDoc, increment } from 'firebase/firestore';
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from 'firebase/auth';
-        import { getAnalytics } from "firebase/analytics";
 
         // --------------------------------------------------------
-        // 🔥 ZONA SEGURA: TUS CREDENCIALES YA ESTÁN INTEGRADAS 🔥
+        // 🔑 PEGA TUS CREDENCIALES DE FIREBASE AQUÍ
         // --------------------------------------------------------
         const firebaseConfig = {
-            apiKey: "AIzaSyCSljrHBziUyLcTGjyx1ignV8NB8rCsL2U",
-            authDomain: "soy-tome-web.firebaseapp.com",
-            projectId: "soy-tome-web",
-            storageBucket: "soy-tome-web.firebasestorage.app",
-            messagingSenderId: "1074104457245",
-            appId: "1:1074104457245:web:f5e2ffc4b9b72285a28ef4",
-            measurementId: "G-CFLWJG3WB4"
+            apiKey: "", 
+            authDomain: "",
+            projectId: "",
+            storageBucket: "",
+            messagingSenderId: "",
+            appId: ""
         };
 
         // INICIALIZACIÓN
-        let db, auth, analytics;
+        let db, auth;
         try {
-            const app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-            analytics = getAnalytics(app);
+            if(firebaseConfig.apiKey) {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+            }
         } catch (e) { console.error("Firebase Error:", e); }
 
         // UTILS
         const REPORT_TYPES = [
-            { id: 'accident', label: 'Accidente', icon: Siren, color: '#ef4444', gradient: 'from-red-500 to-red-700' },
-            { id: 'fire', label: 'Incendio', icon: Flame, color: '#f97316', gradient: 'from-orange-500 to-orange-700' },
-            { id: 'security', label: 'Seguridad', icon: Shield, color: '#3b82f6', gradient: 'from-blue-500 to-blue-700' },
-            { id: 'pet', label: 'Mascota', icon: Dog, color: '#eab308', gradient: 'from-yellow-500 to-yellow-700' },
-            { id: 'docs', label: 'Documentos', icon: FileText, color: '#a855f7', gradient: 'from-purple-500 to-purple-700' },
-            { id: 'other', label: 'Otro', icon: AlertTriangle, color: '#71717a', gradient: 'from-zinc-500 to-zinc-700' },
+            { id: 'accident', label: 'Accidente', icon: Siren, color: '#ef4444', gradient: 'from-red-500 to-red-600' },
+            { id: 'fire', label: 'Incendio', icon: Flame, color: '#f97316', gradient: 'from-orange-500 to-orange-600' },
+            { id: 'security', label: 'Seguridad', icon: Shield, color: '#3b82f6', gradient: 'from-blue-500 to-blue-600' },
+            { id: 'pet', label: 'Mascota', icon: Dog, color: '#eab308', gradient: 'from-yellow-400 to-yellow-600' },
+            { id: 'docs', label: 'Documentos', icon: FileText, color: '#a855f7', gradient: 'from-purple-500 to-purple-600' },
+            { id: 'other', label: 'Otro', icon: AlertTriangle, color: '#64748b', gradient: 'from-gray-500 to-gray-600' },
         ];
 
         const compressImage = (file) => new Promise((resolve) => {
@@ -131,8 +132,8 @@
             }
         });
 
-        // --- COMPONENTE: MAPA INTERACTIVO (CORREGIDO) ---
-        const LeafletMap = ({ reports, onMapClick, onMarkerClick, userLoc }) => {
+        // --- COMPONENTE: MAPA VIBRANTE ---
+        const LeafletMap = ({ reports, onMapClick, onMarkerClick, userLoc, refreshTrigger }) => {
             const mapRef = useRef(null);
             const mapInstance = useRef(null);
             const popupRef = useRef(null);
@@ -141,27 +142,22 @@
                 if (!mapInstance.current && mapRef.current) {
                     const map = L.map(mapRef.current, { zoomControl: false, attributionControl: false }).setView([-36.6158, -72.9575], 14);
                     
-                    // CORRECCIÓN: Usamos CartoDB Dark Matter (Gratis y sin API Key)
-                    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                        attribution: '&copy; OpenStreetMap &copy; CartoDB',
-                        subdomains: 'abcd',
+                    // 🔥 MAPA COLORIDO Y RÁPIDO (CARTO VOYAGER)
+                    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                        attribution: '&copy; CartoDB',
                         maxZoom: 20
                     }).addTo(map);
 
                     mapInstance.current = map;
 
-                    // EVENTO CLIC EN MAPA -> ABRIR POPUP "REPORTAR AQUÍ"
                     map.on('click', (e) => {
                         const { lat, lng } = e.latlng;
-                        
-                        // Si ya hay popup, borrarlo
                         if(popupRef.current) map.removeLayer(popupRef.current);
 
-                        // Crear Popup Flotante
                         const popupContent = document.createElement('div');
                         popupContent.innerHTML = `
-                            <button id="btn-report-here" style="background:#ef4444; color:white; font-weight:bold; padding:8px 16px; border-radius:20px; border:none; cursor:pointer; display:flex; align-items:center; gap:5px; box-shadow:0 4px 10px rgba(239,68,68,0.4);">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                            <button id="btn-report-here" style="background:#6366f1; color:white; font-family:'Outfit'; font-weight:700; padding:10px 20px; border-radius:12px; border:none; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 4px 12px rgba(99,102,241,0.4); width:100%;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
                                 REPORTAR AQUÍ
                             </button>
                         `;
@@ -171,25 +167,22 @@
                             onMapClick({ lat, lng });
                         };
 
-                        popupRef.current = L.popup({ closeButton: false, offset: [0, -10], className: 'custom-popup' })
+                        popupRef.current = L.popup({ closeButton: false, offset: [0, -20], minWidth: 150 })
                             .setLatLng(e.latlng)
                             .setContent(popupContent)
                             .openOn(map);
                     });
                 }
 
-                const map = mapInstance.current;
-                
-                // Mover a ubicación de usuario
-                if (userLoc && map) {
-                    const center = map.getCenter();
-                    const dist = map.distance(center, [userLoc.lat, userLoc.lng]);
-                    if(dist > 500) map.flyTo([userLoc.lat, userLoc.lng], 15, { duration: 1.5 });
+                // Forzar recarga de tiles si se pide
+                if(mapInstance.current) {
+                    setTimeout(() => mapInstance.current.invalidateSize(), 200);
                 }
 
-                // Renderizar Marcadores
+                const map = mapInstance.current;
+                
+                // Marcadores
                 if(map) {
-                    // Limpiar marcadores viejos
                     map.eachLayer(l => { if(l instanceof L.Marker) map.removeLayer(l); });
 
                     reports.forEach(r => {
@@ -205,122 +198,36 @@
                         
                         const icon = L.divIcon({ html: iconHtml, className: '', iconSize: [40, 50], iconAnchor: [20, 45] });
                         const marker = L.marker([r.lat, r.lng], { icon }).addTo(map);
-                        
-                        marker.on('click', () => {
-                            onMarkerClick(r);
-                        });
+                        marker.on('click', () => onMarkerClick(r));
                     });
                 }
 
-            }, [reports, userLoc]);
+            }, [reports, userLoc, refreshTrigger]);
+
+            // Efecto volar a usuario
+            useEffect(() => {
+                if(mapInstance.current && userLoc) {
+                     mapInstance.current.flyTo([userLoc.lat, userLoc.lng], 16, { duration: 1 });
+                }
+            }, [userLoc]);
 
             return <div ref={mapRef} className="w-full h-full" />;
         };
 
-        // Helper para iconos SVG en string
         const getIconSvg = (typeId) => {
-            if(typeId === 'accident') return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>';
-            if(typeId === 'fire') return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.1.2-2.2.5-3.3a9 9 0 0 0 2.5 3.3z"/></svg>';
-            if(typeId === 'security') return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>';
-            return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
-        };
-
-        // --- MODAL DETALLE REPORTE & COMENTARIOS ---
-        const ReportDetailModal = ({ report, onClose, user }) => {
-            const [newComment, setNewComment] = useState('');
-            const [comments, setComments] = useState(report.comments || []);
-
-            useEffect(() => {
-                if(db) {
-                    const unsub = onSnapshot(doc(db, 'reports', report.id), (doc) => {
-                        if(doc.exists()) setComments(doc.data().comments || []);
-                    });
-                    return () => unsub();
-                }
-            }, [report.id]);
-
-            const sendComment = async () => {
-                if(!newComment.trim() || !user) return;
-                const commentData = {
-                    text: newComment,
-                    user: user.displayName || 'Anónimo',
-                    uid: user.uid,
-                    photo: user.photoURL,
-                    date: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
-                };
-                
-                if(db) {
-                    await updateDoc(doc(db, 'reports', report.id), {
-                        comments: arrayUnion(commentData)
-                    });
-                }
-                setNewComment('');
-            };
-
-            const typeInfo = REPORT_TYPES.find(t=>t.id===report.type);
-
-            return (
-                <div className="fixed inset-0 z-50 flex flex-col justify-end sm:justify-center items-center bg-black/60 backdrop-blur-sm animate-float">
-                    <div className="bg-brand-card w-full max-w-md h-[85vh] sm:h-auto sm:rounded-2xl rounded-t-3xl overflow-hidden flex flex-col shadow-2xl border border-white/10">
-                        <div className={`p-6 bg-gradient-to-r ${typeInfo?.gradient} relative`}>
-                            <button onClick={onClose} className="absolute top-4 right-4 bg-black/20 p-2 rounded-full text-white hover:bg-black/40"><X size={20}/></button>
-                            <div className="flex items-center gap-3">
-                                <div className="bg-white/20 p-3 rounded-full backdrop-blur-md">
-                                    <typeInfo.icon size={32} className="text-white"/>
-                                </div>
-                                <div>
-                                    <h2 className="text-2xl font-black uppercase tracking-tight text-white">{typeInfo?.label}</h2>
-                                    <span className="text-white/80 text-sm font-medium flex items-center gap-1"><User size={12}/> {report.userNick || 'Vecino'} • {report.date}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="flex-1 overflow-y-auto p-6 bg-brand-bg">
-                            <p className="text-lg font-medium leading-relaxed mb-4 text-gray-200">"{report.desc}"</p>
-                            {report.src?.[0] && <img src={report.src[0]} className="w-full rounded-xl mb-6 border border-white/10 shadow-lg" />}
-
-                            <div className="border-t border-white/10 pt-4">
-                                <h3 className="text-sm font-bold text-gray-500 uppercase mb-4 tracking-wider">Actualizaciones ({comments.length})</h3>
-                                <div className="space-y-4 mb-20">
-                                    {comments.length === 0 && <p className="text-center text-gray-600 italic">Sé el primero en comentar.</p>}
-                                    {comments.map((c, i) => (
-                                        <div key={i} className="flex gap-3 animate-pulse-glow">
-                                            <img src={c.photo || 'https://ui-avatars.com/api/?name='+c.user} className="w-8 h-8 rounded-full bg-gray-700"/>
-                                            <div className="bg-white/5 p-3 rounded-r-xl rounded-bl-xl flex-1">
-                                                <div className="flex justify-between items-baseline mb-1">
-                                                    <span className="text-xs font-bold text-brand-accent">{c.user}</span>
-                                                    <span className="text-[10px] text-gray-500">{c.date}</span>
-                                                </div>
-                                                <p className="text-sm text-gray-300">{c.text}</p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="p-4 bg-brand-card border-t border-white/10 flex gap-2">
-                            {user ? (
-                                <>
-                                    <input value={newComment} onChange={e=>setNewComment(e.target.value)} placeholder="Añadir actualización..." 
-                                        className="flex-1 bg-black/50 border border-white/10 rounded-full px-4 py-3 outline-none focus:border-brand-accent transition"/>
-                                    <button onClick={sendComment} className="bg-brand-accent text-black p-3 rounded-full font-bold hover:scale-110 transition"><Send size={20}/></button>
-                                </>
-                            ) : (
-                                <p className="text-center w-full text-sm text-gray-500">Inicia sesión para comentar</p>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            );
+            if(typeId === 'accident') return '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>';
+            return '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
         };
 
         // --- APP PRINCIPAL ---
         const App = () => {
             const [user, setUser] = useState(null);
+            const [userData, setUserData] = useState({ xp: 0, level: 1 });
             const [userLoc, setUserLoc] = useState(null);
             const [reports, setReports] = useState([]);
+            const [refresh, setRefresh] = useState(0);
             
+            // UI States
             const [showLogin, setShowLogin] = useState(false);
             const [showCreate, setShowCreate] = useState(false);
             const [showControl, setShowControl] = useState(false);
@@ -328,23 +235,46 @@
             const [createLoc, setCreateLoc] = useState(null);
 
             useEffect(() => {
-                if(auth) onAuthStateChanged(auth, u => setUser(u));
+                // Auth Listener & XP System
+                if(auth) onAuthStateChanged(auth, async (u) => {
+                    setUser(u);
+                    if(u) {
+                        const userRef = doc(db, 'users', u.uid);
+                        const docSnap = await getDoc(userRef);
+                        if(docSnap.exists()) {
+                            setUserData(docSnap.data());
+                        } else {
+                            await setDoc(userRef, { xp: 0, level: 1, name: u.displayName, photo: u.photoURL });
+                        }
+                        // Listen for XP changes
+                        onSnapshot(userRef, (d) => { if(d.exists()) setUserData(d.data()); });
+                    }
+                });
                 
                 if(db) {
                     const q = query(collection(db, 'reports'));
                     onSnapshot(q, s => setReports(s.docs.map(d=>({id:d.id, ...d.data()}))) );
                 }
 
+                locateUser();
+            }, []);
+
+            const locateUser = () => {
                 if(navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(
                         p => setUserLoc({lat: p.coords.latitude, lng: p.coords.longitude}),
                         null, { enableHighAccuracy: true }
                     );
                 }
-            }, []);
+            };
+
+            const handleRefresh = () => {
+                setRefresh(prev => prev + 1);
+                locateUser();
+            };
 
             const handleGoogleLogin = async () => {
-                if(!auth) return alert("Firebase no configurado. ¡Pega las API Keys en el código!");
+                if(!auth) return alert("Firebase no configurado.");
                 try {
                     await signInWithPopup(auth, new GoogleAuthProvider());
                     setShowLogin(false);
@@ -352,59 +282,69 @@
             };
 
             const handleMapClick = (loc) => {
-                if(!user) {
-                    setShowLogin(true);
-                    return;
-                }
+                if(!user) return setShowLogin(true);
                 setCreateLoc(loc);
                 setShowCreate(true);
             };
 
-            const handleAdmin = () => {
-                if(prompt("Clave Maestra:") === "soytome1") setShowControl(true);
-                else alert("Acceso Denegado");
-            };
-
             return (
-                <div className="h-[100dvh] flex flex-col bg-brand-bg font-sans">
-                    <div className="absolute top-4 left-4 right-4 z-20 flex justify-between items-center pointer-events-none">
-                        <div className="bg-brand-card/90 backdrop-blur px-4 py-2 rounded-full border border-white/10 pointer-events-auto shadow-2xl flex items-center gap-2">
-                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                            <h1 className="font-black tracking-tighter text-lg">SOY TOMÉ</h1>
+                <div className="h-[100dvh] flex flex-col bg-brand-bg font-sans overflow-hidden relative">
+                    {/* BARRA SUPERIOR FLOTANTE */}
+                    <div className="absolute top-4 left-4 right-4 z-20 flex justify-between items-start pointer-events-none">
+                        
+                        {/* Logo & Status */}
+                        <div className="flex flex-col gap-2 pointer-events-auto">
+                            <div className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-full shadow-xl flex items-center gap-2 border border-white">
+                                <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse"></div>
+                                <h1 className="font-black tracking-tighter text-lg text-brand-dark">SOY TOMÉ</h1>
+                            </div>
+                            
+                            {user && (
+                                <div className="bg-brand-dark/90 backdrop-blur-md px-4 py-2 rounded-full shadow-xl flex items-center gap-3 text-white border border-white/10">
+                                    <div className="relative">
+                                        <img src={user.photoURL} className="w-8 h-8 rounded-full border-2 border-brand-accent" />
+                                        <div className="absolute -bottom-1 -right-1 bg-brand-accent text-[10px] font-black w-4 h-4 flex items-center justify-center rounded-full">
+                                            {Math.floor(userData.xp / 100) + 1}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-bold leading-none text-brand-accent">XP {userData.xp}</p>
+                                        <p className="text-[10px] text-gray-400 font-medium">Nivel {Math.floor(userData.xp / 100) + 1}</p>
+                                    </div>
+                                </div>
+                            )}
                         </div>
+
+                        {/* Botones de Acción */}
                         <div className="flex gap-2 pointer-events-auto">
-                            <button onClick={handleAdmin} className="w-10 h-10 rounded-full bg-black/50 backdrop-blur flex items-center justify-center border border-white/10"><Settings size={18}/></button>
+                            <button onClick={handleRefresh} className="w-10 h-10 rounded-full bg-white text-brand-dark flex items-center justify-center shadow-lg border border-white hover:bg-gray-50 active:scale-90 transition">
+                                <RefreshCw size={18} />
+                            </button>
+                            
                             {user ? (
-                                <button onClick={()=>setUserLoc({...userLoc})} className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-lg"><Navigation size={18}/></button>
+                                <button onClick={()=>setUserLoc({...userLoc})} className="w-10 h-10 rounded-full bg-brand-accent text-white flex items-center justify-center shadow-lg hover:brightness-110 active:scale-90 transition">
+                                    <Navigation size={18}/>
+                                </button>
                             ) : (
-                                <button onClick={()=>setShowLogin(true)} className="bg-brand-accent text-black px-4 py-2 rounded-full font-bold text-sm shadow-lg shadow-yellow-500/20 flex items-center gap-2"><LogIn size={16}/> ENTRAR</button>
+                                <button onClick={()=>setShowLogin(true)} className="bg-brand-dark text-white px-5 py-2.5 rounded-full font-bold text-sm shadow-xl flex items-center gap-2 hover:scale-105 transition">
+                                    <LogIn size={16}/> ENTRAR
+                                </button>
                             )}
                         </div>
                     </div>
 
-                    <div className="flex-1 relative">
+                    {/* MAPA */}
+                    <div className="flex-1 relative z-0">
                         <LeafletMap 
                             reports={reports} 
                             userLoc={userLoc} 
+                            refreshTrigger={refresh}
                             onMapClick={handleMapClick}
                             onMarkerClick={setSelectedReport}
                         />
                     </div>
 
-                    {showLogin && (
-                        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur flex items-center justify-center p-4 animate-float">
-                            <div className="bg-brand-card p-8 rounded-3xl border border-white/10 max-w-sm w-full text-center">
-                                <h2 className="text-3xl font-black mb-2">Bienvenido</h2>
-                                <p className="text-gray-400 mb-6">Únete a la comunidad para reportar y comentar.</p>
-                                <button onClick={handleGoogleLogin} className="w-full bg-white text-black py-4 rounded-xl font-bold flex items-center justify-center gap-3 hover:scale-105 transition">
-                                    <svg width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M21.35 11.1h-9.17v2.73h6.51c-.33 3.81-3.5 5.44-6.5 5.44C8.36 19.27 5 16.25 5 12c0-4.1 3.2-7.27 7.2-7.27 3.09 0 4.9 1.97 4.9 1.97L19 4.72S16.56 2 12.1 2C6.42 2 2.03 6.8 2.03 12c0 5.05 4.13 10 10.22 10 5.35 0 9.25-3.67 9.25-9.09 0-1.15-.15-1.81-.15-1.81z"/></svg>
-                                    Continuar con Google
-                                </button>
-                                <button onClick={()=>setShowLogin(false)} className="mt-4 text-gray-500 text-sm hover:text-white">Cancelar</button>
-                            </div>
-                        </div>
-                    )}
-
+                    {/* MODAL CREAR REPORTE */}
                     {showCreate && createLoc && (
                         <CreateReportModal 
                             lat={createLoc.lat} 
@@ -415,29 +355,41 @@
                         />
                     )}
 
-                    {selectedReport && (
-                        <ReportDetailModal 
-                            report={selectedReport} 
-                            user={user} 
-                            onClose={()=>setSelectedReport(null)} 
-                        />
+                    {/* MODAL LOGIN */}
+                    {showLogin && (
+                        <div className="fixed inset-0 z-[100] bg-brand-dark/80 backdrop-blur-sm flex items-center justify-center p-4">
+                            <div className="bg-white p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center relative overflow-hidden">
+                                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
+                                <div className="bg-brand-accent/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Trophy className="text-brand-accent" size={32} />
+                                </div>
+                                <h2 className="text-3xl font-black text-brand-dark mb-2">Sube de Nivel</h2>
+                                <p className="text-gray-500 mb-8 text-sm">Gana puntos reportando incidencias y ayudando a tu comunidad.</p>
+                                
+                                <button onClick={handleGoogleLogin} className="w-full bg-brand-dark text-white py-4 rounded-xl font-bold flex items-center justify-center gap-3 hover:scale-105 transition shadow-lg">
+                                    <svg width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M21.35 11.1h-9.17v2.73h6.51c-.33 3.81-3.5 5.44-6.5 5.44C8.36 19.27 5 16.25 5 12c0-4.1 3.2-7.27 7.2-7.27 3.09 0 4.9 1.97 4.9 1.97L19 4.72S16.56 2 12.1 2C6.42 2 2.03 6.8 2.03 12c0 5.05 4.13 10 10.22 10 5.35 0 9.25-3.67 9.25-9.09 0-1.15-.15-1.81-.15-1.81z"/></svg>
+                                    Entrar con Google
+                                </button>
+                                <button onClick={()=>setShowLogin(false)} className="mt-4 text-gray-400 text-xs font-bold hover:text-brand-dark">CANCELAR</button>
+                            </div>
+                        </div>
                     )}
-
-                    {showControl && <MasterControl db={db} onClose={()=>setShowControl(false)} />}
                 </div>
             );
         };
 
+        // --- SUBCOMPONENTES ---
         const CreateReportModal = ({ lat, lng, user, onClose, db }) => {
             const [data, setData] = useState({ type: 'security', desc: '', src: [] });
             const [loading, setLoading] = useState(false);
 
             const handleSubmit = async () => {
-                if(!data.desc) return alert("Describe el problema");
+                if(!data.desc) return alert("Falta descripción");
                 setLoading(true);
+                
+                // 1. Crear Reporte
                 const report = {
-                    ...data,
-                    lat, lng,
+                    ...data, lat, lng,
                     userId: user.uid,
                     userNick: user.displayName,
                     userPhoto: user.photoURL,
@@ -445,7 +397,18 @@
                     timestamp: Date.now(),
                     comments: []
                 };
-                if(db) await addDoc(collection(db, 'reports'), report);
+                
+                if(db) {
+                    await addDoc(collection(db, 'reports'), report);
+                    // 2. Dar XP al usuario
+                    const userRef = doc(db, 'users', user.uid);
+                    await updateDoc(userRef, { xp: increment(50) });
+                    
+                    // Efecto Confeti
+                    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                    alert("¡Reporte enviado! +50 XP 🌟");
+                }
+                
                 setLoading(false);
                 onClose();
             };
@@ -458,17 +421,15 @@
             };
 
             return (
-                <div className="fixed inset-0 z-[60] bg-black/90 flex items-end sm:items-center justify-center sm:p-4">
-                    <div className="bg-brand-card w-full max-w-lg sm:rounded-2xl rounded-t-3xl p-6 animate-float border border-white/10">
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-bold">Nuevo Reporte</h3>
-                            <button onClick={onClose}><X/></button>
-                        </div>
+                <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4">
+                    <div className="bg-white w-full max-w-lg sm:rounded-3xl rounded-t-3xl p-6 animate-float shadow-2xl relative">
+                        <button onClick={onClose} className="absolute top-4 right-4 bg-gray-100 p-2 rounded-full hover:bg-gray-200"><X size={20}/></button>
+                        <h3 className="text-2xl font-black text-brand-dark mb-6">Nuevo Reporte</h3>
                         
                         <div className="grid grid-cols-3 gap-3 mb-6">
                             {REPORT_TYPES.map(t => (
                                 <button key={t.id} onClick={()=>setData({...data, type:t.id})}
-                                    className={`p-3 rounded-xl border flex flex-col items-center gap-1 transition ${data.type===t.id ? 'bg-white text-black border-white' : 'border-white/10 text-gray-500 hover:bg-white/5'}`}>
+                                    className={`p-3 rounded-2xl border-2 flex flex-col items-center gap-1 transition ${data.type===t.id ? 'bg-brand-accent/10 border-brand-accent text-brand-accent' : 'border-gray-100 text-gray-400 hover:bg-gray-50'}`}>
                                     <t.icon size={24}/>
                                     <span className="text-[10px] font-bold uppercase">{t.label}</span>
                                 </button>
@@ -476,55 +437,18 @@
                         </div>
 
                         <textarea value={data.desc} onChange={e=>setData({...data, desc:e.target.value})} 
-                            className="w-full bg-black/50 p-4 rounded-xl border border-white/10 mb-4 focus:border-brand-accent outline-none" 
-                            placeholder="¿Qué está pasando aquí?" rows="3"></textarea>
+                            className="w-full bg-gray-50 p-4 rounded-2xl border-2 border-transparent focus:border-brand-accent focus:bg-white outline-none mb-4 text-brand-dark transition" 
+                            placeholder="¿Qué está pasando?" rows="3"></textarea>
                         
                         <div className="flex gap-3">
-                            <label className="bg-white/5 p-4 rounded-xl cursor-pointer hover:bg-white/10 transition">
+                            <label className="bg-gray-100 p-4 rounded-2xl cursor-pointer hover:bg-gray-200 transition text-gray-500">
                                 <input type="file" className="hidden" onChange={handleFile}/>
-                                <Camera className={data.src[0] ? 'text-green-500' : 'text-white'}/>
+                                <Camera className={data.src[0] ? 'text-green-500' : ''}/>
                             </label>
-                            <button onClick={handleSubmit} disabled={loading} className="flex-1 bg-brand-accent text-black font-black rounded-xl text-lg hover:scale-105 transition shadow-lg shadow-orange-500/20">
-                                {loading ? 'Enviando...' : 'PUBLICAR ALERTA'}
+                            <button onClick={handleSubmit} disabled={loading} className="flex-1 bg-brand-accent text-white font-black rounded-2xl text-lg hover:scale-105 transition shadow-lg shadow-brand-accent/30">
+                                {loading ? 'Enviando...' : 'GANAR +50 XP'}
                             </button>
                         </div>
-                    </div>
-                </div>
-            );
-        };
-
-        const MasterControl = ({ db, onClose }) => {
-            const [reports, setReports] = useState([]);
-            useEffect(() => {
-                if(db) onSnapshot(query(collection(db, 'reports'), orderBy('timestamp', 'desc')), s => setReports(s.docs.map(d=>({id:d.id, ...d.data()}))) );
-            }, []);
-
-            const deleteR = async (id) => {
-                if(confirm("Eliminar?")) await deleteDoc(doc(db, 'reports', id));
-            }
-
-            return (
-                <div className="fixed inset-0 z-[200] bg-black text-white flex flex-col">
-                    <div className="p-4 bg-brand-card border-b border-white/10 flex justify-between items-center">
-                        <h2 className="font-black text-brand-accent">CONTROL MAESTRO</h2>
-                        <button onClick={onClose}><LogOut/></button>
-                    </div>
-                    <div className="flex-1 overflow-y-auto p-4">
-                        <h3 className="font-bold mb-4 text-gray-500">REPORTES ACTIVOS ({reports.length})</h3>
-                        {reports.map(r => (
-                            <div key={r.id} className="bg-brand-card border border-white/5 p-4 rounded-xl mb-3 flex gap-3">
-                                <img src={r.userPhoto || 'https://ui-avatars.com/api/?name='+r.userNick} className="w-10 h-10 rounded-full"/>
-                                <div className="flex-1">
-                                    <div className="flex justify-between">
-                                        <span className="font-bold text-brand-accent">{r.userNick}</span>
-                                        <span className="text-xs text-gray-500">{r.date}</span>
-                                    </div>
-                                    <p className="text-sm">{r.desc}</p>
-                                    <span className="text-xs bg-white/10 px-2 py-0.5 rounded mt-1 inline-block uppercase">{r.type}</span>
-                                </div>
-                                <button onClick={()=>deleteR(r.id)} className="text-red-500"><Trash2/></button>
-                            </div>
-                        ))}
                     </div>
                 </div>
             );
