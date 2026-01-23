@@ -81,7 +81,8 @@
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from 'firebase/auth';
 
         // --------------------------------------------------------
-        // 1. CONFIGURACIÓN FIREBASE (LLENAR DATOS)
+        // ⚠️ ZONA DE CONEXIÓN: PEGA TUS DATOS DE FIREBASE AQUÍ ⚠️
+        // Si esto está vacío (""), Google Login NO funcionará.
         // --------------------------------------------------------
         const firebaseConfig = {
             apiKey: "", 
@@ -99,6 +100,8 @@
                 const app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
+            } else {
+                console.warn("FALTAN LAS LLAVES DE FIREBASE");
             }
         } catch (e) { console.error("Firebase Error:", e); }
 
@@ -129,7 +132,7 @@
             }
         });
 
-        // --- COMPONENTE: MAPA INTERACTIVO ---
+        // --- COMPONENTE: MAPA INTERACTIVO (CORREGIDO) ---
         const LeafletMap = ({ reports, onMapClick, onMarkerClick, userLoc }) => {
             const mapRef = useRef(null);
             const mapInstance = useRef(null);
@@ -139,8 +142,10 @@
                 if (!mapInstance.current && mapRef.current) {
                     const map = L.map(mapRef.current, { zoomControl: false, attributionControl: false }).setView([-36.6158, -72.9575], 14);
                     
-                    // Mapa Oscuro Moderno (Stadia Alidade Smooth Dark)
-                    L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png', {
+                    // CORRECCIÓN: Usamos CartoDB Dark Matter (Gratis y sin API Key)
+                    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                        attribution: '&copy; OpenStreetMap &copy; CartoDB',
+                        subdomains: 'abcd',
                         maxZoom: 20
                     }).addTo(map);
 
@@ -178,7 +183,6 @@
                 
                 // Mover a ubicación de usuario
                 if (userLoc && map) {
-                    // Solo volar si estamos lejos
                     const center = map.getCenter();
                     const dist = map.distance(center, [userLoc.lat, userLoc.lng]);
                     if(dist > 500) map.flyTo([userLoc.lat, userLoc.lng], 15, { duration: 1.5 });
@@ -216,7 +220,6 @@
 
         // Helper para iconos SVG en string
         const getIconSvg = (typeId) => {
-            // Iconos simplificados para el mapa
             if(typeId === 'accident') return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>';
             if(typeId === 'fire') return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.1.2-2.2.5-3.3a9 9 0 0 0 2.5 3.3z"/></svg>';
             if(typeId === 'security') return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>';
@@ -228,7 +231,6 @@
             const [newComment, setNewComment] = useState('');
             const [comments, setComments] = useState(report.comments || []);
 
-            // Escuchar cambios en tiempo real para este reporte específico
             useEffect(() => {
                 if(db) {
                     const unsub = onSnapshot(doc(db, 'reports', report.id), (doc) => {
@@ -261,7 +263,6 @@
             return (
                 <div className="fixed inset-0 z-50 flex flex-col justify-end sm:justify-center items-center bg-black/60 backdrop-blur-sm animate-float">
                     <div className="bg-brand-card w-full max-w-md h-[85vh] sm:h-auto sm:rounded-2xl rounded-t-3xl overflow-hidden flex flex-col shadow-2xl border border-white/10">
-                        {/* Header */}
                         <div className={`p-6 bg-gradient-to-r ${typeInfo?.gradient} relative`}>
                             <button onClick={onClose} className="absolute top-4 right-4 bg-black/20 p-2 rounded-full text-white hover:bg-black/40"><X size={20}/></button>
                             <div className="flex items-center gap-3">
@@ -275,12 +276,10 @@
                             </div>
                         </div>
 
-                        {/* Body */}
                         <div className="flex-1 overflow-y-auto p-6 bg-brand-bg">
                             <p className="text-lg font-medium leading-relaxed mb-4 text-gray-200">"{report.desc}"</p>
                             {report.src?.[0] && <img src={report.src[0]} className="w-full rounded-xl mb-6 border border-white/10 shadow-lg" />}
 
-                            {/* Comentarios */}
                             <div className="border-t border-white/10 pt-4">
                                 <h3 className="text-sm font-bold text-gray-500 uppercase mb-4 tracking-wider">Actualizaciones ({comments.length})</h3>
                                 <div className="space-y-4 mb-20">
@@ -301,7 +300,6 @@
                             </div>
                         </div>
 
-                        {/* Input */}
                         <div className="p-4 bg-brand-card border-t border-white/10 flex gap-2">
                             {user ? (
                                 <>
@@ -324,24 +322,20 @@
             const [userLoc, setUserLoc] = useState(null);
             const [reports, setReports] = useState([]);
             
-            // UI States
             const [showLogin, setShowLogin] = useState(false);
             const [showCreate, setShowCreate] = useState(false);
             const [showControl, setShowControl] = useState(false);
             const [selectedReport, setSelectedReport] = useState(null);
             const [createLoc, setCreateLoc] = useState(null);
 
-            // Auth Listener
             useEffect(() => {
                 if(auth) onAuthStateChanged(auth, u => setUser(u));
                 
-                // Cargar Reportes
                 if(db) {
                     const q = query(collection(db, 'reports'));
                     onSnapshot(q, s => setReports(s.docs.map(d=>({id:d.id, ...d.data()}))) );
                 }
 
-                // GPS
                 if(navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(
                         p => setUserLoc({lat: p.coords.latitude, lng: p.coords.longitude}),
@@ -351,7 +345,7 @@
             }, []);
 
             const handleGoogleLogin = async () => {
-                if(!auth) return alert("Firebase Auth no configurado");
+                if(!auth) return alert("Firebase no configurado. ¡Pega las API Keys en el código!");
                 try {
                     await signInWithPopup(auth, new GoogleAuthProvider());
                     setShowLogin(false);
@@ -374,7 +368,6 @@
 
             return (
                 <div className="h-[100dvh] flex flex-col bg-brand-bg font-sans">
-                    {/* NAV FLOTANTE */}
                     <div className="absolute top-4 left-4 right-4 z-20 flex justify-between items-center pointer-events-none">
                         <div className="bg-brand-card/90 backdrop-blur px-4 py-2 rounded-full border border-white/10 pointer-events-auto shadow-2xl flex items-center gap-2">
                             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
@@ -390,7 +383,6 @@
                         </div>
                     </div>
 
-                    {/* MAPA */}
                     <div className="flex-1 relative">
                         <LeafletMap 
                             reports={reports} 
@@ -400,7 +392,6 @@
                         />
                     </div>
 
-                    {/* LOGIN MODAL */}
                     {showLogin && (
                         <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur flex items-center justify-center p-4 animate-float">
                             <div className="bg-brand-card p-8 rounded-3xl border border-white/10 max-w-sm w-full text-center">
@@ -415,7 +406,6 @@
                         </div>
                     )}
 
-                    {/* CREAR REPORTE */}
                     {showCreate && createLoc && (
                         <CreateReportModal 
                             lat={createLoc.lat} 
@@ -426,7 +416,6 @@
                         />
                     )}
 
-                    {/* DETALLE REPORTE */}
                     {selectedReport && (
                         <ReportDetailModal 
                             report={selectedReport} 
@@ -435,13 +424,11 @@
                         />
                     )}
 
-                    {/* CONTROL MAESTRO */}
                     {showControl && <MasterControl db={db} onClose={()=>setShowControl(false)} />}
                 </div>
             );
         };
 
-        // --- MODAL CREAR REPORTE ---
         const CreateReportModal = ({ lat, lng, user, onClose, db }) => {
             const [data, setData] = useState({ type: 'security', desc: '', src: [] });
             const [loading, setLoading] = useState(false);
@@ -507,7 +494,6 @@
             );
         };
 
-        // --- CONTROL MAESTRO ---
         const MasterControl = ({ db, onClose }) => {
             const [reports, setReports] = useState([]);
             useEffect(() => {
