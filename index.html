@@ -124,7 +124,6 @@
             signInAnonymously(auth).catch(console.error);
         } catch(e) { console.error(e); }
 
-        // --- ICONOS SVG ---
         const ICONS_SVG = {
             siren: '<path d="M7 18v-6a5 5 0 1 1 10 0v6"/><path d="M5 21a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2"/><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8"/><path d="M3 11.5a8.38 8.38 0 0 0 .9 3.8"/>',
             heart: '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
@@ -154,6 +153,33 @@
             { id: 'event', label: 'Eventos', icon: PartyPopper, color: '#14b8a6', svg: ICONS_SVG.event },
             { id: 'pet', label: 'Mascota', icon: Dog, color: '#a8a29e', svg: ICONS_SVG.dog },
         ];
+
+        // --- SISTEMA AUTÓNOMO DE FOTOS (GUARDA EN BD DIRECTAMENTE) ---
+        const processImage = (file) => {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file); // Leer archivo
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        // Reducir tamaño para no saturar la BD (Max 500px)
+                        const MAX_WIDTH = 500;
+                        const scaleSize = MAX_WIDTH / img.width;
+                        const width = (img.width > MAX_WIDTH) ? MAX_WIDTH : img.width;
+                        const height = (img.width > MAX_WIDTH) ? (img.height * scaleSize) : img.height;
+                        canvas.width = width;
+                        canvas.height = height;
+                        ctx.drawImage(img, 0, 0, width, height);
+                        // Obtener DataURL completo (incluye cabecera para visualizar directo)
+                        resolve(canvas.toDataURL('image/jpeg', 0.6));
+                    };
+                };
+                reader.onerror = error => reject(error);
+            });
+        };
 
         const BadBunnyEye = ({ awake }) => {
             const [pupilPos, setPupilPos] = useState({ x: 0, y: 0 });
@@ -237,7 +263,6 @@
                     userMarkerRef.current = L.marker([userLoc.lat, userLoc.lng], { icon: userIcon, zIndexOffset: 1000 }).addTo(map);
                 }
 
-                // FILTRO
                 const visibleReports = filter === 'all' ? reports : reports.filter(r => r.type === filter);
 
                 visibleReports.forEach(r => {
@@ -263,7 +288,6 @@
             const [files, setFiles] = useState([]);
             const [loading, setLoading] = useState(false);
             const [status, setStatus] = useState("PUBLICAR");
-            const IMGBB_KEY = "4b032541863b7a63782c7fc88f270f0f";
 
             const handleFileSelect = (e) => {
                 const selected = Array.from(e.target.files);
@@ -278,21 +302,12 @@
                 
                 try {
                     const mediaUrls = [];
+                    // SUBIDA DIRECTA A FIREBASE (SIN IMGBB)
                     for (let i = 0; i < files.length; i++) {
-                        setStatus(`Subiendo foto ${i + 1}...`);
-                        
-                        // --- SOLUCIÓN DIRECTA: SUBIR ARCHIVO SIN PROCESAR ---
-                        // Esto evita el error de memoria "Error al leer archivo".
-                        // ImgBB soporta hasta 32MB, así que el celular puede enviarlo directo.
-                        
-                        const formData = new FormData();
-                        formData.append("image", files[i]); // ENVIAR DIRECTO
-                        
-                        const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, { method: "POST", body: formData });
-                        const result = await response.json();
-                        
-                        if (result.success) mediaUrls.push({ url: result.data.url, type: 'image' });
-                        else throw new Error("Error ImgBB: " + (result.error?.message || "Desconocido"));
+                        setStatus(`Procesando foto ${i + 1}...`);
+                        const base64Image = await processImage(files[i]);
+                        // Guardamos la imagen (dataUrl) directamente en el objeto media
+                        mediaUrls.push({ url: base64Image, type: 'image' });
                     }
 
                     setStatus("Guardando...");
@@ -302,7 +317,7 @@
                     localStorage.setItem('st_xp', parseInt(localStorage.getItem('st_xp') || '0') + 50);
                     onClose();
                 } catch (e) { 
-                    alert("Error: " + e.message + ". Intenta con una sola foto si la conexión es lenta."); 
+                    alert("Error: " + e.message); 
                 } finally { 
                     setLoading(false); 
                     setStatus("PUBLICAR");
@@ -343,7 +358,7 @@
                         <div className="p-6 pb-20"> 
                             <div className="flex justify-between items-start mb-4"><div className="flex items-center gap-3"><div style={{background: typeInfo.color}} className="p-3 rounded-full text-white shadow-lg"><typeInfo.icon size={24}/></div><div><h3 className="text-lg font-black text-white">{typeInfo.label}</h3><p className="text-xs text-zinc-400">{report.dateString} • {report.name || 'Anónimo'}</p></div></div><button onClick={onClose} className="text-zinc-500 bg-white/10 p-2 rounded-full"><X size={16}/></button></div>
                             <p className="text-white text-lg leading-relaxed mb-6 font-medium">{report.desc}</p>
-                            {report.media && report.media.length > 0 && (<div className="flex overflow-x-auto gap-3 pb-4 mb-4 no-scrollbar">{report.media.map((m, i) => (<div key={i} className="flex-shrink-0 w-72 h-72 rounded-xl overflow-hidden bg-black border border-zinc-700 relative group"><img src={m.url} className="w-full h-full object-cover" onClick={()=>window.open(m.url)} /><div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition pointer-events-none"><span className="text-white text-xs font-bold">VER FULL</span></div></div>))}</div>)}
+                            {report.media && report.media.length > 0 && (<div className="flex overflow-x-auto gap-3 pb-4 mb-4 no-scrollbar">{report.media.map((m, i) => (<div key={i} className="flex-shrink-0 w-72 h-72 rounded-xl overflow-hidden bg-black border border-zinc-700 relative group"><img src={m.url} className="w-full h-full object-cover" /><div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition pointer-events-none"><span className="text-white text-xs font-bold">VER FULL</span></div></div>))}</div>)}
                             <div className="flex gap-2 mb-6">{report.contact && (<a href={`https://wa.me/${report.contact.replace('+','').replace(/\s/g,'')}`} target="_blank" className="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-green-500 transition"><MessageCircle size={18}/> WHATSAPP</a>)}{isAdmin && (<button onClick={()=>onDelete(report.id)} className="bg-red-600 p-3 rounded-xl text-white"><Trash2 size={18}/></button>)}</div>
                             <div className="border-t border-zinc-800 pt-4"><h4 className="text-sm font-bold text-zinc-500 mb-3 uppercase">Comentarios</h4><div className="space-y-3 mb-4 max-h-40 overflow-y-auto">{report.comments && report.comments.map((c, idx) => (<div key={idx} className="bg-zinc-900 p-3 rounded-lg text-sm"><span className="text-gold font-bold text-xs block">{c.author}</span><span className="text-zinc-300">{c.text}</span></div>))}</div><div className="flex gap-2"><input type="text" value={newComment} onChange={e=>setNewComment(e.target.value)} placeholder="Comentar..." className="flex-1 bg-black border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-gold"/><button onClick={()=>{ if(newComment) { onComment(report.id, newComment, userName); setNewComment(""); } }} className="bg-gold text-black p-2 rounded-lg font-bold"><Send size={16}/></button></div></div>
                         </div>
