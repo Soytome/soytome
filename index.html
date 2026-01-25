@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Soy Tomé - Premium</title>
+    <title>Soy Tomé - Ultimate</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -20,11 +20,13 @@
                     animation: {
                         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                         'liquid': 'liquid 10s ease infinite',
-                        'eye-open': 'eyeOpen 0.5s ease-out forwards'
+                        'eye-open': 'eyeOpen 0.5s ease-out forwards',
+                        'float': 'float 6s ease-in-out infinite'
                     },
                     keyframes: {
                         liquid: { '0%': { backgroundPosition: '0% 50%' }, '50%': { backgroundPosition: '100% 50%' }, '100%': { backgroundPosition: '0% 50%' } },
-                        eyeOpen: { '0%': { transform: 'scaleY(0.1)' }, '100%': { transform: 'scaleY(1)' } }
+                        eyeOpen: { '0%': { transform: 'scaleY(0.1)' }, '100%': { transform: 'scaleY(1)' } },
+                        float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-10px)' } }
                     }
                 }
             }
@@ -54,7 +56,6 @@
         .leaflet-container { width: 100%; height: 100%; z-index: 0; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
-        /* ORO LÍQUIDO */
         .bg-liquid-gold {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2;
             background: linear-gradient(-45deg, #000000, #1a1a1a, #422006, #000000);
@@ -62,12 +63,15 @@
             animation: liquid 15s ease infinite;
         }
 
-        /* GPS PULSO */
         .user-pulse { animation: pulse-blue 2s infinite; }
         @keyframes pulse-blue { 0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(59, 130, 246, 0); } 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); } }
         
         .grayscale-mode { filter: grayscale(100%) brightness(0.6); transition: filter 1s ease; }
         .premium-mode { filter: grayscale(0%) brightness(1); transition: filter 1s ease; }
+        .z-highest { z-index: 9999; }
+        
+        /* Vertical Text for WA */
+        .vertical-text { writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(180deg); }
     </style>
 </head>
 <body>
@@ -76,15 +80,13 @@
     <script type="text/babel" data-type="module">
         import React, { useState, useEffect, useRef } from 'react';
         import { createRoot } from 'react-dom/client';
-        import { MapPin, Plus, X, Siren, Shield, Flame, Dog, AlertTriangle, Heart, Zap, Camera, Navigation, Star, Phone, User, Layers, Eye, EyeOff, MessageCircle, Send, Settings, Trash2 } from 'lucide-react';
+        import { MapPin, Plus, X, Siren, Shield, Flame, Dog, AlertTriangle, Heart, Zap, Camera, Navigation, Star, Phone, User, Layers, Eye, EyeOff, MessageCircle, Send, Settings, Trash2, Cloud, Sun, CloudRain, Facebook, Instagram, Youtube, Hash, Save } from 'lucide-react';
         
         import { initializeApp } from 'firebase/app';
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc, setDoc, getDoc } from 'firebase/firestore';
         import { getAuth, signInAnonymously } from 'firebase/auth';
 
-        // ---------------------------------------------------------
         // CONFIGURACIÓN FIREBASE
-        // ---------------------------------------------------------
         const firebaseConfig = {
             apiKey: "AIzaSyCYQHWlpWXqxYj8Lk7gLAQT3c2_YaFs8Ew",
             authDomain: "soy-tome.firebaseapp.com",
@@ -112,7 +114,66 @@
             { id: 'pet', label: 'Mascota', icon: Dog, color: '#eab308' },
         ];
 
-        // --- MAPA AVANZADO (GPS REAL) ---
+        // --- COMPRESOR DE IMÁGENES ---
+        const compressImage = async (file) => {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.src = URL.createObjectURL(file);
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const MAX_WIDTH = 800;
+                    const scaleSize = MAX_WIDTH / img.width;
+                    const width = (img.width > MAX_WIDTH) ? MAX_WIDTH : img.width;
+                    const height = (img.width > MAX_WIDTH) ? (img.height * scaleSize) : img.height;
+                    canvas.width = width; canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+                    canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.7);
+                };
+            });
+        };
+
+        // --- WIDGET CLIMA ---
+        const WeatherWidget = () => {
+            const [weather, setWeather] = useState(null);
+            const [time, setTime] = useState(new Date());
+
+            useEffect(() => {
+                const fetchWeather = async () => {
+                    try {
+                        const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-36.6158&longitude=-72.9575&current=temperature_2m,is_day,weather_code&timezone=auto');
+                        const data = await res.json();
+                        setWeather(data.current);
+                    } catch (e) { console.error(e); }
+                };
+                fetchWeather();
+                const timer = setInterval(() => setTime(new Date()), 60000); // Actualiza hora cada min
+                return () => clearInterval(timer);
+            }, []);
+
+            if (!weather) return <div className="animate-pulse h-10 w-24 bg-white/10 rounded-xl"></div>;
+
+            let WeatherIcon = Sun;
+            if (weather.weather_code > 50) WeatherIcon = CloudRain;
+            else if (weather.weather_code > 2) WeatherIcon = Cloud;
+            if (weather.is_day === 0 && weather.weather_code < 3) WeatherIcon = Star; // Noche despejada
+
+            return (
+                <div className="flex items-center gap-3 bg-black/40 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/10">
+                    <div className="text-right">
+                        <div className="text-xl font-black leading-none">{Math.round(weather.temperature_2m)}°</div>
+                        <div className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Tomé</div>
+                    </div>
+                    <div className="h-8 w-[1px] bg-white/20"></div>
+                    <WeatherIcon className="text-gold" size={24} />
+                    <div className="text-xs font-mono text-zinc-300">
+                        {time.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                    </div>
+                </div>
+            );
+        };
+
+        // --- MAPA ---
         const LeafletMap = ({ reports, onMapClick, onMarkerClick, userLoc, styleMode }) => {
             const mapContainer = useRef(null);
             const mapInstance = useRef(null);
@@ -135,36 +196,23 @@
                 }
             }, []);
 
-            useEffect(() => {
-                if(mapInstance.current && tileLayerRef.current) tileLayerRef.current.setUrl(MAP_STYLES[styleMode]);
-            }, [styleMode]);
+            useEffect(() => { if(mapInstance.current && tileLayerRef.current) tileLayerRef.current.setUrl(MAP_STYLES[styleMode]); }, [styleMode]);
 
             useEffect(() => {
                 const map = mapInstance.current;
                 if(!map) return;
-
                 map.eachLayer(l => { if(l instanceof L.Marker && l !== userMarkerRef.current) map.removeLayer(l); });
 
-                // MARCADOR DE USUARIO (GPS REAL)
                 if(userLoc) {
                     if(userMarkerRef.current) map.removeLayer(userMarkerRef.current);
-                    const userIcon = L.divIcon({ 
-                        html: `<div class="user-pulse flex items-center justify-center w-6 h-6"><div class="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg"></div></div>`, 
-                        className: '', iconSize: [24, 24] 
-                    });
+                    const userIcon = L.divIcon({ html: `<div class="user-pulse flex items-center justify-center w-6 h-6"><div class="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg"></div></div>`, className: '', iconSize: [24, 24] });
                     userMarkerRef.current = L.marker([userLoc.lat, userLoc.lng], { icon: userIcon, zIndexOffset: 1000 }).addTo(map);
                 }
 
-                // REPORTES
                 reports.forEach(r => {
                     const type = REPORT_TYPES.find(t => t.id === r.type) || REPORT_TYPES[2];
                     const isSOS = r.type === 'sos_help';
-                    const iconHtml = `
-                        <div class="${isSOS ? 'animate-pulse' : ''} transition-transform hover:scale-110">
-                            <div style="background:${type.color};" class="w-10 h-10 rounded-full flex items-center justify-center border-2 border-white shadow-xl">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${isSOS ? '<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>' : '<circle cx="12" cy="12" r="10"/>'}</svg>
-                            </div>
-                        </div>`;
+                    const iconHtml = `<div class="${isSOS ? 'animate-pulse' : ''} transition-transform hover:scale-110"><div style="background:${type.color};" class="w-10 h-10 rounded-full flex items-center justify-center border-2 border-white shadow-xl"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${isSOS ? '<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>' : '<circle cx="12" cy="12" r="10"/>'}</svg></div></div>`;
                     L.marker([r.lat, r.lng], { icon: L.divIcon({ html: iconHtml, className: '', iconSize: [40, 40], iconAnchor: [20, 20] }) }).addTo(map).on('click', () => onMarkerClick(r));
                 });
             }, [reports, userLoc]);
@@ -189,128 +237,63 @@
                 if(!data.desc) return alert("Falta descripción");
                 setLoading(true);
                 localStorage.setItem('st_username', data.name); 
-
                 try {
                     const mediaUrls = [];
                     for (const file of files) {
-                        const formData = new FormData();
-                        formData.append("image", file);
+                        const compressedFile = await compressImage(file);
+                        const formData = new FormData(); formData.append("image", compressedFile, "photo.jpg");
                         const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, { method: "POST", body: formData });
                         const result = await response.json();
                         if (result.success) mediaUrls.push({ url: result.data.url, type: 'image' });
                     }
-
-                    await addDoc(collection(db, 'reports'), {
-                        ...data, lat, lng, media: mediaUrls,
-                        timestamp: Date.now(),
-                        dateString: new Date().toLocaleTimeString(),
-                        xp: 50,
-                        comments: [] 
-                    });
-
+                    await addDoc(collection(db, 'reports'), { ...data, lat, lng, media: mediaUrls, timestamp: Date.now(), dateString: new Date().toLocaleTimeString(), xp: 50, comments: [] });
                     confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-                    const currentXP = parseInt(localStorage.getItem('st_xp') || '0');
-                    localStorage.setItem('st_xp', currentXP + 50);
-                    alert("¡Reporte Publicado!");
+                    localStorage.setItem('st_xp', parseInt(localStorage.getItem('st_xp') || '0') + 50);
                     onClose();
-                } catch (e) { alert("Error: " + e.message); } 
-                finally { setLoading(false); }
+                } catch (e) { alert("Error: " + e.message); } finally { setLoading(false); }
             };
 
             return (
-                <div className="fixed inset-0 z-[60] bg-black/90 backdrop-blur-md flex items-end sm:items-center justify-center pt-10 sm:p-4">
-                    <div className="bg-brand-card w-full max-w-lg rounded-t-3xl border-t border-white/10 p-6 shadow-2xl h-[90vh] sm:h-auto overflow-y-auto relative">
+                <div className="fixed inset-0 z-[60] bg-black/90 backdrop-blur-md flex items-end sm:items-center justify-center pt-10 sm:p-4 animate-in fade-in">
+                    <div className="bg-brand-card w-full max-w-lg rounded-t-3xl border-t border-white/10 p-6 shadow-2xl h-[90vh] sm:h-auto overflow-y-auto relative z-highest">
                         <div className="w-12 h-1.5 bg-zinc-700 rounded-full mx-auto mb-6 sm:hidden"></div>
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-black text-white flex items-center gap-2"><Zap className="text-gold" fill="currentColor"/> NUEVO REPORTE</h3>
-                            <button onClick={onClose} className="p-2 bg-white/10 rounded-full"><X size={20}/></button>
-                        </div>
+                        <div className="flex justify-between items-center mb-6"><h3 className="text-xl font-black text-white flex items-center gap-2"><Zap className="text-gold" fill="currentColor"/> NUEVO REPORTE</h3><button onClick={onClose} className="p-2 bg-white/10 rounded-full"><X size={20}/></button></div>
                         <div className="grid grid-cols-2 gap-3 mb-6">
                             <button onClick={()=>setData({...data, type: 'sos_help'})} className={`p-4 rounded-xl border-2 font-bold flex flex-col items-center gap-2 ${data.type === 'sos_help' ? 'bg-red-500/20 border-red-500 text-red-500' : 'border-white/10 text-zinc-500'}`}><Siren size={32}/> PEDIR AYUDA</button>
                             <button onClick={()=>setData({...data, type: 'sos_offer'})} className={`p-4 rounded-xl border-2 font-bold flex flex-col items-center gap-2 ${data.type === 'sos_offer' ? 'bg-green-500/20 border-green-500 text-green-500' : 'border-white/10 text-zinc-500'}`}><Heart size={32}/> DAR AYUDA</button>
                         </div>
-                        <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar mb-4">
-                            {REPORT_TYPES.slice(2).map(t => (
-                                <button key={t.id} onClick={()=>setData({...data, type:t.id})} className={`flex-shrink-0 px-4 py-2 rounded-lg border text-xs font-bold flex items-center gap-2 ${data.type===t.id ? 'bg-gold/20 border-gold text-gold' : 'border-zinc-800 text-zinc-400'}`}><t.icon size={14}/> {t.label}</button>
-                            ))}
-                        </div>
+                        <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar mb-4">{REPORT_TYPES.slice(2).map(t => (<button key={t.id} onClick={()=>setData({...data, type:t.id})} className={`flex-shrink-0 px-4 py-2 rounded-lg border text-xs font-bold flex items-center gap-2 ${data.type===t.id ? 'bg-gold/20 border-gold text-gold' : 'border-zinc-800 text-zinc-400'}`}><t.icon size={14}/> {t.label}</button>))}</div>
                         <div className="space-y-4 mb-6">
                             <div className="relative"><User className="absolute left-3 top-3.5 text-zinc-500" size={16}/><input type="text" value={data.name} onChange={e=>setData({...data, name:e.target.value})} className="w-full bg-black border border-zinc-700 p-3 pl-10 rounded-xl text-white outline-none" placeholder="Tu nombre"/></div>
                             <div className="relative"><Phone className="absolute left-3 top-3.5 text-zinc-500" size={16}/><input type="text" value={data.contact} onChange={e=>setData({...data, contact:e.target.value})} className="w-full bg-black border border-zinc-700 p-3 pl-10 rounded-xl text-white outline-none" placeholder="Teléfono / WhatsApp"/></div>
                             <textarea value={data.desc} onChange={e=>setData({...data, desc:e.target.value})} className="w-full bg-black border border-zinc-700 p-4 rounded-xl text-white h-24 outline-none" placeholder="Descripción detallada..."></textarea>
                         </div>
-                        <div className="mb-6">
-                            <label className="block w-full p-4 border-2 border-dashed border-zinc-700 rounded-xl text-center cursor-pointer hover:border-gold transition text-zinc-400">
-                                <input type="file" multiple accept="image/*" onChange={handleFileSelect} className="hidden" />
-                                <Camera className="mx-auto mb-2"/><span className="text-xs font-bold">AGREGAR FOTOS</span>
-                                {files.length > 0 && <p className="text-gold text-xs mt-2">{files.length} seleccionadas</p>}
-                            </label>
-                        </div>
-                        <button onClick={handleSubmit} disabled={loading} className="w-full bg-gradient-to-r from-gold to-orange-600 text-black font-black rounded-xl py-4 shadow-lg mb-8">
-                            {loading ? 'ENVIANDO...' : 'PUBLICAR AHORA'}
-                        </button>
+                        <div className="mb-6"><label className="block w-full p-4 border-2 border-dashed border-zinc-700 rounded-xl text-center cursor-pointer hover:border-gold transition text-zinc-400"><input type="file" multiple accept="image/*" onChange={handleFileSelect} className="hidden" /><Camera className="mx-auto mb-2"/><span className="text-xs font-bold">AGREGAR FOTOS</span>{files.length > 0 && <p className="text-gold text-xs mt-2">{files.length} seleccionadas</p>}</label></div>
+                        <button onClick={handleSubmit} disabled={loading} className="w-full bg-gradient-to-r from-gold to-orange-600 text-black font-black rounded-xl py-4 shadow-lg mb-8">{loading ? 'ENVIANDO...' : 'PUBLICAR AHORA'}</button>
                     </div>
                 </div>
             );
         };
 
-        // --- DETALLE CON COMENTARIOS ---
-        const ReportDetailModal = ({ report, onClose, isAdmin, onDelete, onComment }) => {
-            const [newComment, setNewComment] = useState("");
-            if(!report) return null;
-            const typeInfo = REPORT_TYPES.find(t=>t.id===report.type) || REPORT_TYPES[2];
-            const userName = localStorage.getItem('st_username') || 'Vecino';
+        const SettingsModal = ({ config, onClose, onSave }) => {
+            const [links, setLinks] = useState(config);
+            const handleChange = (key, val) => setLinks({...links, [key]: val});
 
             return (
-                <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center sm:p-4 bg-black/90 backdrop-blur-sm pt-10" onClick={onClose}>
-                    <div className="w-full max-w-md bg-brand-card rounded-t-3xl sm:rounded-2xl border border-white/10 overflow-hidden relative h-[90vh] sm:h-auto overflow-y-auto" onClick={e=>e.stopPropagation()}>
-                        <div className="p-6">
-                            <div className="flex justify-between items-start mb-4">
-                                <div className="flex items-center gap-3">
-                                    <div style={{background: typeInfo.color}} className="p-3 rounded-full text-white shadow-lg"><typeInfo.icon size={24}/></div>
-                                    <div><h3 className="text-lg font-black text-white">{typeInfo.label}</h3><p className="text-xs text-zinc-400">{report.dateString} • {report.name || 'Anónimo'}</p></div>
+                <div className="fixed inset-0 z-[110] bg-black/90 flex items-center justify-center p-4">
+                    <div className="bg-zinc-900 w-full max-w-md rounded-2xl p-6 border border-gold/30">
+                        <h3 className="text-xl font-bold text-white mb-4">CONFIGURAR REDES</h3>
+                        <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
+                            {['whatsapp_support', 'facebook', 'instagram', 'tiktok', 'youtube', 'threads'].map(net => (
+                                <div key={net}>
+                                    <label className="text-xs uppercase text-zinc-500 font-bold">{net.replace('_', ' ')}</label>
+                                    <input type="text" value={links[net] || ''} onChange={e=>handleChange(net, e.target.value)} className="w-full bg-black border border-zinc-700 p-2 rounded text-sm text-gold" placeholder="https://..." />
                                 </div>
-                                <button onClick={onClose} className="text-zinc-500 bg-white/10 p-2 rounded-full"><X size={16}/></button>
-                            </div>
-                            
-                            <p className="text-white text-lg leading-relaxed mb-6 font-medium">{report.desc}</p>
-                            
-                            {report.media && report.media.length > 0 && (
-                                <div className="flex overflow-x-auto gap-3 pb-4 mb-4 no-scrollbar">
-                                    {report.media.map((m, i) => (
-                                        <div key={i} className="flex-shrink-0 w-64 h-64 rounded-xl overflow-hidden bg-black border border-zinc-700 relative group">
-                                            <img src={m.url} className="w-full h-full object-contain bg-black" onClick={()=>window.open(m.url)} />
-                                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition pointer-events-none"><span className="text-white text-xs font-bold">VER FULL</span></div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-
-                            <div className="flex gap-2 mb-6">
-                                {report.contact && (
-                                    <a href={`https://wa.me/${report.contact.replace('+','').replace(/\s/g,'')}`} target="_blank" className="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-green-500 transition"><MessageCircle size={18}/> WHATSAPP</a>
-                                )}
-                                {isAdmin && (
-                                    <button onClick={()=>onDelete(report.id)} className="bg-red-600 p-3 rounded-xl text-white"><Trash2 size={18}/></button>
-                                )}
-                            </div>
-
-                            <div className="border-t border-zinc-800 pt-4">
-                                <h4 className="text-sm font-bold text-zinc-500 mb-3 uppercase">Actualizaciones</h4>
-                                <div className="space-y-3 mb-4 max-h-40 overflow-y-auto">
-                                    {report.comments && report.comments.map((c, idx) => (
-                                        <div key={idx} className="bg-zinc-900 p-3 rounded-lg text-sm">
-                                            <span className="text-gold font-bold text-xs block">{c.author}</span>
-                                            <span className="text-zinc-300">{c.text}</span>
-                                        </div>
-                                    ))}
-                                    {(!report.comments || report.comments.length === 0) && <p className="text-zinc-600 text-xs italic">Sin comentarios aún.</p>}
-                                </div>
-                                <div className="flex gap-2">
-                                    <input type="text" value={newComment} onChange={e=>setNewComment(e.target.value)} placeholder="Escribe una actualización..." className="flex-1 bg-black border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-gold"/>
-                                    <button onClick={()=>{ if(newComment) { onComment(report.id, newComment, userName); setNewComment(""); } }} className="bg-gold text-black p-2 rounded-lg font-bold"><Send size={16}/></button>
-                                </div>
-                            </div>
+                            ))}
+                        </div>
+                        <div className="flex gap-2 mt-6">
+                            <button onClick={onClose} className="flex-1 bg-zinc-800 py-3 rounded-xl font-bold">CANCELAR</button>
+                            <button onClick={()=>onSave(links)} className="flex-1 bg-gold text-black py-3 rounded-xl font-bold flex items-center justify-center gap-2"><Save size={16}/> GUARDAR</button>
                         </div>
                     </div>
                 </div>
@@ -327,50 +310,44 @@
             const [selectedReport, setSelectedReport] = useState(null);
             const [mapStyle, setMapStyle] = useState('dark');
             const [isAdmin, setIsAdmin] = useState(false);
-            const [waNumber, setWaNumber] = useState("+56900000000"); 
+            const [config, setConfig] = useState({}); // Redes sociales y WA
+            const [showSettings, setShowSettings] = useState(false);
 
             useEffect(() => {
                 if(db) {
                     const q = query(collection(db, 'reports'), orderBy('timestamp', 'desc'));
                     onSnapshot(q, (snap) => setReports(snap.docs.map(d => ({id: d.id, ...d.data()}))));
-                    const configRef = doc(db, 'settings', 'global');
-                    getDoc(configRef).then(snap => { if(snap.exists()) setWaNumber(snap.data().whatsapp || "+56900000000"); });
+                    onSnapshot(doc(db, 'settings', 'global'), (snap) => { if(snap.exists()) setConfig(snap.data()); });
                 }
             }, []);
 
             const enableGPS = () => {
                 if(navigator.geolocation) {
-                    navigator.geolocation.watchPosition(
-                        (p) => { setUserLoc({lat: p.coords.latitude, lng: p.coords.longitude}); },
-                        (err) => console.warn(err),
-                        { enableHighAccuracy: true, maximumAge: 1000, timeout: 5000 }
-                    );
+                    navigator.geolocation.watchPosition((p) => setUserLoc({lat: p.coords.latitude, lng: p.coords.longitude}), (err) => console.warn(err), { enableHighAccuracy: true });
                     setView('map');
                 } else { alert("GPS no disponible"); setView('map'); }
             };
 
-            const addComment = async (reportId, text, author) => {
-                const reportRef = doc(db, 'reports', reportId);
-                const report = reports.find(r => r.id === reportId);
-                const newComments = [...(report.comments || []), { text, author, timestamp: Date.now() }];
-                await updateDoc(reportRef, { comments: newComments });
-            };
-
-            const deleteReport = async (id) => {
-                if(confirm("¿Borrar reporte?")) { await deleteDoc(doc(db, 'reports', id)); setSelectedReport(null); }
-            };
-
-            const toggleAdmin = async () => {
-                const pass = prompt("Clave Maestra:");
-                if(pass === "soytome123") {
-                    setIsAdmin(true);
-                    alert("Modo Admin Activado");
-                    const newWa = prompt("Actualizar WhatsApp General (Ej: +569...):", waNumber);
-                    if(newWa) {
-                        await setDoc(doc(db, 'settings', 'global'), { whatsapp: newWa }, { merge: true });
-                        setWaNumber(newWa);
-                    }
+            const toggleAdmin = () => {
+                if(isAdmin) setShowSettings(true);
+                else {
+                    const pass = prompt("Clave Maestra:");
+                    if(pass === "soytome123") { setIsAdmin(true); alert("Modo Admin Activado. Ahora puedes editar las redes."); }
                 }
+            };
+
+            const saveSettings = async (newConfig) => {
+                await setDoc(doc(db, 'settings', 'global'), newConfig, { merge: true });
+                setShowSettings(false);
+                alert("Configuración actualizada.");
+            };
+
+            // Iconos RRSS
+            const SocialIcon = ({ type, url }) => {
+                if(!url) return null;
+                const icons = { facebook: Facebook, instagram: Instagram, youtube: Youtube, threads: Hash, tiktok: MessageCircle, whatsapp: MessageCircle };
+                const Icon = icons[type] || MessageCircle;
+                return <a href={url} target="_blank" className="p-3 bg-white/5 hover:bg-gold/20 hover:text-gold rounded-xl transition border border-white/5"><Icon size={20}/></a>;
             };
 
             return (
@@ -385,12 +362,23 @@
                             </div>
                             
                             <h1 className={`text-6xl font-black mb-2 tracking-tighter relative z-10 transition-all duration-1000 ${awake ? 'text-white drop-shadow-xl' : 'text-zinc-700'}`}>SOY<br/><span className={awake ? 'text-gold' : 'text-zinc-800'}>TOMÉ</span></h1>
-                            <p className="relative z-10 text-zinc-500 mb-12 font-medium">Red de Emergencia Ciudadana</p>
+                            <p className="relative z-10 text-zinc-500 mb-8 font-medium">Red de Emergencia Ciudadana</p>
                             
                             {awake && (
-                                <button onClick={(e) => { e.stopPropagation(); enableGPS(); }} className="relative z-10 bg-gold text-black px-10 py-5 rounded-full font-black shadow-[0_0_40px_rgba(245,158,11,0.5)] hover:scale-105 transition flex items-center gap-3 animate-in fade-in slide-in-from-bottom-8">
-                                    <Navigation fill="black"/> INGRESAR
-                                </button>
+                                <div className="animate-in fade-in slide-in-from-bottom-8 flex flex-col items-center w-full max-w-sm">
+                                    <button onClick={(e) => { e.stopPropagation(); enableGPS(); }} className="bg-gold text-black px-10 py-5 rounded-full font-black shadow-[0_0_40px_rgba(245,158,11,0.5)] hover:scale-105 transition flex items-center gap-3 w-full justify-center mb-8">
+                                        <Navigation fill="black"/> INGRESAR
+                                    </button>
+                                    
+                                    {/* BARRA DE REDES SOCIALES */}
+                                    <div className="flex gap-2 justify-center flex-wrap" onClick={e=>e.stopPropagation()}>
+                                        <SocialIcon type="threads" url={config.threads} />
+                                        <SocialIcon type="youtube" url={config.youtube} />
+                                        <SocialIcon type="tiktok" url={config.tiktok} />
+                                        <SocialIcon type="instagram" url={config.instagram} />
+                                        <SocialIcon type="facebook" url={config.facebook} />
+                                    </div>
+                                </div>
                             )}
                         </div>
                     )}
@@ -399,18 +387,24 @@
                         <div className="absolute inset-0">
                             <LeafletMap reports={reports} userLoc={userLoc} styleMode={mapStyle} onMapClick={(coords)=>{ setCreateLoc(coords); setShowCreate(true); }} onMarkerClick={setSelectedReport} />
                             
+                            {/* WIDGET CLIMA */}
+                            <div className="fixed top-4 left-4 z-[500]"><WeatherWidget/></div>
+
                             <div className="fixed top-4 right-4 z-[1000] flex flex-col gap-3">
                                 <button onClick={()=>setMapStyle(mapStyle === 'dark' ? 'satellite' : 'dark')} className="bg-black/80 p-3 rounded-full border border-white/20 text-white"><Layers size={20}/></button>
-                                <button onClick={toggleAdmin} className={`p-3 rounded-full border border-white/20 text-white ${isAdmin ? 'bg-red-600' : 'bg-black/80'}`}><Settings size={20}/></button>
+                                <button onClick={toggleAdmin} className={`p-3 rounded-full border border-white/20 text-white ${isAdmin ? 'bg-gold text-black' : 'bg-black/80'}`}><Settings size={20}/></button>
                             </div>
 
-                            <a href={`https://wa.me/${waNumber.replace('+','').replace(/\s/g,'')}`} target="_blank" className="fixed bottom-28 right-4 z-[1000] bg-[#25D366] p-4 rounded-full shadow-xl hover:scale-110 transition animate-in slide-in-from-right-10">
-                                <MessageCircle size={28} fill="white" className="text-white"/>
-                            </a>
+                            {/* BOTÓN WHATSAPP SOPORTE (IZQUIERDA MEDIO) */}
+                            {config.whatsapp_support && (
+                                <a href={config.whatsapp_support} target="_blank" className="fixed left-0 top-1/2 -translate-y-1/2 z-[1000] bg-[#25D366] py-4 pl-3 pr-2 rounded-r-2xl shadow-xl hover:pl-5 transition-all flex items-center gap-1 group">
+                                    <MessageCircle size={24} fill="white" className="text-white animate-pulse-slow"/>
+                                    <span className="vertical-text text-[10px] font-black text-white tracking-widest hidden group-hover:block h-20">SOPORTE</span>
+                                </a>
+                            )}
 
                             {!showCreate && (
-                                <button onClick={()=>{ if(userLoc) { setCreateLoc(userLoc); setShowCreate(true); } else enableGPS(); }} 
-                                    className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[1000] bg-brand-card border border-gold/50 text-gold px-8 py-4 rounded-2xl shadow-2xl font-black flex items-center gap-3 hover:bg-gold hover:text-black transition-all">
+                                <button onClick={()=>{ if(userLoc) { setCreateLoc(userLoc); setShowCreate(true); } else enableGPS(); }} className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[1000] bg-brand-card border border-gold/50 text-gold px-8 py-4 rounded-2xl shadow-2xl font-black flex items-center gap-3 hover:bg-gold hover:text-black transition-all">
                                     <Plus size={24}/> REPORTAR
                                 </button>
                             )}
@@ -418,7 +412,7 @@
                     )}
 
                     {showCreate && <CreateReportModal lat={createLoc.lat} lng={createLoc.lng} onClose={()=>setShowCreate(false)} />}
-                    <ReportDetailModal report={selectedReport} onClose={()=>setSelectedReport(null)} isAdmin={isAdmin} onDelete={deleteReport} onComment={addComment} />
+                    {showSettings && <SettingsModal config={config} onClose={()=>setShowSettings(false)} onSave={saveSettings} />}
                 </div>
             );
         };
