@@ -16,10 +16,9 @@
                     colors: { 
                         gold: '#f59e0b', 
                         brand: { bg: '#09090b', card: '#18181b', border: '#27272a' },
-                        sos: { red: '#ef4444', green: '#10b981', blue: '#3b82f6' }
                     },
                     animation: {
-                        'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                     }
                 }
             }
@@ -46,12 +45,15 @@
     
     <style>
         body { background-color: #09090b; color: #fff; margin: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
-        .leaflet-container { background: #27272a; width: 100%; height: 100%; z-index: 0; }
-        .glass { background: rgba(24, 24, 27, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); }
+        .leaflet-container { width: 100%; height: 100%; z-index: 0; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
+        /* Animaciones Mapa */
         .marker-pulse-red { animation: pulse-red 1.5s infinite; }
         @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+        
+        .user-pulse { animation: pulse-blue 2s infinite; }
+        @keyframes pulse-blue { 0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(59, 130, 246, 0); } 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); } }
     </style>
 </head>
 <body>
@@ -60,14 +62,14 @@
     <script type="text/babel" data-type="module">
         import React, { useState, useEffect, useRef } from 'react';
         import { createRoot } from 'react-dom/client';
-        import { MapPin, Plus, X, Siren, Shield, Flame, Dog, AlertTriangle, Home, Heart, Zap, Camera, Video, Navigation, Star, Phone, User } from 'lucide-react';
+        import { MapPin, Plus, X, Siren, Shield, Flame, Dog, AlertTriangle, Heart, Zap, Camera, Navigation, Star, Phone, User, Layers } from 'lucide-react';
         
         import { initializeApp } from 'firebase/app';
-        import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, query, orderBy } from 'firebase/firestore';
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from 'firebase/firestore';
         import { getAuth, signInAnonymously } from 'firebase/auth';
 
         // ---------------------------------------------------------
-        // TUS LLAVES (YA CONFIGURADAS)
+        // LLAVES FIREBASE
         // ---------------------------------------------------------
         const firebaseConfig = {
             apiKey: "AIzaSyCYQHWlpWXqxYj8Lk7gLAQT3c2_YaFs8Ew",
@@ -79,61 +81,99 @@
             measurementId: "G-6YGWLM475M"
         };
 
-        let db, auth;
+        let db;
         try {
             const app = initializeApp(firebaseConfig);
             db = getFirestore(app);
-            auth = getAuth(app);
+            const auth = getAuth(app);
             signInAnonymously(auth).catch(console.error);
-        } catch(e) { console.error("Firebase Error", e); }
+        } catch(e) { console.error(e); }
 
         const REPORT_TYPES = [
-            { id: 'sos_help', label: 'NECESITO AYUDA', icon: Siren, color: '#ef4444', sos: true },
-            { id: 'sos_offer', label: 'OFREZCO AYUDA', icon: Heart, color: '#10b981', sos: true },
-            { id: 'accident', label: 'Accidente', icon: AlertTriangle, color: '#f59e0b', sos: false },
-            { id: 'fire', label: 'Incendio', icon: Flame, color: '#f97316', sos: false },
-            { id: 'security', label: 'Seguridad', icon: Shield, color: '#3b82f6', sos: false },
-            { id: 'pet', label: 'Mascota', icon: Dog, color: '#eab308', sos: false },
+            { id: 'sos_help', label: 'NECESITO AYUDA', icon: Siren, color: '#ef4444' },
+            { id: 'sos_offer', label: 'OFREZCO AYUDA', icon: Heart, color: '#10b981' },
+            { id: 'accident', label: 'Accidente', icon: AlertTriangle, color: '#f59e0b' },
+            { id: 'fire', label: 'Incendio', icon: Flame, color: '#f97316' },
+            { id: 'security', label: 'Seguridad', icon: Shield, color: '#3b82f6' },
+            { id: 'pet', label: 'Mascota', icon: Dog, color: '#eab308' },
         ];
 
-        const LeafletMap = ({ reports, onMapClick, onMarkerClick, userLoc }) => {
+        // --- MAPA AVANZADO ---
+        const LeafletMap = ({ reports, onMapClick, onMarkerClick, userLoc, styleMode }) => {
             const mapContainer = useRef(null);
             const mapInstance = useRef(null);
-            // COORDENADAS POR DEFECTO: TOMÉ CENTRO
-            const DEFAULT_CENTER = [-36.6158, -72.9575];
+            const tileLayerRef = useRef(null);
+            const userMarkerRef = useRef(null);
 
+            // Estilos de Mapa
+            const MAP_STYLES = {
+                dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+                satellite: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                urban: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'
+            };
+
+            // 1. Inicializar Mapa
             useEffect(() => {
                 if (!mapInstance.current && mapContainer.current) {
-                    const center = userLoc ? [userLoc.lat, userLoc.lng] : DEFAULT_CENTER;
+                    const center = userLoc ? [userLoc.lat, userLoc.lng] : [-36.6158, -72.9575];
                     const map = L.map(mapContainer.current, { zoomControl: false }).setView(center, 14);
-                    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
+                    
+                    tileLayerRef.current = L.tileLayer(MAP_STYLES[styleMode], { maxZoom: 19 }).addTo(map);
                     mapInstance.current = map;
                     map.on('click', (e) => onMapClick(e.latlng));
                 }
-                
-                const map = mapInstance.current;
-                if(map) {
-                    map.eachLayer(l => { if(l instanceof L.Marker) map.removeLayer(l); });
-                    reports.forEach(r => {
-                        const type = REPORT_TYPES.find(t => t.id === r.type) || REPORT_TYPES[2];
-                        const isSOS = r.type === 'sos_help';
-                        
-                        const iconHtml = `
-                            <div class="${isSOS ? 'marker-pulse-red' : ''} flex flex-col items-center justify-center transition-transform hover:scale-110">
-                                <div style="background:${type.color};" class="w-10 h-10 rounded-full flex items-center justify-center border-2 border-white shadow-xl">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                        ${isSOS ? '<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>' : '<circle cx="12" cy="12" r="10"/>'} 
-                                    </svg>
-                                </div>
-                                <span class="bg-black/80 text-white text-[10px] px-2 py-0.5 rounded-full mt-1 font-bold">${type.label}</span>
-                            </div>`;
-                        
-                        const icon = L.divIcon({ html: iconHtml, className: '', iconSize: [40, 60], iconAnchor: [20, 20] });
-                        L.marker([r.lat, r.lng], { icon }).addTo(map).on('click', () => onMarkerClick(r));
-                    });
-                }
-            }, [reports]);
+            }, []);
 
+            // 2. Cambiar Estilo (Dark / Satellite / Urban)
+            useEffect(() => {
+                if(mapInstance.current && tileLayerRef.current) {
+                    tileLayerRef.current.setUrl(MAP_STYLES[styleMode]);
+                }
+            }, [styleMode]);
+
+            // 3. Renderizar Reportes y Usuario
+            useEffect(() => {
+                const map = mapInstance.current;
+                if(!map) return;
+
+                // Limpiar marcadores viejos
+                map.eachLayer(l => { 
+                    if(l instanceof L.Marker && l !== userMarkerRef.current) map.removeLayer(l); 
+                });
+
+                // A. Marcador de "TÚ" (Usuario)
+                if(userLoc) {
+                    if(userMarkerRef.current) map.removeLayer(userMarkerRef.current);
+                    
+                    const userIconHtml = `
+                        <div class="user-pulse relative flex items-center justify-center w-6 h-6">
+                            <div class="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg z-10"></div>
+                        </div>`;
+                    const userIcon = L.divIcon({ html: userIconHtml, className: '', iconSize: [24, 24] });
+                    userMarkerRef.current = L.marker([userLoc.lat, userLoc.lng], { icon: userIcon, zIndexOffset: 1000 }).addTo(map);
+                }
+
+                // B. Marcadores de Reportes
+                reports.forEach(r => {
+                    const type = REPORT_TYPES.find(t => t.id === r.type) || REPORT_TYPES[2];
+                    const isSOS = r.type === 'sos_help';
+                    
+                    const iconHtml = `
+                        <div class="${isSOS ? 'marker-pulse-red' : ''} flex flex-col items-center justify-center transition-transform hover:scale-110">
+                            <div style="background:${type.color};" class="w-10 h-10 rounded-full flex items-center justify-center border-2 border-white shadow-xl">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    ${isSOS ? '<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>' : '<circle cx="12" cy="12" r="10"/>'} 
+                                </svg>
+                            </div>
+                        </div>`;
+                    
+                    const icon = L.divIcon({ html: iconHtml, className: '', iconSize: [40, 40], iconAnchor: [20, 20] });
+                    L.marker([r.lat, r.lng], { icon }).addTo(map).on('click', () => onMarkerClick(r));
+                });
+
+            }, [reports, userLoc]);
+
+            // Volar al usuario si cambia ubicación
             useEffect(() => {
                 if(mapInstance.current && userLoc) {
                     mapInstance.current.flyTo([userLoc.lat, userLoc.lng], 16);
@@ -156,22 +196,18 @@
             };
 
             const handleSubmit = async () => {
-                if(!data.desc) return alert("Describe qué sucede");
-                if(data.type === 'sos_help' && !data.contact) return alert("El contacto es vital para pedir ayuda");
-                
+                if(!data.desc) return alert("Falta descripción");
                 setLoading(true);
                 localStorage.setItem('st_username', data.name); 
 
                 try {
                     const mediaUrls = [];
                     for (const file of files) {
-                        if (file.type.startsWith('image/')) {
-                            const formData = new FormData();
-                            formData.append("image", file);
-                            const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, { method: "POST", body: formData });
-                            const result = await response.json();
-                            if (result.success) mediaUrls.push({ url: result.data.url, type: 'image' });
-                        }
+                        const formData = new FormData();
+                        formData.append("image", file);
+                        const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, { method: "POST", body: formData });
+                        const result = await response.json();
+                        if (result.success) mediaUrls.push({ url: result.data.url, type: 'image' });
                     }
 
                     await addDoc(collection(db, 'reports'), {
@@ -184,32 +220,31 @@
                     confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
                     const currentXP = parseInt(localStorage.getItem('st_xp') || '0');
                     localStorage.setItem('st_xp', currentXP + 50);
-
-                    alert("¡Reporte enviado! +50 XP");
+                    alert("¡Reporte Publicado!");
                     onClose();
-                } catch (e) {
-                    alert("Error: " + e.message);
-                } finally {
-                    setLoading(false);
-                }
+                } catch (e) { alert("Error: " + e.message); } 
+                finally { setLoading(false); }
             };
 
             return (
-                <div className="fixed inset-0 z-[60] bg-black/90 backdrop-blur-md flex items-end sm:items-center justify-center sm:p-4">
-                    <div className="bg-brand-card w-full max-w-lg sm:rounded-3xl rounded-t-3xl border-t border-white/10 p-6 shadow-2xl animate-fade-in max-h-[90vh] overflow-y-auto">
+                <div className="fixed inset-0 z-[60] bg-black/90 backdrop-blur-md flex items-end sm:items-center justify-center sm:p-4 animate-in fade-in slide-in-from-bottom-10">
+                    <div className="bg-brand-card w-full max-w-lg sm:rounded-3xl rounded-t-3xl border-t border-white/10 p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-black text-white flex items-center gap-2"><Zap className="text-gold" fill="currentColor"/> NUEVA ALERTA</h3>
+                            <h3 className="text-xl font-black text-white flex items-center gap-2"><Zap className="text-gold" fill="currentColor"/> REPORTE</h3>
                             <button onClick={onClose} className="p-2 bg-white/10 rounded-full"><X size={20}/></button>
                         </div>
+                        
+                        {/* TIPOS PRINCIPALES */}
                         <div className="grid grid-cols-2 gap-3 mb-6">
-                            <button onClick={()=>setData({...data, type: 'sos_help'})} className={`p-4 rounded-xl border-2 font-bold flex flex-col items-center gap-2 transition ${data.type === 'sos_help' ? 'bg-red-500/20 border-red-500 text-red-500' : 'border-white/10 text-zinc-500'}`}>
-                                <Siren size={32}/> SOLICITAR AYUDA
+                            <button onClick={()=>setData({...data, type: 'sos_help'})} className={`p-4 rounded-xl border-2 font-bold flex flex-col items-center gap-2 ${data.type === 'sos_help' ? 'bg-red-500/20 border-red-500 text-red-500' : 'border-white/10 text-zinc-500'}`}>
+                                <Siren size={32}/> PEDIR AYUDA
                             </button>
-                            <button onClick={()=>setData({...data, type: 'sos_offer'})} className={`p-4 rounded-xl border-2 font-bold flex flex-col items-center gap-2 transition ${data.type === 'sos_offer' ? 'bg-green-500/20 border-green-500 text-green-500' : 'border-white/10 text-zinc-500'}`}>
-                                <Heart size={32}/> OFRECER AYUDA
+                            <button onClick={()=>setData({...data, type: 'sos_offer'})} className={`p-4 rounded-xl border-2 font-bold flex flex-col items-center gap-2 ${data.type === 'sos_offer' ? 'bg-green-500/20 border-green-500 text-green-500' : 'border-white/10 text-zinc-500'}`}>
+                                <Heart size={32}/> DAR AYUDA
                             </button>
                         </div>
-                        <p className="text-xs font-bold text-zinc-500 mb-2 uppercase tracking-wider">O selecciona una categoría</p>
+
+                        {/* OTROS TIPOS */}
                         <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar mb-4">
                             {REPORT_TYPES.slice(2).map(t => (
                                 <button key={t.id} onClick={()=>setData({...data, type:t.id})} className={`flex-shrink-0 px-4 py-2 rounded-lg border text-xs font-bold flex items-center gap-2 ${data.type===t.id ? 'bg-gold/20 border-gold text-gold' : 'border-zinc-800 text-zinc-400'}`}>
@@ -217,26 +252,23 @@
                                 </button>
                             ))}
                         </div>
+
                         <div className="space-y-4 mb-6">
-                            <div>
-                                <label className="text-xs text-zinc-400 font-bold ml-1">TU NOMBRE</label>
-                                <div className="relative"><User className="absolute left-3 top-3.5 text-zinc-500" size={16}/><input type="text" value={data.name} onChange={e=>setData({...data, name:e.target.value})} className="w-full bg-black border border-zinc-700 p-3 pl-10 rounded-xl text-white outline-none" placeholder="Tu nombre"/></div>
-                            </div>
-                            <div>
-                                <label className="text-xs text-zinc-400 font-bold ml-1">CONTACTO</label>
-                                <div className="relative"><Phone className="absolute left-3 top-3.5 text-zinc-500" size={16}/><input type="text" value={data.contact} onChange={e=>setData({...data, contact:e.target.value})} className="w-full bg-black border border-zinc-700 p-3 pl-10 rounded-xl text-white outline-none" placeholder="+569..."/></div>
-                            </div>
-                            <textarea value={data.desc} onChange={e=>setData({...data, desc:e.target.value})} className="w-full bg-black border border-zinc-700 p-4 rounded-xl text-white h-24 outline-none" placeholder="Detalles..."></textarea>
+                            <div className="relative"><User className="absolute left-3 top-3.5 text-zinc-500" size={16}/><input type="text" value={data.name} onChange={e=>setData({...data, name:e.target.value})} className="w-full bg-black border border-zinc-700 p-3 pl-10 rounded-xl text-white outline-none" placeholder="Tu nombre"/></div>
+                            <div className="relative"><Phone className="absolute left-3 top-3.5 text-zinc-500" size={16}/><input type="text" value={data.contact} onChange={e=>setData({...data, contact:e.target.value})} className="w-full bg-black border border-zinc-700 p-3 pl-10 rounded-xl text-white outline-none" placeholder="Teléfono / WhatsApp"/></div>
+                            <textarea value={data.desc} onChange={e=>setData({...data, desc:e.target.value})} className="w-full bg-black border border-zinc-700 p-4 rounded-xl text-white h-24 outline-none" placeholder="¿Qué está pasando?"></textarea>
                         </div>
+
                         <div className="mb-6">
                             <label className="block w-full p-4 border-2 border-dashed border-zinc-700 rounded-xl text-center cursor-pointer hover:border-gold transition text-zinc-400">
                                 <input type="file" multiple accept="image/*" onChange={handleFileSelect} className="hidden" />
                                 <Camera className="mx-auto mb-2"/><span className="text-xs font-bold">AGREGAR FOTOS</span>
-                                {files.length > 0 && <p className="text-gold text-xs mt-2">{files.length} seleccionadas</p>}
+                                {files.length > 0 && <p className="text-gold text-xs mt-2">{files.length} fotos listas</p>}
                             </label>
                         </div>
-                        <button onClick={handleSubmit} disabled={loading} className="w-full bg-gradient-to-r from-gold to-orange-600 text-black font-black rounded-xl py-4 shadow-lg hover:scale-[1.02] transition flex items-center justify-center gap-2">
-                            {loading ? 'ENVIANDO...' : 'PUBLICAR ALERTA'}
+
+                        <button onClick={handleSubmit} disabled={loading} className="w-full bg-gradient-to-r from-gold to-orange-600 text-black font-black rounded-xl py-4 shadow-lg">
+                            {loading ? 'ENVIANDO...' : 'PUBLICAR'}
                         </button>
                     </div>
                 </div>
@@ -248,24 +280,34 @@
             const typeInfo = REPORT_TYPES.find(t=>t.id===report.type) || REPORT_TYPES[2];
             return (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm" onClick={onClose}>
-                    <div className="w-full max-w-md bg-brand-card rounded-2xl border border-white/10 overflow-hidden" onClick={e=>e.stopPropagation()}>
-                        <div className="p-6 pb-0">
-                            <div className="flex justify-between items-start mb-4">
-                                <div className="flex items-center gap-3">
-                                    <div style={{background: typeInfo.color}} className="p-3 rounded-full text-white shadow-lg"><typeInfo.icon size={24}/></div>
-                                    <div><h3 className="text-lg font-black text-white">{typeInfo.label}</h3><p className="text-xs text-zinc-400">{report.dateString} • {report.name}</p></div>
+                    <div className="w-full max-w-md bg-brand-card rounded-2xl border border-white/10 overflow-hidden relative" onClick={e=>e.stopPropagation()}>
+                        <button onClick={onClose} className="absolute top-4 right-4 text-white bg-black/50 p-1 rounded-full z-10"><X/></button>
+                        
+                        <div className="p-6">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div style={{background: typeInfo.color}} className="p-3 rounded-full text-white shadow-lg"><typeInfo.icon size={24}/></div>
+                                <div><h3 className="text-lg font-black text-white">{typeInfo.label}</h3><p className="text-xs text-zinc-400">{report.dateString}</p></div>
+                            </div>
+                            
+                            <p className="text-zinc-200 text-lg leading-relaxed mb-6">{report.desc}</p>
+                            
+                            {/* GALERÍA CORREGIDA */}
+                            {report.media && report.media.length > 0 ? (
+                                <div className="grid grid-cols-2 gap-2 mb-6">
+                                    {report.media.map((m, i) => (
+                                        <div key={i} className={`rounded-xl overflow-hidden bg-black border border-zinc-800 ${report.media.length === 1 ? 'col-span-2 h-64' : 'h-32'}`}>
+                                            <img src={m.url} className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition" onClick={()=>window.open(m.url)} />
+                                        </div>
+                                    ))}
                                 </div>
-                                <button onClick={onClose} className="text-zinc-500"><X/></button>
-                            </div>
-                            <p className="text-zinc-200 text-lg leading-relaxed mb-4">{report.desc}</p>
-                            {report.contact && (<div className="bg-zinc-900 p-3 rounded-lg border border-zinc-800 flex items-center justify-between mb-4"><span className="text-xs text-zinc-500 font-bold uppercase">Contacto</span><a href={`tel:${report.contact}`} className="text-gold font-bold flex items-center gap-2"><Phone size={14}/> {report.contact}</a></div>)}
+                            ) : null}
+
+                            {report.contact && (
+                                <a href={`tel:${report.contact}`} className="block w-full bg-zinc-800 text-center py-3 rounded-xl font-bold text-gold hover:bg-zinc-700 transition">
+                                    CONTACTAR: {report.contact}
+                                </a>
+                            )}
                         </div>
-                        {report.media && report.media.length > 0 && (
-                            <div className="flex overflow-x-auto gap-2 p-6 pt-0 no-scrollbar">
-                                {report.media.map((m, i) => (<div key={i} className="flex-shrink-0 w-48 h-64 rounded-xl overflow-hidden bg-black border border-zinc-800"><img src={m.url} className="w-full h-full object-cover" onClick={()=>window.open(m.url)}/></div>))}
-                            </div>
-                        )}
-                        <div className="bg-zinc-900 p-4 border-t border-zinc-800 text-center"><button className="text-sm font-bold text-zinc-500 hover:text-white transition">CERRAR</button></div>
                     </div>
                 </div>
             );
@@ -279,6 +321,7 @@
             const [createLoc, setCreateLoc] = useState(null);
             const [selectedReport, setSelectedReport] = useState(null);
             const [xp, setXp] = useState(parseInt(localStorage.getItem('st_xp') || '0'));
+            const [mapStyle, setMapStyle] = useState('dark'); // dark, satellite, urban
             const [gpsLoading, setGpsLoading] = useState(false);
 
             useEffect(() => {
@@ -288,33 +331,24 @@
                 }
             }, []);
 
-            // ------------------------------------------------------------------
-            // NUEVA FUNCIÓN DE GEOLOCALIZACIÓN "A PRUEBA DE FALLOS"
-            // ------------------------------------------------------------------
             const getLocation = () => {
                 setGpsLoading(true);
-                const TOME_CENTER = { lat: -36.6158, lng: -72.9575 }; // Coordenadas Plaza de Tomé
-
-                const enterMap = (coords) => {
-                    setUserLoc(coords);
-                    setView('map');
-                    setGpsLoading(false);
-                };
+                const TOME_CENTER = { lat: -36.6158, lng: -72.9575 };
+                const enterMap = (coords) => { setUserLoc(coords); setView('map'); setGpsLoading(false); };
 
                 if(navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(
-                        (p) => enterMap({lat: p.coords.latitude, lng: p.coords.longitude}), // Éxito GPS
-                        (err) => {
-                            console.warn("GPS Error/Timeout:", err);
-                            alert("No se pudo detectar GPS preciso. Entrando a Tomé manualmente.");
-                            enterMap(TOME_CENTER); // Fallback: Entrar a Tomé
-                        },
-                        { enableHighAccuracy: true, timeout: 7000, maximumAge: 0 } // 7 segundos máx esperando
+                        (p) => enterMap({lat: p.coords.latitude, lng: p.coords.longitude}),
+                        (err) => { alert("Entrando a Tomé (Sin GPS preciso)"); enterMap(TOME_CENTER); },
+                        { enableHighAccuracy: true, timeout: 8000 }
                     );
-                } else {
-                    alert("Tu dispositivo no tiene GPS. Entrando a Tomé.");
-                    enterMap(TOME_CENTER);
-                }
+                } else { enterMap(TOME_CENTER); }
+            };
+
+            const toggleMapStyle = () => {
+                if(mapStyle === 'dark') setMapStyle('satellite');
+                else if(mapStyle === 'satellite') setMapStyle('urban');
+                else setMapStyle('dark');
             };
 
             return (
@@ -328,21 +362,30 @@
                             <div className="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
                             <div className="relative z-10">
                                 <h1 className="text-6xl font-black mb-2 tracking-tighter">SOY<br/><span className="text-gold">TOMÉ</span></h1>
-                                <p className="text-zinc-300 mb-8 font-medium">Red de Emergencia Ciudadana</p>
                                 <button onClick={getLocation} disabled={gpsLoading} className="bg-gold text-black px-8 py-4 rounded-full font-black shadow-[0_0_30px_rgba(245,158,11,0.4)] hover:scale-105 transition flex items-center gap-3 mx-auto">
-                                    {gpsLoading ? <div className="animate-spin w-5 h-5 border-2 border-black rounded-full border-t-transparent"></div> : <><Navigation fill="black"/> INGRESAR AL MAPA</>}
+                                    {gpsLoading ? <div className="animate-spin w-5 h-5 border-2 border-black rounded-full border-t-transparent"></div> : <><Navigation fill="black"/> INGRESAR</>}
                                 </button>
-                                {gpsLoading && <p className="text-xs text-zinc-400 mt-4 animate-pulse">Buscando satélites...</p>}
                             </div>
                         </div>
                     )}
 
                     {view === 'map' && (
                         <div className="absolute inset-0">
-                            <LeafletMap reports={reports} userLoc={userLoc} onMapClick={(coords)=>{ setCreateLoc(coords); setShowCreate(true); }} onMarkerClick={setSelectedReport} />
-                            <button onClick={()=>{ if(userLoc) { setCreateLoc(userLoc); setShowCreate(true); } else getLocation(); }} className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[1000] bg-brand-card border border-gold/50 text-gold px-8 py-4 rounded-2xl shadow-2xl font-black flex items-center gap-3 hover:bg-gold hover:text-black transition-all group">
-                                <div className="bg-gold text-black p-1 rounded-full group-hover:bg-black group-hover:text-gold transition"><Plus size={20}/></div> REPORTAR
+                            <LeafletMap reports={reports} userLoc={userLoc} styleMode={mapStyle} onMapClick={(coords)=>{ setCreateLoc(coords); setShowCreate(true); }} onMarkerClick={setSelectedReport} />
+                            
+                            {/* BOTÓN ESTILOS DE MAPA */}
+                            <button onClick={toggleMapStyle} className="fixed top-20 right-4 z-[1000] bg-black/80 p-3 rounded-full border border-white/20 shadow-lg text-white">
+                                <Layers size={20}/>
+                                <span className="absolute right-12 top-2 bg-black text-xs px-2 py-1 rounded hidden group-hover:block">{mapStyle}</span>
                             </button>
+
+                            {/* BOTÓN REPORTAR (SE OCULTA AL ABRIR EL MENU) */}
+                            {!showCreate && (
+                                <button onClick={()=>{ if(userLoc) { setCreateLoc(userLoc); setShowCreate(true); } else getLocation(); }} 
+                                    className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[1000] bg-brand-card border border-gold/50 text-gold px-8 py-4 rounded-2xl shadow-2xl font-black flex items-center gap-3 hover:bg-gold hover:text-black transition-all animate-in slide-in-from-bottom-5">
+                                    <Plus size={24}/> REPORTAR
+                                </button>
+                            )}
                         </div>
                     )}
 
