@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Soy Tomé - Alerta Comunitaria</title>
+    <title>Soy Tomé - Premium</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -14,11 +14,17 @@
                 extend: {
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: { 
-                        gold: '#f59e0b', 
+                        gold: '#fbbf24', 
                         brand: { bg: '#09090b', card: '#18181b', border: '#27272a' },
                     },
                     animation: {
                         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'liquid': 'liquid 10s ease infinite',
+                        'eye-open': 'eyeOpen 0.5s ease-out forwards'
+                    },
+                    keyframes: {
+                        liquid: { '0%': { backgroundPosition: '0% 50%' }, '50%': { backgroundPosition: '100% 50%' }, '100%': { backgroundPosition: '0% 50%' } },
+                        eyeOpen: { '0%': { transform: 'scaleY(0.1)' }, '100%': { transform: 'scaleY(1)' } }
                     }
                 }
             }
@@ -48,12 +54,20 @@
         .leaflet-container { width: 100%; height: 100%; z-index: 0; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
-        /* Animaciones Mapa */
-        .marker-pulse-red { animation: pulse-red 1.5s infinite; }
-        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
-        
+        /* ORO LÍQUIDO */
+        .bg-liquid-gold {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2;
+            background: linear-gradient(-45deg, #000000, #1a1a1a, #422006, #000000);
+            background-size: 400% 400%;
+            animation: liquid 15s ease infinite;
+        }
+
+        /* GPS PULSO */
         .user-pulse { animation: pulse-blue 2s infinite; }
         @keyframes pulse-blue { 0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(59, 130, 246, 0); } 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); } }
+        
+        .grayscale-mode { filter: grayscale(100%) brightness(0.6); transition: filter 1s ease; }
+        .premium-mode { filter: grayscale(0%) brightness(1); transition: filter 1s ease; }
     </style>
 </head>
 <body>
@@ -62,14 +76,14 @@
     <script type="text/babel" data-type="module">
         import React, { useState, useEffect, useRef } from 'react';
         import { createRoot } from 'react-dom/client';
-        import { MapPin, Plus, X, Siren, Shield, Flame, Dog, AlertTriangle, Heart, Zap, Camera, Navigation, Star, Phone, User, Layers } from 'lucide-react';
+        import { MapPin, Plus, X, Siren, Shield, Flame, Dog, AlertTriangle, Heart, Zap, Camera, Navigation, Star, Phone, User, Layers, Eye, EyeOff, MessageCircle, Send, Settings, Trash2 } from 'lucide-react';
         
         import { initializeApp } from 'firebase/app';
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from 'firebase/firestore';
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc, setDoc, getDoc } from 'firebase/firestore';
         import { getAuth, signInAnonymously } from 'firebase/auth';
 
         // ---------------------------------------------------------
-        // LLAVES FIREBASE
+        // CONFIGURACIÓN FIREBASE
         // ---------------------------------------------------------
         const firebaseConfig = {
             apiKey: "AIzaSyCYQHWlpWXqxYj8Lk7gLAQT3c2_YaFs8Ew",
@@ -98,91 +112,67 @@
             { id: 'pet', label: 'Mascota', icon: Dog, color: '#eab308' },
         ];
 
-        // --- MAPA AVANZADO ---
+        // --- MAPA AVANZADO (GPS REAL) ---
         const LeafletMap = ({ reports, onMapClick, onMarkerClick, userLoc, styleMode }) => {
             const mapContainer = useRef(null);
             const mapInstance = useRef(null);
             const tileLayerRef = useRef(null);
             const userMarkerRef = useRef(null);
 
-            // Estilos de Mapa
             const MAP_STYLES = {
                 dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
                 satellite: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
                 urban: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'
             };
 
-            // 1. Inicializar Mapa
             useEffect(() => {
                 if (!mapInstance.current && mapContainer.current) {
                     const center = userLoc ? [userLoc.lat, userLoc.lng] : [-36.6158, -72.9575];
                     const map = L.map(mapContainer.current, { zoomControl: false }).setView(center, 14);
-                    
                     tileLayerRef.current = L.tileLayer(MAP_STYLES[styleMode], { maxZoom: 19 }).addTo(map);
                     mapInstance.current = map;
                     map.on('click', (e) => onMapClick(e.latlng));
                 }
             }, []);
 
-            // 2. Cambiar Estilo (Dark / Satellite / Urban)
             useEffect(() => {
-                if(mapInstance.current && tileLayerRef.current) {
-                    tileLayerRef.current.setUrl(MAP_STYLES[styleMode]);
-                }
+                if(mapInstance.current && tileLayerRef.current) tileLayerRef.current.setUrl(MAP_STYLES[styleMode]);
             }, [styleMode]);
 
-            // 3. Renderizar Reportes y Usuario
             useEffect(() => {
                 const map = mapInstance.current;
                 if(!map) return;
 
-                // Limpiar marcadores viejos
-                map.eachLayer(l => { 
-                    if(l instanceof L.Marker && l !== userMarkerRef.current) map.removeLayer(l); 
-                });
+                map.eachLayer(l => { if(l instanceof L.Marker && l !== userMarkerRef.current) map.removeLayer(l); });
 
-                // A. Marcador de "TÚ" (Usuario)
+                // MARCADOR DE USUARIO (GPS REAL)
                 if(userLoc) {
                     if(userMarkerRef.current) map.removeLayer(userMarkerRef.current);
-                    
-                    const userIconHtml = `
-                        <div class="user-pulse relative flex items-center justify-center w-6 h-6">
-                            <div class="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg z-10"></div>
-                        </div>`;
-                    const userIcon = L.divIcon({ html: userIconHtml, className: '', iconSize: [24, 24] });
+                    const userIcon = L.divIcon({ 
+                        html: `<div class="user-pulse flex items-center justify-center w-6 h-6"><div class="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg"></div></div>`, 
+                        className: '', iconSize: [24, 24] 
+                    });
                     userMarkerRef.current = L.marker([userLoc.lat, userLoc.lng], { icon: userIcon, zIndexOffset: 1000 }).addTo(map);
                 }
 
-                // B. Marcadores de Reportes
+                // REPORTES
                 reports.forEach(r => {
                     const type = REPORT_TYPES.find(t => t.id === r.type) || REPORT_TYPES[2];
                     const isSOS = r.type === 'sos_help';
-                    
                     const iconHtml = `
-                        <div class="${isSOS ? 'marker-pulse-red' : ''} flex flex-col items-center justify-center transition-transform hover:scale-110">
+                        <div class="${isSOS ? 'animate-pulse' : ''} transition-transform hover:scale-110">
                             <div style="background:${type.color};" class="w-10 h-10 rounded-full flex items-center justify-center border-2 border-white shadow-xl">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                    ${isSOS ? '<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>' : '<circle cx="12" cy="12" r="10"/>'} 
-                                </svg>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${isSOS ? '<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>' : '<circle cx="12" cy="12" r="10"/>'}</svg>
                             </div>
                         </div>`;
-                    
-                    const icon = L.divIcon({ html: iconHtml, className: '', iconSize: [40, 40], iconAnchor: [20, 20] });
-                    L.marker([r.lat, r.lng], { icon }).addTo(map).on('click', () => onMarkerClick(r));
+                    L.marker([r.lat, r.lng], { icon: L.divIcon({ html: iconHtml, className: '', iconSize: [40, 40], iconAnchor: [20, 20] }) }).addTo(map).on('click', () => onMarkerClick(r));
                 });
-
             }, [reports, userLoc]);
-
-            // Volar al usuario si cambia ubicación
-            useEffect(() => {
-                if(mapInstance.current && userLoc) {
-                    mapInstance.current.flyTo([userLoc.lat, userLoc.lng], 16);
-                }
-            }, [userLoc]);
 
             return <div ref={mapContainer} className="w-full h-full" />;
         };
 
+        // --- MODAL CREAR REPORTE (CORREGIDO MÓVIL) ---
         const CreateReportModal = ({ lat, lng, onClose }) => {
             const [data, setData] = useState({ type: 'sos_help', desc: '', contact: '', name: localStorage.getItem('st_username') || '' });
             const [files, setFiles] = useState([]);
@@ -214,7 +204,8 @@
                         ...data, lat, lng, media: mediaUrls,
                         timestamp: Date.now(),
                         dateString: new Date().toLocaleTimeString(),
-                        xp: 50
+                        xp: 50,
+                        comments: [] 
                     });
 
                     confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
@@ -227,86 +218,109 @@
             };
 
             return (
-                <div className="fixed inset-0 z-[60] bg-black/90 backdrop-blur-md flex items-end sm:items-center justify-center sm:p-4 animate-in fade-in slide-in-from-bottom-10">
-                    <div className="bg-brand-card w-full max-w-lg sm:rounded-3xl rounded-t-3xl border-t border-white/10 p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+                <div className="fixed inset-0 z-[60] bg-black/90 backdrop-blur-md flex items-end sm:items-center justify-center pt-10 sm:p-4">
+                    <div className="bg-brand-card w-full max-w-lg rounded-t-3xl border-t border-white/10 p-6 shadow-2xl h-[90vh] sm:h-auto overflow-y-auto relative">
+                         {/* BARRA DE ARRASTRE PARA MÓVIL */}
+                        <div className="w-12 h-1.5 bg-zinc-700 rounded-full mx-auto mb-6 sm:hidden"></div>
+                        
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-black text-white flex items-center gap-2"><Zap className="text-gold" fill="currentColor"/> REPORTE</h3>
+                            <h3 className="text-xl font-black text-white flex items-center gap-2"><Zap className="text-gold" fill="currentColor"/> NUEVO REPORTE</h3>
                             <button onClick={onClose} className="p-2 bg-white/10 rounded-full"><X size={20}/></button>
                         </div>
                         
-                        {/* TIPOS PRINCIPALES */}
                         <div className="grid grid-cols-2 gap-3 mb-6">
-                            <button onClick={()=>setData({...data, type: 'sos_help'})} className={`p-4 rounded-xl border-2 font-bold flex flex-col items-center gap-2 ${data.type === 'sos_help' ? 'bg-red-500/20 border-red-500 text-red-500' : 'border-white/10 text-zinc-500'}`}>
-                                <Siren size={32}/> PEDIR AYUDA
-                            </button>
-                            <button onClick={()=>setData({...data, type: 'sos_offer'})} className={`p-4 rounded-xl border-2 font-bold flex flex-col items-center gap-2 ${data.type === 'sos_offer' ? 'bg-green-500/20 border-green-500 text-green-500' : 'border-white/10 text-zinc-500'}`}>
-                                <Heart size={32}/> DAR AYUDA
-                            </button>
+                            <button onClick={()=>setData({...data, type: 'sos_help'})} className={`p-4 rounded-xl border-2 font-bold flex flex-col items-center gap-2 ${data.type === 'sos_help' ? 'bg-red-500/20 border-red-500 text-red-500' : 'border-white/10 text-zinc-500'}`}><Siren size={32}/> PEDIR AYUDA</button>
+                            <button onClick={()=>setData({...data, type: 'sos_offer'})} className={`p-4 rounded-xl border-2 font-bold flex flex-col items-center gap-2 ${data.type === 'sos_offer' ? 'bg-green-500/20 border-green-500 text-green-500' : 'border-white/10 text-zinc-500'}`}><Heart size={32}/> DAR AYUDA</button>
                         </div>
 
-                        {/* OTROS TIPOS */}
                         <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar mb-4">
                             {REPORT_TYPES.slice(2).map(t => (
-                                <button key={t.id} onClick={()=>setData({...data, type:t.id})} className={`flex-shrink-0 px-4 py-2 rounded-lg border text-xs font-bold flex items-center gap-2 ${data.type===t.id ? 'bg-gold/20 border-gold text-gold' : 'border-zinc-800 text-zinc-400'}`}>
-                                    <t.icon size={14}/> {t.label}
-                                </button>
+                                <button key={t.id} onClick={()=>setData({...data, type:t.id})} className={`flex-shrink-0 px-4 py-2 rounded-lg border text-xs font-bold flex items-center gap-2 ${data.type===t.id ? 'bg-gold/20 border-gold text-gold' : 'border-zinc-800 text-zinc-400'}`}><t.icon size={14}/> {t.label}</button>
                             ))}
                         </div>
 
                         <div className="space-y-4 mb-6">
                             <div className="relative"><User className="absolute left-3 top-3.5 text-zinc-500" size={16}/><input type="text" value={data.name} onChange={e=>setData({...data, name:e.target.value})} className="w-full bg-black border border-zinc-700 p-3 pl-10 rounded-xl text-white outline-none" placeholder="Tu nombre"/></div>
                             <div className="relative"><Phone className="absolute left-3 top-3.5 text-zinc-500" size={16}/><input type="text" value={data.contact} onChange={e=>setData({...data, contact:e.target.value})} className="w-full bg-black border border-zinc-700 p-3 pl-10 rounded-xl text-white outline-none" placeholder="Teléfono / WhatsApp"/></div>
-                            <textarea value={data.desc} onChange={e=>setData({...data, desc:e.target.value})} className="w-full bg-black border border-zinc-700 p-4 rounded-xl text-white h-24 outline-none" placeholder="¿Qué está pasando?"></textarea>
+                            <textarea value={data.desc} onChange={e=>setData({...data, desc:e.target.value})} className="w-full bg-black border border-zinc-700 p-4 rounded-xl text-white h-24 outline-none" placeholder="Descripción detallada..."></textarea>
                         </div>
 
                         <div className="mb-6">
                             <label className="block w-full p-4 border-2 border-dashed border-zinc-700 rounded-xl text-center cursor-pointer hover:border-gold transition text-zinc-400">
                                 <input type="file" multiple accept="image/*" onChange={handleFileSelect} className="hidden" />
                                 <Camera className="mx-auto mb-2"/><span className="text-xs font-bold">AGREGAR FOTOS</span>
-                                {files.length > 0 && <p className="text-gold text-xs mt-2">{files.length} fotos listas</p>}
+                                {files.length > 0 && <p className="text-gold text-xs mt-2">{files.length} seleccionadas</p>}
                             </label>
                         </div>
 
-                        <button onClick={handleSubmit} disabled={loading} className="w-full bg-gradient-to-r from-gold to-orange-600 text-black font-black rounded-xl py-4 shadow-lg">
-                            {loading ? 'ENVIANDO...' : 'PUBLICAR'}
+                        <button onClick={handleSubmit} disabled={loading} className="w-full bg-gradient-to-r from-gold to-orange-600 text-black font-black rounded-xl py-4 shadow-lg mb-8">
+                            {loading ? 'ENVIANDO...' : 'PUBLICAR AHORA'}
                         </button>
                     </div>
                 </div>
             );
         };
 
-        const ReportDetailModal = ({ report, onClose }) => {
+        // --- DETALLE CON COMENTARIOS Y FOTOS CORREGIDAS ---
+        const ReportDetailModal = ({ report, onClose, isAdmin, onDelete, onComment }) => {
+            const [newComment, setNewComment] = useState("");
             if(!report) return null;
             const typeInfo = REPORT_TYPES.find(t=>t.id===report.type) || REPORT_TYPES[2];
+            const userName = localStorage.getItem('st_username') || 'Vecino';
+
             return (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm" onClick={onClose}>
-                    <div className="w-full max-w-md bg-brand-card rounded-2xl border border-white/10 overflow-hidden relative" onClick={e=>e.stopPropagation()}>
-                        <button onClick={onClose} className="absolute top-4 right-4 text-white bg-black/50 p-1 rounded-full z-10"><X/></button>
-                        
+                <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center sm:p-4 bg-black/90 backdrop-blur-sm pt-10" onClick={onClose}>
+                    <div className="w-full max-w-md bg-brand-card rounded-t-3xl sm:rounded-2xl border border-white/10 overflow-hidden relative h-[90vh] sm:h-auto overflow-y-auto" onClick={e=>e.stopPropagation()}>
                         <div className="p-6">
-                            <div className="flex items-center gap-3 mb-4">
-                                <div style={{background: typeInfo.color}} className="p-3 rounded-full text-white shadow-lg"><typeInfo.icon size={24}/></div>
-                                <div><h3 className="text-lg font-black text-white">{typeInfo.label}</h3><p className="text-xs text-zinc-400">{report.dateString}</p></div>
+                            <div className="flex justify-between items-start mb-4">
+                                <div className="flex items-center gap-3">
+                                    <div style={{background: typeInfo.color}} className="p-3 rounded-full text-white shadow-lg"><typeInfo.icon size={24}/></div>
+                                    <div><h3 className="text-lg font-black text-white">{typeInfo.label}</h3><p className="text-xs text-zinc-400">{report.dateString} • {report.name || 'Anónimo'}</p></div>
+                                </div>
+                                <button onClick={onClose} className="text-zinc-500 bg-white/10 p-2 rounded-full"><X size={16}/></button>
                             </div>
                             
-                            <p className="text-zinc-200 text-lg leading-relaxed mb-6">{report.desc}</p>
+                            <p className="text-white text-lg leading-relaxed mb-6 font-medium">{report.desc}</p>
                             
-                            {/* GALERÍA CORREGIDA */}
-                            {report.media && report.media.length > 0 ? (
-                                <div className="grid grid-cols-2 gap-2 mb-6">
+                            {/* GALERÍA CORREGIDA - FULL SIZE */}
+                            {report.media && report.media.length > 0 && (
+                                <div className="flex overflow-x-auto gap-3 pb-4 mb-4 no-scrollbar">
                                     {report.media.map((m, i) => (
-                                        <div key={i} className={`rounded-xl overflow-hidden bg-black border border-zinc-800 ${report.media.length === 1 ? 'col-span-2 h-64' : 'h-32'}`}>
-                                            <img src={m.url} className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition" onClick={()=>window.open(m.url)} />
+                                        <div key={i} className="flex-shrink-0 w-64 h-64 rounded-xl overflow-hidden bg-black border border-zinc-700 relative group">
+                                            <img src={m.url} className="w-full h-full object-contain bg-black" onClick={()=>window.open(m.url)} />
+                                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition pointer-events-none"><span className="text-white text-xs font-bold">VER FULL</span></div>
                                         </div>
                                     ))}
                                 </div>
-                            ) : null}
-
-                            {report.contact && (
-                                <a href={`tel:${report.contact}`} className="block w-full bg-zinc-800 text-center py-3 rounded-xl font-bold text-gold hover:bg-zinc-700 transition">
-                                    CONTACTAR: {report.contact}
-                                </a>
                             )}
+
+                            {/* BOTONES ACCIÓN */}
+                            <div className="flex gap-2 mb-6">
+                                {report.contact && (
+                                    <a href={`https://wa.me/${report.contact.replace('+','').replace(/\s/g,'')}`} target="_blank" className="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-green-500 transition"><MessageCircle size={18}/> WHATSAPP</a>
+                                )}
+                                {isAdmin && (
+                                    <button onClick={()=>onDelete(report.id)} className="bg-red-600 p-3 rounded-xl text-white"><Trash2 size={18}/></button>
+                                )}
+                            </div>
+
+                            {/* SECCIÓN COMENTARIOS (SOSAFE STYLE) */}
+                            <div className="border-t border-zinc-800 pt-4">
+                                <h4 className="text-sm font-bold text-zinc-500 mb-3 uppercase">Actualizaciones</h4>
+                                <div className="space-y-3 mb-4 max-h-40 overflow-y-auto">
+                                    {report.comments && report.comments.map((c, idx) => (
+                                        <div key={idx} className="bg-zinc-900 p-3 rounded-lg text-sm">
+                                            <span className="text-gold font-bold text-xs block">{c.author}</span>
+                                            <span className="text-zinc-300">{c.text}</span>
+                                        </div>
+                                    ))}
+                                    {(!report.comments || report.comments.length === 0) && <p className="text-zinc-600 text-xs italic">Sin comentarios aún.</p>}
+                                </div>
+                                <div className="flex gap-2">
+                                    <input type="text" value={newComment} onChange={e=>setNewComment(e.target.value)} placeholder="Escribe una actualización..." className="flex-1 bg-black border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-gold"/>
+                                    <button onClick={()=>{ if(newComment) { onComment(report.id, newComment, userName); setNewComment(""); } }} className="bg-gold text-black p-2 rounded-lg font-bold"><Send size={16}/></button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -315,57 +329,85 @@
 
         const App = () => {
             const [view, setView] = useState('home');
+            const [awake, setAwake] = useState(false);
             const [userLoc, setUserLoc] = useState(null);
             const [reports, setReports] = useState([]);
             const [showCreate, setShowCreate] = useState(false);
             const [createLoc, setCreateLoc] = useState(null);
             const [selectedReport, setSelectedReport] = useState(null);
-            const [xp, setXp] = useState(parseInt(localStorage.getItem('st_xp') || '0'));
-            const [mapStyle, setMapStyle] = useState('dark'); // dark, satellite, urban
-            const [gpsLoading, setGpsLoading] = useState(false);
+            const [mapStyle, setMapStyle] = useState('dark');
+            const [isAdmin, setIsAdmin] = useState(false);
+            const [waNumber, setWaNumber] = useState("+56900000000"); // Default
 
             useEffect(() => {
                 if(db) {
+                    // Cargar Reportes
                     const q = query(collection(db, 'reports'), orderBy('timestamp', 'desc'));
                     onSnapshot(q, (snap) => setReports(snap.docs.map(d => ({id: d.id, ...d.data()}))));
+                    
+                    // Cargar Configuración Global (WhatsApp Admin)
+                    const configRef = doc(db, 'settings', 'global');
+                    getDoc(configRef).then(snap => { if(snap.exists()) setWaNumber(snap.data().whatsapp || "+56900000000"); });
                 }
             }, []);
 
-            const getLocation = () => {
-                setGpsLoading(true);
-                const TOME_CENTER = { lat: -36.6158, lng: -72.9575 };
-                const enterMap = (coords) => { setUserLoc(coords); setView('map'); setGpsLoading(false); };
-
+            // GPS EXACTO (WatchPosition)
+            const enableGPS = () => {
                 if(navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(
-                        (p) => enterMap({lat: p.coords.latitude, lng: p.coords.longitude}),
-                        (err) => { alert("Entrando a Tomé (Sin GPS preciso)"); enterMap(TOME_CENTER); },
-                        { enableHighAccuracy: true, timeout: 8000 }
+                    navigator.geolocation.watchPosition(
+                        (p) => { setUserLoc({lat: p.coords.latitude, lng: p.coords.longitude}); },
+                        (err) => console.warn(err),
+                        { enableHighAccuracy: true, maximumAge: 1000, timeout: 5000 }
                     );
-                } else { enterMap(TOME_CENTER); }
+                    setView('map');
+                } else { alert("GPS no disponible"); setView('map'); }
             };
 
-            const toggleMapStyle = () => {
-                if(mapStyle === 'dark') setMapStyle('satellite');
-                else if(mapStyle === 'satellite') setMapStyle('urban');
-                else setMapStyle('dark');
+            const addComment = async (reportId, text, author) => {
+                const reportRef = doc(db, 'reports', reportId);
+                const report = reports.find(r => r.id === reportId);
+                const newComments = [...(report.comments || []), { text, author, timestamp: Date.now() }];
+                await updateDoc(reportRef, { comments: newComments });
+            };
+
+            const deleteReport = async (id) => {
+                if(confirm("¿Borrar reporte?")) { await deleteDoc(doc(db, 'reports', id)); setSelectedReport(null); }
+            };
+
+            const toggleAdmin = async () => {
+                const pass = prompt("Clave Maestra:");
+                if(pass === "soytome123") {
+                    setIsAdmin(true);
+                    alert("Modo Admin Activado");
+                    const newWa = prompt("Actualizar WhatsApp General (Ej: +569...):", waNumber);
+                    if(newWa) {
+                        await setDoc(doc(db, 'settings', 'global'), { whatsapp: newWa }, { merge: true });
+                        setWaNumber(newWa);
+                        alert("Número actualizado para todos.");
+                    }
+                }
             };
 
             return (
-                <div className="min-h-screen bg-brand-bg font-sans text-white">
-                    <div className="fixed top-4 left-4 z-50 bg-black/50 backdrop-blur-md px-3 py-1 rounded-full border border-gold/30 flex items-center gap-2">
-                        <Star size={12} className="text-gold fill-gold"/><span className="text-xs font-bold text-gold">{xp} XP</span>
-                    </div>
+                <div className={`min-h-screen font-sans text-white transition-all duration-1000 ${awake ? 'premium-mode' : 'grayscale-mode'}`}>
+                    {awake && <div className="bg-liquid-gold"></div>}
 
+                    {/* INTRO OJO BAD BUNNY */}
                     {view === 'home' && (
-                        <div className="h-screen flex flex-col items-center justify-center p-6 text-center bg-[url('https://images.unsplash.com/photo-1542281286-9e0a16bb7366?auto=format&fit=crop&q=80')] bg-cover bg-center">
-                            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
-                            <div className="relative z-10">
-                                <h1 className="text-6xl font-black mb-2 tracking-tighter">SOY<br/><span className="text-gold">TOMÉ</span></h1>
-                                <button onClick={getLocation} disabled={gpsLoading} className="bg-gold text-black px-8 py-4 rounded-full font-black shadow-[0_0_30px_rgba(245,158,11,0.4)] hover:scale-105 transition flex items-center gap-3 mx-auto">
-                                    {gpsLoading ? <div className="animate-spin w-5 h-5 border-2 border-black rounded-full border-t-transparent"></div> : <><Navigation fill="black"/> INGRESAR</>}
-                                </button>
+                        <div className="h-screen flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
+                            {!awake && <div className="absolute inset-0 bg-black z-[-1]"></div>}
+                            <div className="cursor-pointer mb-8 transition-transform hover:scale-110" onClick={() => { setAwake(true); }}>
+                                {awake ? <Eye size={80} className="text-gold animate-eye-open drop-shadow-[0_0_15px_rgba(251,191,36,0.8)]"/> : <EyeOff size={80} className="text-zinc-600"/>}
                             </div>
+                            
+                            <h1 className={`text-6xl font-black mb-2 tracking-tighter transition-all duration-1000 ${awake ? 'text-white drop-shadow-xl' : 'text-zinc-700'}`}>SOY<br/><span className={awake ? 'text-gold' : 'text-zinc-800'}>TOMÉ</span></h1>
+                            <p className="text-zinc-500 mb-12 font-medium">Red de Emergencia Ciudadana</p>
+                            
+                            {awake && (
+                                <button onClick={enableGPS} className="bg-gold text-black px-10 py-5 rounded-full font-black shadow-[0_0_40px_rgba(245,158,11,0.5)] hover:scale-105 transition flex items-center gap-3 animate-in fade-in slide-in-from-bottom-8">
+                                    <Navigation fill="black"/> INGRESAR
+                                </button>
+                            )}
                         </div>
                     )}
 
@@ -373,16 +415,20 @@
                         <div className="absolute inset-0">
                             <LeafletMap reports={reports} userLoc={userLoc} styleMode={mapStyle} onMapClick={(coords)=>{ setCreateLoc(coords); setShowCreate(true); }} onMarkerClick={setSelectedReport} />
                             
-                            {/* BOTÓN ESTILOS DE MAPA */}
-                            <button onClick={toggleMapStyle} className="fixed top-20 right-4 z-[1000] bg-black/80 p-3 rounded-full border border-white/20 shadow-lg text-white">
-                                <Layers size={20}/>
-                                <span className="absolute right-12 top-2 bg-black text-xs px-2 py-1 rounded hidden group-hover:block">{mapStyle}</span>
-                            </button>
+                            {/* BOTONES FLOTANTES MAPA */}
+                            <div className="fixed top-4 right-4 z-[1000] flex flex-col gap-3">
+                                <button onClick={()=>setMapStyle(mapStyle === 'dark' ? 'satellite' : 'dark')} className="bg-black/80 p-3 rounded-full border border-white/20 text-white"><Layers size={20}/></button>
+                                <button onClick={toggleAdmin} className={`p-3 rounded-full border border-white/20 text-white ${isAdmin ? 'bg-red-600' : 'bg-black/80'}`}><Settings size={20}/></button>
+                            </div>
 
-                            {/* BOTÓN REPORTAR (SE OCULTA AL ABRIR EL MENU) */}
+                            {/* BOTÓN WHATSAPP FLOTANTE */}
+                            <a href={`https://wa.me/${waNumber.replace('+','').replace(/\s/g,'')}`} target="_blank" className="fixed bottom-28 right-4 z-[1000] bg-[#25D366] p-4 rounded-full shadow-xl hover:scale-110 transition animate-in slide-in-from-right-10">
+                                <MessageCircle size={28} fill="white" className="text-white"/>
+                            </a>
+
                             {!showCreate && (
-                                <button onClick={()=>{ if(userLoc) { setCreateLoc(userLoc); setShowCreate(true); } else getLocation(); }} 
-                                    className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[1000] bg-brand-card border border-gold/50 text-gold px-8 py-4 rounded-2xl shadow-2xl font-black flex items-center gap-3 hover:bg-gold hover:text-black transition-all animate-in slide-in-from-bottom-5">
+                                <button onClick={()=>{ if(userLoc) { setCreateLoc(userLoc); setShowCreate(true); } else enableGPS(); }} 
+                                    className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[1000] bg-brand-card border border-gold/50 text-gold px-8 py-4 rounded-2xl shadow-2xl font-black flex items-center gap-3 hover:bg-gold hover:text-black transition-all">
                                     <Plus size={24}/> REPORTAR
                                 </button>
                             )}
@@ -390,7 +436,7 @@
                     )}
 
                     {showCreate && <CreateReportModal lat={createLoc.lat} lng={createLoc.lng} onClose={()=>setShowCreate(false)} />}
-                    <ReportDetailModal report={selectedReport} onClose={()=>setSelectedReport(null)} />
+                    <ReportDetailModal report={selectedReport} onClose={()=>setSelectedReport(null)} isAdmin={isAdmin} onDelete={deleteReport} onComment={addComment} />
                 </div>
             );
         };
