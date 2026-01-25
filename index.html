@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Soy Tomé - App</title>
+    <title>Soy Tomé - Premium</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -19,12 +19,12 @@
                     },
                     animation: {
                         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'liquid': 'liquid 10s ease infinite',
-                        'eye-open': 'eyeOpen 0.5s ease-out forwards'
+                        'liquid': 'liquid 15s ease infinite',
+                        'float': 'float 6s ease-in-out infinite'
                     },
                     keyframes: {
                         liquid: { '0%': { backgroundPosition: '0% 50%' }, '50%': { backgroundPosition: '100% 50%' }, '100%': { backgroundPosition: '0% 50%' } },
-                        eyeOpen: { '0%': { transform: 'scaleY(0.1)' }, '100%': { transform: 'scaleY(1)' } }
+                        float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-10px)' } }
                     }
                 }
             }
@@ -49,16 +49,62 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&display=swap" rel="stylesheet">
     
     <style>
-        body { background-color: #09090b; color: #fff; margin: 0; user-select: none; -webkit-tap-highlight-color: transparent; height: 100dvh; overflow: hidden; }
+        body { background-color: #050505; color: #fff; margin: 0; user-select: none; -webkit-tap-highlight-color: transparent; height: 100dvh; overflow: hidden; }
         .leaflet-container { width: 100%; height: 100%; z-index: 0; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .bg-liquid-gold { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; background: linear-gradient(-45deg, #000000, #1a1a1a, #422006, #000000); background-size: 400% 400%; animation: liquid 15s ease infinite; }
+        
+        /* FONDO ORO LÍQUIDO GLASS */
+        .liquid-glass-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2;
+            background: linear-gradient(-45deg, #000000, #2b1d00, #5c3a00, #000000);
+            background-size: 300% 300%;
+            animation: liquid 10s ease infinite;
+        }
+        .glass-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            backdrop-filter: blur(10px);
+            background: rgba(0,0,0,0.3);
+        }
+
         .user-pulse { animation: pulse-blue 2s infinite; }
         @keyframes pulse-blue { 0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(59, 130, 246, 0); } 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); } }
-        .grayscale-mode { filter: grayscale(100%) brightness(0.6); transition: filter 1s ease; }
-        .premium-mode { filter: grayscale(0%) brightness(1); transition: filter 1s ease; }
+        
         .z-highest { z-index: 9999; }
         .vertical-text { writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(180deg); }
+
+        /* OJO BAD BUNNY STYLE */
+        .eye-container {
+            width: 120px; height: 80px;
+            background: white;
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+            transition: all 0.3s ease;
+        }
+        .eye-pupil {
+            width: 40px; height: 40px;
+            background: black;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            border: 2px solid #fbbf24;
+            transition: transform 0.1s ease-out; /* Movimiento suave */
+        }
+        .eye-shine {
+            width: 10px; height: 10px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 25%; right: 25%;
+        }
+        .closed-eye {
+            height: 10px;
+            border-radius: 5px;
+            background: #333;
+            margin-top: 35px;
+        }
     </style>
 </head>
 <body>
@@ -67,12 +113,13 @@
     <script type="text/babel" data-type="module">
         import React, { useState, useEffect, useRef } from 'react';
         import { createRoot } from 'react-dom/client';
-        import { MapPin, Plus, X, Siren, Shield, Flame, Dog, AlertTriangle, Heart, Zap, Camera, Navigation, Star, Phone, User, Layers, Eye, EyeOff, MessageCircle, Send, Settings, Trash2, Cloud, Sun, CloudRain, Facebook, Instagram, Youtube, Hash, Save, ArrowLeft } from 'lucide-react';
+        import { MapPin, Plus, X, Siren, Shield, Flame, Dog, AlertTriangle, Heart, Zap, Camera, Navigation, Star, Phone, User, Layers, MessageCircle, Send, Settings, Trash2, Cloud, Sun, CloudRain, Facebook, Instagram, Youtube, Hash, Save, ArrowLeft } from 'lucide-react';
         
         import { initializeApp } from 'firebase/app';
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc, setDoc, getDoc } from 'firebase/firestore';
         import { getAuth, signInAnonymously } from 'firebase/auth';
 
+        // CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyCYQHWlpWXqxYj8Lk7gLAQT3c2_YaFs8Ew",
             authDomain: "soy-tome.firebaseapp.com",
@@ -100,7 +147,7 @@
             { id: 'pet', label: 'Mascota', icon: Dog, color: '#eab308' },
         ];
 
-        // --- COMPRESOR BINARIO (SOLUCIÓN AL FREEZE) ---
+        // --- COMPRESOR AGRESIVO (SOLUCIÓN FINAL) ---
         const compressImage = async (file) => {
             return new Promise((resolve) => {
                 const img = new Image();
@@ -108,8 +155,8 @@
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
-                    // Reducir tamaño para evitar colapsos de memoria
-                    const MAX_WIDTH = 600; 
+                    // MÁXIMO 500PX: Esto asegura que la foto pese < 100KB y suba al instante
+                    const MAX_WIDTH = 500;
                     const scaleSize = MAX_WIDTH / img.width;
                     const width = (img.width > MAX_WIDTH) ? MAX_WIDTH : img.width;
                     const height = (img.width > MAX_WIDTH) ? (img.height * scaleSize) : img.height;
@@ -118,12 +165,53 @@
                     canvas.height = height;
                     ctx.drawImage(img, 0, 0, width, height);
                     
-                    // Convertir a BLOB (Binario ligero) en lugar de Base64
+                    // Convertir a Blob (Binario) con baja calidad (0.6) para velocidad
                     canvas.toBlob((blob) => {
                         resolve(blob);
-                    }, 'image/jpeg', 0.6); // Calidad 60%
+                    }, 'image/jpeg', 0.6);
                 };
             });
+        };
+
+        const BadBunnyEye = ({ awake }) => {
+            const [pupilPos, setPupilPos] = useState({ x: 0, y: 0 });
+
+            useEffect(() => {
+                const handleMove = (e) => {
+                    if (!awake) return;
+                    // Detectar mouse o touch
+                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+                    // Limitar movimiento de la pupila
+                    const moveX = (clientX / window.innerWidth - 0.5) * 20; 
+                    const moveY = (clientY / window.innerHeight - 0.5) * 10;
+                    setPupilPos({ x: moveX, y: moveY });
+                };
+
+                window.addEventListener('mousemove', handleMove);
+                window.addEventListener('touchmove', handleMove);
+                return () => {
+                    window.removeEventListener('mousemove', handleMove);
+                    window.removeEventListener('touchmove', handleMove);
+                };
+            }, [awake]);
+
+            if (!awake) {
+                return (
+                    <div className="w-[120px] h-[40px] flex items-center justify-center">
+                        <div className="w-full h-[6px] bg-zinc-600 rounded-full"></div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="eye-container">
+                    <div className="eye-pupil" style={{ transform: `translate(calc(-50% + ${pupilPos.x}px), calc(-50% + ${pupilPos.y}px))` }}>
+                        <div className="eye-shine"></div>
+                    </div>
+                </div>
+            );
         };
 
         const WeatherWidget = () => {
@@ -230,10 +318,10 @@
                 
                 try {
                     const mediaUrls = [];
-                    // SUBIDA BINARIA (NO BASE64)
                     for (let i = 0; i < files.length; i++) {
                         setStatus(`Subiendo ${i + 1}/${files.length}...`);
                         const file = files[i];
+                        // MINIATURIZAR
                         const compressedBlob = await compressImage(file);
                         
                         const formData = new FormData();
@@ -245,7 +333,7 @@
                         if (result.success) {
                             mediaUrls.push({ url: result.data.url, type: 'image' });
                         } else {
-                            throw new Error("Fallo al subir imagen a ImgBB");
+                            throw new Error("Error ImgBB: " + (result.error?.message || "Desconocido"));
                         }
                     }
 
@@ -256,8 +344,7 @@
                     localStorage.setItem('st_xp', parseInt(localStorage.getItem('st_xp') || '0') + 50);
                     onClose();
                 } catch (e) { 
-                    console.error(e);
-                    alert("Error: " + e.message + ". Intenta con menos fotos o mejor señal."); 
+                    alert("Error: " + e.message); 
                 } finally { 
                     setLoading(false); 
                     setStatus("PUBLICAR AHORA");
@@ -419,13 +506,14 @@
 
             return (
                 <div className={`h-dvh font-sans text-white transition-all duration-1000 ${awake ? 'premium-mode' : 'grayscale-mode'}`} onClick={() => { if(!awake) setAwake(true); }}>
-                    {awake && <div className="bg-liquid-gold"></div>}
+                    {awake && <div className="liquid-glass-bg"></div>}
+                    {awake && <div className="glass-overlay"></div>}
 
                     {view === 'home' && (
                         <div className="h-full flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
                             {!awake && <div className="absolute inset-0 bg-black z-[-1]"></div>}
                             <div className="relative z-10 cursor-pointer mb-8 transition-transform hover:scale-110">
-                                {awake ? <Eye size={80} className="text-gold animate-eye-open drop-shadow-[0_0_15px_rgba(251,191,36,0.8)]"/> : <EyeOff size={80} className="text-zinc-600"/>}
+                                <BadBunnyEye awake={awake} />
                             </div>
                             <h1 className={`text-6xl font-black mb-2 tracking-tighter relative z-10 transition-all duration-1000 ${awake ? 'text-white drop-shadow-xl' : 'text-zinc-700'}`}>SOY<br/><span className={awake ? 'text-gold' : 'text-zinc-800'}>TOMÉ</span></h1>
                             <p className="relative z-10 text-zinc-500 mb-8 font-medium">Red de Emergencia Ciudadana</p>
