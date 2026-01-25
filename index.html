@@ -73,11 +73,10 @@
         .z-highest { z-index: 9999; }
         .vertical-text { writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(180deg); }
 
-        /* OJO BAD BUNNY X100PRE REAL */
         .eye-container {
             width: 160px; height: 90px;
             background: #e5e5e5;
-            border-radius: 50% 50% 50% 50% / 70% 70% 40% 40%; /* Forma más triste/semi-círculo */
+            border-radius: 50% 50% 50% 50% / 70% 70% 40% 40%;
             position: relative;
             overflow: hidden;
             box-shadow: 0 0 40px rgba(251, 191, 36, 0.3);
@@ -93,10 +92,6 @@
             box-shadow: 0 0 10px rgba(0,0,0,0.5);
             transition: transform 0.08s ease-out;
         }
-        .eye-cross {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            color: #fbbf24; font-size: 20px; font-weight: bold;
-        }
     </style>
 </head>
 <body>
@@ -105,7 +100,7 @@
     <script type="text/babel" data-type="module">
         import React, { useState, useEffect, useRef } from 'react';
         import { createRoot } from 'react-dom/client';
-        import { MapPin, Plus, X, Siren, Shield, Flame, Dog, AlertTriangle, Heart, Zap, Camera, Navigation, Star, Phone, User, Layers, Eye, EyeOff, MessageCircle, Send, Settings, Trash2, Cloud, Sun, CloudRain, Facebook, Instagram, Youtube, Hash, Save, ArrowLeft, ShoppingBag, Utensils, Sparkles, PartyPopper } from 'lucide-react';
+        import { MapPin, Plus, X, Siren, Shield, Flame, Dog, AlertTriangle, Heart, Zap, Camera, Navigation, Star, Phone, User, Layers, Eye, EyeOff, MessageCircle, Send, Settings, Trash2, Cloud, Sun, CloudRain, Facebook, Instagram, Youtube, Hash, Save, ArrowLeft, ShoppingBag, Utensils, Sparkles, PartyPopper, Wrench, Pill } from 'lucide-react';
         
         import { initializeApp } from 'firebase/app';
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc, setDoc, getDoc } from 'firebase/firestore';
@@ -129,45 +124,62 @@
             signInAnonymously(auth).catch(console.error);
         } catch(e) { console.error(e); }
 
-        // --- CATEGORÍAS ACTUALIZADAS ---
+        // --- CATEGORÍAS & ICONOS SVG (PARA MAPA) ---
+        // Definimos los paths SVG manualmente para que Leaflet pueda renderizarlos como string
+        const ICONS_SVG = {
+            siren: '<path d="M7 18v-6a5 5 0 1 1 10 0v6"/><path d="M5 21a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2"/><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8"/><path d="M3 11.5a8.38 8.38 0 0 0 .9 3.8"/>',
+            heart: '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
+            alert: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+            shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+            flame: '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.1.2-2.2.5-3.3.3-1.4 1-2.7 2-4 .5.3 1 .8 1 1.8z"/>',
+            food: '<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>',
+            beauty: '<path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M9 5H3"/><path d="M5 19v4"/><path d="M9 21H3"/>',
+            shop: '<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>',
+            event: '<path d="M5.8 11.3 2 22l10.7-3.79"/><path d="M4 3h.01"/><path d="M22 8h.01"/><path d="M15 2h.01"/><path d="M22 20h.01"/><path d="m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12v0c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10"/><path d="m22 13-.82-.33c-.86-.34-1.82.2-1.98 1.11v0c-.11.7-.72 1.22-1.43 1.22H17"/><path d="m11 2 .33.82c.34.86-.2 1.82-1.11 1.98v0C9.52 4.9 9 5.52 9 6.23V7"/><path d="M11 13c1.93 1.93 2.83 4.17 2 5-.83.83-3.07-.07-5-2-1.93-1.93-2.83-4.17-2-5 .83-.83 3.07.07 5 2Z"/>',
+            dog: '<path d="M10 5.172C10 3.782 8.423 2.679 6.5 3c-2.823.47-4.113 6.006-4 7 .08.703 1.725 1.722 3.656 1 1.261-.472 1.96-1.45 2.344-2.5"/><path d="M14.267 5.172c0-1.39 1.577-2.493 3.5-2.172 2.823.47 4.113 6.006 4 7-.08.703-1.725 1.722-3.656 1-1.261-.472-1.96-1.45-2.344-2.5"/><path d="M8 14v.5"/><path d="M16 14v.5"/><path d="M11.25 16.25h1.5L12 17l-.75-.75Z"/>',
+            wrench: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',
+            pill: '<path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/>'
+        };
+
         const REPORT_TYPES = [
-            { id: 'sos_help', label: 'NECESITO AYUDA', icon: Siren, color: '#ef4444' }, // Rojo
-            { id: 'sos_offer', label: 'OFREZCO AYUDA', icon: Heart, color: '#10b981' }, // Verde
-            { id: 'accident', label: 'Accidente', icon: AlertTriangle, color: '#f59e0b' }, // Ambar
-            { id: 'security', label: 'Seguridad', icon: Shield, color: '#3b82f6' }, // Azul
-            { id: 'fire', label: 'Incendio', icon: Flame, color: '#f97316' }, // Naranja
-            { id: 'food', label: 'Fast Food', icon: Utensils, color: '#eab308' }, // Amarillo
-            { id: 'beauty', label: 'Belleza', icon: Sparkles, color: '#ec4899' }, // Rosa
-            { id: 'market', label: 'Emprendimiento', icon: ShoppingBag, color: '#8b5cf6' }, // Violeta
-            { id: 'event', label: 'Eventos', icon: PartyPopper, color: '#14b8a6' }, // Calipso
-            { id: 'pet', label: 'Mascota', icon: Dog, color: '#a8a29e' }, // Gris
+            { id: 'sos_help', label: 'NECESITO AYUDA', icon: Siren, color: '#ef4444', svg: ICONS_SVG.siren },
+            { id: 'sos_offer', label: 'OFREZCO AYUDA', icon: Heart, color: '#10b981', svg: ICONS_SVG.heart },
+            { id: 'accident', label: 'Accidente', icon: AlertTriangle, color: '#f59e0b', svg: ICONS_SVG.alert },
+            { id: 'security', label: 'Seguridad', icon: Shield, color: '#3b82f6', svg: ICONS_SVG.shield },
+            { id: 'fire', label: 'Incendio', icon: Flame, color: '#f97316', svg: ICONS_SVG.flame },
+            { id: 'food', label: 'Fast Food', icon: Utensils, color: '#eab308', svg: ICONS_SVG.food },
+            { id: 'vulcan', label: 'Vulcanización', icon: Wrench, color: '#64748b', svg: ICONS_SVG.wrench },
+            { id: 'pharma', label: 'Farmacia', icon: Pill, color: '#0ea5e9', svg: ICONS_SVG.pill },
+            { id: 'beauty', label: 'Belleza', icon: Sparkles, color: '#ec4899', svg: ICONS_SVG.beauty },
+            { id: 'market', label: 'Emprendimiento', icon: ShoppingBag, color: '#8b5cf6', svg: ICONS_SVG.shop },
+            { id: 'event', label: 'Eventos', icon: PartyPopper, color: '#14b8a6', svg: ICONS_SVG.event },
+            { id: 'pet', label: 'Mascota', icon: Dog, color: '#a8a29e', svg: ICONS_SVG.dog },
         ];
 
-        // --- SOLUCIÓN DE FOTOS V3 (FileReader + Base64 Puro) ---
+        // --- COMPRESOR BINARIO V4 (Solución "Undefined") ---
         const processImage = (file) => {
             return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = (event) => {
-                    const img = new Image();
-                    img.src = event.target.result;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext('2d');
-                        // Redimensionar a 600px max para asegurar subida rápida
-                        const MAX_WIDTH = 600;
-                        const scaleSize = MAX_WIDTH / img.width;
-                        const width = (img.width > MAX_WIDTH) ? MAX_WIDTH : img.width;
-                        const height = (img.width > MAX_WIDTH) ? (img.height * scaleSize) : img.height;
-                        canvas.width = width;
-                        canvas.height = height;
-                        ctx.drawImage(img, 0, 0, width, height);
-                        // Obtener Base64 limpio sin header
-                        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-                        resolve(dataUrl.split(',')[1]);
-                    };
+                const img = new Image();
+                img.src = URL.createObjectURL(file);
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const MAX_WIDTH = 600; // Limite seguro
+                    const scaleSize = MAX_WIDTH / img.width;
+                    const width = (img.width > MAX_WIDTH) ? MAX_WIDTH : img.width;
+                    const height = (img.width > MAX_WIDTH) ? (img.height * scaleSize) : img.height;
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Retornar BLOB (Archivo real comprimido), no string
+                    canvas.toBlob((blob) => {
+                        if (blob) resolve(blob);
+                        else reject(new Error("Error comprimiendo imagen"));
+                    }, 'image/jpeg', 0.6);
                 };
-                reader.onerror = error => reject(error);
+                img.onerror = () => reject(new Error("No se pudo leer la imagen"));
             });
         };
 
@@ -218,7 +230,7 @@
             );
         };
 
-        // --- MAPA CON FILTROS ---
+        // --- MAPA CON ICONOS SVG DINÁMICOS ---
         const LeafletMap = ({ reports, onMapClick, onMarkerClick, userLoc, styleMode, filter }) => {
             const mapContainer = useRef(null);
             const mapInstance = useRef(null);
@@ -254,13 +266,21 @@
                     userMarkerRef.current = L.marker([userLoc.lat, userLoc.lng], { icon: userIcon, zIndexOffset: 1000 }).addTo(map);
                 }
 
-                // APLICAR FILTRO
+                // FILTRO
                 const visibleReports = filter === 'all' ? reports : reports.filter(r => r.type === filter);
 
                 visibleReports.forEach(r => {
                     const type = REPORT_TYPES.find(t => t.id === r.type) || REPORT_TYPES[2];
                     const isSOS = r.type === 'sos_help';
-                    const iconHtml = `<div class="${isSOS ? 'animate-pulse' : ''} transition-transform hover:scale-110"><div style="background:${type.color};" class="w-10 h-10 rounded-full flex items-center justify-center border-2 border-white shadow-xl"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${isSOS ? '<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>' : '<circle cx="12" cy="12" r="10"/>'}</svg></div></div>`;
+                    // --- AQUI ESTÁ LA MAGIA: INSERTAMOS EL SVG ESPECÍFICO ---
+                    const iconHtml = `
+                        <div class="${isSOS ? 'animate-pulse' : ''} transition-transform hover:scale-110">
+                            <div style="background:${type.color};" class="w-10 h-10 rounded-full flex items-center justify-center border-2 border-white shadow-xl">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    ${type.svg}
+                                </svg>
+                            </div>
+                        </div>`;
                     L.marker([r.lat, r.lng], { icon: L.divIcon({ html: iconHtml, className: '', iconSize: [40, 40], iconAnchor: [20, 20] }) }).addTo(map).on('click', () => onMarkerClick(r));
                 });
             }, [reports, userLoc, filter]);
@@ -273,7 +293,7 @@
             const [files, setFiles] = useState([]);
             const [loading, setLoading] = useState(false);
             const [status, setStatus] = useState("PUBLICAR");
-            const IMGBB_KEY = "4b032541863b7a63782c7fc88f270f0f"; // CLAVE CORRECTA
+            const IMGBB_KEY = "4b032541863b7a63782c7fc88f270f0f";
 
             const handleFileSelect = (e) => {
                 const selected = Array.from(e.target.files);
@@ -290,16 +310,17 @@
                     const mediaUrls = [];
                     for (let i = 0; i < files.length; i++) {
                         setStatus(`Subiendo foto ${i + 1}...`);
-                        const base64Str = await processImage(files[i]); // NUEVO PROCESO
+                        // COMPRIMIR A BLOB (BINARIO)
+                        const compressedBlob = await processImage(files[i]); 
                         
                         const formData = new FormData();
-                        formData.append("image", base64Str);
+                        formData.append("image", compressedBlob, "upload.jpg");
                         
                         const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, { method: "POST", body: formData });
                         const result = await response.json();
                         
                         if (result.success) mediaUrls.push({ url: result.data.url, type: 'image' });
-                        else throw new Error("Error ImgBB: " + (result.error?.message || "Error desconocido"));
+                        else throw new Error("Error ImgBB: " + (result.error?.message || "Desconocido"));
                     }
 
                     setStatus("Guardando...");
@@ -387,7 +408,7 @@
             const [isAdmin, setIsAdmin] = useState(false);
             const [config, setConfig] = useState({});
             const [showSettings, setShowSettings] = useState(false);
-            const [filter, setFilter] = useState('all'); // NUEVO ESTADO DE FILTRO
+            const [filter, setFilter] = useState('all');
 
             useEffect(() => {
                 if(db) {
@@ -442,7 +463,6 @@
                                     <button onClick={()=>setView('home')} className="bg-black/60 backdrop-blur-xl p-3 rounded-2xl border border-white/10 text-white hover:bg-white/20"><ArrowLeft size={24}/></button>
                                     <WeatherWidget/>
                                 </div>
-                                {/* BARRA DE FILTROS HORIZONTAL */}
                                 <div className="flex gap-2 overflow-x-auto w-[85vw] no-scrollbar pb-2">
                                     <button onClick={()=>setFilter('all')} className={`px-4 py-2 rounded-xl text-xs font-bold border whitespace-nowrap backdrop-blur-md ${filter === 'all' ? 'bg-gold text-black border-gold' : 'bg-black/60 text-zinc-400 border-white/10'}`}>TODOS</button>
                                     {REPORT_TYPES.map(t => (
