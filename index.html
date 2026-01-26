@@ -212,12 +212,17 @@
                         const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
                         const res = await fetch(proxyUrl);
                         const data = await res.json();
+                        
                         const today = data.find(f => {
-                            const com = f.comuna_nombre || "";
-                            return com.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() === 'TOME';
+                            const com = (f.comuna_nombre || "").toLowerCase();
+                            return com.includes("tome");
                         });
                         if (today) setPharmacy(today);
-                    } catch (e) { console.error("Error farmacia:", e); } finally { setLoading(false); }
+                    } catch (e) { 
+                        console.error("Error farmacia:", e); 
+                    } finally { 
+                        setLoading(false); 
+                    }
                 };
                 fetchPharmacy();
             }, []);
@@ -228,7 +233,7 @@
             const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(pharmacy.local_nombre + ' ' + pharmacy.local_direccion + ' Tome')}`;
 
             return (
-                <a href={mapsUrl} target="_blank" className={`flex items-center gap-2 sm:gap-3 bg-red-600/90 backdrop-blur-xl px-4 py-2 rounded-2xl border border-red-400/50 shadow-lg transition-all active:scale-95 pointer-events-auto ${compact ? 'max-w-[150px]' : ''}`}>
+                <a href={mapsUrl} target="_blank" className={`flex items-center gap-2 sm:gap-3 bg-red-600/90 backdrop-blur-xl px-4 py-2 rounded-2xl border border-red-400/50 shadow-lg transition-all active:scale-95 pointer-events-auto ${compact ? 'max-w-[150px]' : 'w-full max-w-[200px] justify-center'}`}>
                     <div className="flex flex-col text-right">
                         <span className="text-[9px] text-white/80 uppercase tracking-tighter leading-none mb-0.5 font-bold">Turno</span>
                         <span className="text-[11px] sm:text-xs font-black text-white truncate max-w-[80px] sm:max-w-[100px]">{pharmacy.local_nombre.split(' ')[0]}</span>
@@ -556,10 +561,9 @@
                             <p className="relative z-10 text-zinc-600 mb-8 font-black uppercase text-[10px] tracking-[0.3em] opacity-80">Red de Emergencia Ciudadana</p>
                             {awake && (
                                 <div className="animate-in fade-in slide-in-from-bottom-8 flex flex-col items-center w-full max-w-sm">
-                                    <button onClick={(e) => { e.stopPropagation(); enableGPS(); }} className="bg-gold text-black px-12 py-5 rounded-full font-black shadow-[0_0_60px_rgba(245,158,11,0.5)] hover:scale-105 transition-all flex items-center gap-4 w-full justify-center mb-8 uppercase tracking-[0.15em] text-xs"><Navigation fill="black" size={18}/> Ingresar</button>
+                                    <button onClick={(e) => { e.stopPropagation(); enableGPS(); }} className="bg-gold text-black px-12 py-5 rounded-full font-black shadow-[0_0_60px_rgba(245,158,11,0.5)] hover:scale-105 transition-all flex items-center gap-4 w-full justify-center mb-10 uppercase tracking-[0.15em] text-xs"><Navigation fill="black" size={18}/> Ingresar</button>
                                     
-                                    {/* FARMACIA EN HOME - BAJO BOTÓN INGRESAR */}
-                                    <div className="mb-8 w-full flex justify-center" onClick={e=>e.stopPropagation()}>
+                                    <div className="mb-10 w-full flex justify-center" onClick={e=>e.stopPropagation()}>
                                         <PharmacyWidget />
                                     </div>
 
