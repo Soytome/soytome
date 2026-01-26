@@ -67,7 +67,7 @@
     <script type="text/babel" data-type="module">
         import React, { useState, useEffect, useRef } from 'react';
         import { createRoot } from 'react-dom/client';
-        import { MapPin, Plus, X, Siren, Shield, Flame, Dog, AlertTriangle, Heart, Zap, Camera, Navigation, Star, Phone, User, Layers, Eye, EyeOff, MessageCircle, Send, Settings, Trash2, Cloud, Sun, CloudRain, Facebook, Instagram, Youtube, Hash, Save, ArrowLeft, ShoppingBag, Utensils, Sparkles, PartyPopper, Wrench, Pill, Fuel, Hammer, Search, Shirt, Apple, Package, Lightbulb, Briefcase, Home, Key, Pencil, Bath } from 'lucide-react';
+        import { MapPin, Plus, X, Siren, Shield, Flame, Dog, AlertTriangle, Heart, Zap, Camera, Navigation, Star, Phone, User, Layers, Eye, EyeOff, MessageCircle, Send, Settings, Trash2, Cloud, Sun, CloudRain, Facebook, Instagram, Youtube, Hash, Save, ArrowLeft, ShoppingBag, Utensils, Sparkles, PartyPopper, Wrench, Pill, Fuel, Hammer, Search, Shirt, Apple, Package, Lightbulb, Briefcase, Home, Key, Pencil, Bath, Music } from 'lucide-react';
         import { initializeApp } from 'firebase/app';
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc, setDoc, getDoc } from 'firebase/firestore';
         import { getAuth, signInAnonymously } from 'firebase/auth';
@@ -93,7 +93,7 @@
             alert: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
             shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
             flame: '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.1.2-2.2.5-3.3.3-1.4 1-2.7 2-4 .5.3 1 .8 1 1.8z"/>',
-            toilet: '<path d="M9 12h6m-6 4h6m2 5v-7a3 3 0 0 0-3-3H10a3 3 0 0 0-3 3v7"/><path d="M6 12V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v7"/>'
+            toilet: '<path d="M7 12h10v8a3 3 0 0 1-3 3h-4a3 3 0 0 1-3-3v-8zM7 11V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v6H7z"/><path d="M10 8h4"/>'
         };
 
         const REPORT_TYPES = [
@@ -117,6 +117,8 @@
             { id: 'fire', label: 'Incendio', icon: Flame, color: '#f97316', svg: ICONS_SVG.flame },
             { id: 'pet', label: 'Mascota', icon: Dog, color: '#a8a29e', svg: ICONS_SVG.dog },
         ];
+
+        // --- COMPONENTES AUXILIARES ---
 
         const BadBunnyEye = ({ awake }) => {
             const [pupilPos, setPupilPos] = useState({ x: 0, y: 0 });
@@ -154,19 +156,19 @@
             );
         };
 
-        const PharmacyWidget = ({ onDataLoaded }) => {
+        const PharmacyWidget = ({ onPharmacyFound }) => {
             const [pharmacy, setPharmacy] = useState(null);
             const [loading, setLoading] = useState(true);
 
             useEffect(() => {
-                const target = 'https://midas.minsal.cl/farmacia_v2/WS/getLocalesTurnos.php';
-                fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(target))
+                const url = 'https://midas.minsal.cl/farmacia_v2/WS/getLocalesTurnos.php';
+                fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url))
                     .then(res => res.json())
                     .then(data => {
                         const today = data.find(f => (f.comuna_nombre || "").toUpperCase().includes("TOME"));
                         if (today) {
                             setPharmacy(today);
-                            if (onDataLoaded) onDataLoaded(today);
+                            if (onPharmacyFound) onPharmacyFound(today);
                         }
                     })
                     .catch(console.error).finally(() => setLoading(false));
@@ -180,14 +182,120 @@
             return (
                 <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 bg-red-600/90 backdrop-blur-xl px-4 py-3 rounded-2xl border border-red-400/50 shadow-lg active:scale-95 transition-all pointer-events-auto">
                     <div className="text-right">
-                        <div className="text-[9px] font-black uppercase text-white/80">Farmacia de Turno</div>
-                        <div className="text-xs font-black text-white truncate max-w-[100px] uppercase">{pharmacy.local_nombre.split(' ')[0]}</div>
+                        <div className="text-[9px] font-black uppercase text-white/80 tracking-widest">Turno</div>
+                        <div className="text-xs font-black text-white truncate max-w-[100px] uppercase tracking-wider">{pharmacy.local_nombre.split(' ')[0]}</div>
                     </div>
                     <div className="h-6 w-[1px] bg-white/20"></div>
                     <Pill className="text-white animate-pulse" size={20} />
                 </a>
             );
         };
+
+        const SocialIcon = ({ type, url }) => { 
+            if(!url) return null; 
+            const icons = { facebook: Facebook, instagram: Instagram, youtube: Youtube, threads: Hash, tiktok: Music }; 
+            const Icon = icons[type] || MessageCircle; 
+            return (
+                <a href={url} target="_blank" className="p-3 bg-white/5 hover:bg-gold/20 hover:text-gold rounded-xl transition border border-white/5 shadow-md">
+                    <Icon size={20}/>
+                </a>
+            ); 
+        };
+
+        // --- MODALES ---
+
+        const ReportDetailModal = ({ report, onClose, onDelete, isAdmin }) => {
+            const typeInfo = REPORT_TYPES.find(t=>t.id===report.type) || REPORT_TYPES[0];
+            const waLink = `https://wa.me/${(report.contact || "").replace(/\D/g,'')}`;
+
+            return (
+                <div className="fixed inset-0 flex items-end sm:items-center justify-center sm:p-4 bg-black/95 backdrop-blur-sm z-[2500]" onClick={onClose}>
+                    <div className="w-full max-w-md bg-brand-card rounded-t-3xl sm:rounded-3xl border border-white/10 overflow-hidden relative max-h-[85vh] overflow-y-auto shadow-2xl" onClick={e=>e.stopPropagation()}>
+                        <div className="p-6"> 
+                            <div className="flex justify-between items-start mb-6">
+                                <div className="flex items-center gap-3">
+                                    <div style={{background: typeInfo.color}} className="p-3 rounded-full text-white shadow-xl"><typeInfo.icon size={24}/></div>
+                                    <div>
+                                        <h3 className="text-lg font-black text-white uppercase tracking-tighter">{typeInfo.label}</h3>
+                                        <p className="text-[10px] text-zinc-500 uppercase font-black">{report.dateString} • {report.name || 'Anónimo'}</p>
+                                    </div>
+                                </div>
+                                <button onClick={onClose} className="text-zinc-500 bg-white/5 p-2.5 rounded-full"><X size={16}/></button>
+                            </div>
+                            
+                            {report.details?.restroomType && (
+                                <div className="mb-4">
+                                    <span className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase ${report.details.restroomType==='Gratis' ? 'bg-green-600' : 'bg-red-600'}`}>Baño {report.details.restroomType}</span>
+                                </div>
+                            )}
+
+                            <p className="text-white text-lg leading-relaxed mb-6 font-medium">{report.desc}</p>
+                            
+                            {report.contact && (
+                                <a href={waLink} target="_blank" className="flex items-center justify-center gap-2 bg-green-600 text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest mb-4 transition active:scale-95">
+                                    <MessageCircle size={18}/> Contactar vía WhatsApp
+                                </a>
+                            )}
+
+                            {isAdmin && (
+                                <button onClick={()=>onDelete(report.id)} className="w-full bg-red-600/20 text-red-500 border border-red-500/50 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest mt-4">Eliminar Reporte (Admin)</button>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const CreateReportModal = ({ lat, lng, onClose }) => {
+            const [data, setData] = useState({ type: 'sos_help', desc: '', contact: '', name: localStorage.getItem('st_username') || '' });
+            const [loading, setLoading] = useState(false);
+            const [restroomType, setRestroomType] = useState("");
+
+            const handleSubmit = async () => {
+                if (!data.desc) return alert("Falta descripción");
+                setLoading(true);
+                try {
+                    await addDoc(collection(db, 'reports'), { 
+                        ...data, lat, lng, timestamp: Date.now(), dateString: new Date().toLocaleTimeString(),
+                        details: { restroomType: data.type === 'restroom' ? restroomType : '' }
+                    });
+                    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                    onClose();
+                } catch (e) { alert("Error"); } finally { setLoading(false); }
+            };
+
+            return (
+                <div className="fixed inset-0 z-[2000] bg-black/90 backdrop-blur-md flex items-end sm:items-center justify-center pt-10 sm:p-4">
+                    <div className="bg-brand-card w-full max-w-lg rounded-t-3xl sm:rounded-3xl border-t border-white/10 p-6 shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar relative">
+                        <div className="flex justify-between items-center mb-6"><h3 className="text-xl font-black text-white uppercase tracking-tighter">Reportar</h3><button onClick={onClose} className="p-2 bg-white/10 rounded-full"><X size={20}/></button></div>
+                        <div className="grid grid-cols-2 gap-3 mb-6">
+                            <button onClick={()=>setData({...data, type:'sos_help'})} className={`p-4 rounded-xl border-2 font-black flex flex-col items-center gap-2 ${data.type==='sos_help'?'bg-red-500/20 border-red-500':'border-white/10 text-zinc-500'}`}><Siren size={32}/> AYUDA</button>
+                            <button onClick={()=>setData({...data, type:'sos_offer'})} className={`p-4 rounded-xl border-2 font-black flex flex-col items-center gap-2 ${data.type==='sos_offer'?'bg-green-500/20 border-green-500':'border-white/10 text-zinc-500'}`}><Heart size={32}/> OFRECER</button>
+                        </div>
+                        <div className="mb-6"><div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar">{REPORT_TYPES.slice(2).map(t => (<button key={t.id} onClick={()=>setData({...data, type:t.id})} className={`flex-shrink-0 px-4 py-3 rounded-xl border text-xs font-black flex flex-col items-center gap-2 min-w-[80px] ${data.type===t.id?'bg-gold text-black border-gold':'bg-zinc-900 border-zinc-800 text-zinc-400'}`}><t.icon size={20}/> {t.label}</button>))}</div></div>
+                        
+                        {data.type === 'restroom' && (
+                            <div className="bg-zinc-900/50 p-4 rounded-xl mb-6 border border-gold/30">
+                                <p className="text-[10px] font-black text-gold mb-3 uppercase text-center tracking-widest">Tipo de Baño</p>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <button onClick={()=>setRestroomType('Gratis')} className={`p-3 rounded-lg border text-xs font-black ${restroomType==='Gratis'?'bg-green-600 border-green-500':'bg-black border-zinc-700'}`}>GRATIS</button>
+                                    <button onClick={()=>setRestroomType('Pago')} className={`p-3 rounded-lg border text-xs font-black ${restroomType==='Pago'?'bg-red-600 border-red-500':'bg-black border-zinc-700'}`}>PAGO ($)</button>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="space-y-4 mb-6">
+                            <input type="text" value={data.name} onChange={e=>setData({...data, name:e.target.value})} className="w-full bg-black border border-zinc-800 p-4 rounded-xl text-white outline-none" placeholder="Tu nombre..."/>
+                            <input type="text" value={data.contact} onChange={e=>setData({...data, contact:e.target.value})} className="w-full bg-black border border-zinc-800 p-4 rounded-xl text-white outline-none" placeholder="WhatsApp (Ej: +569...)"/>
+                            <textarea value={data.desc} onChange={e=>setData({...data, desc:e.target.value})} className="w-full bg-black border border-zinc-800 p-4 rounded-xl text-white h-24 outline-none" placeholder="¿Qué está pasando?"></textarea>
+                        </div>
+                        <button onClick={handleSubmit} disabled={loading} className="w-full bg-gradient-to-r from-gold to-orange-600 text-black font-black rounded-xl py-5 shadow-xl uppercase tracking-widest text-xs">{loading ? 'ENVIANDO...' : 'PUBLICAR REPORTE'}</button>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- COMPONENTE MAPA ---
 
         const LeafletMap = ({ reports, userLoc, pharmacy, onMapClick, onMarkerClick }) => {
             const mapRef = useRef(null);
@@ -215,18 +323,20 @@
 
                 if (pharmacy && pharmacy.local_lat) {
                     const pharmIcon = L.divIcon({ html: `<div class="animate-bounce bg-red-600 p-2 rounded-full border-2 border-white shadow-2xl"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg></div>`, className: '', iconSize: [32, 32], iconAnchor: [16, 16] });
-                    L.marker([pharmacy.local_lat, pharmacy.local_lng], { icon: pharmIcon }).addTo(map).bindPopup(`<div style="color:black; font-weight:900;">📍 ${pharmacy.local_nombre}<br/>${pharmacy.local_direccion}</div>`);
+                    L.marker([pharmacy.local_lat, pharmacy.local_lng], { icon }).addTo(map).bindPopup(`<div style="color:black; font-family:Inter; font-weight:900;">📍 ${pharmacy.local_nombre}</div>`);
                 }
 
                 reports.forEach(r => {
                     const type = REPORT_TYPES.find(t => t.id === r.type) || REPORT_TYPES[0];
-                    const html = `<div style="background:${type.color};" class="w-10 h-10 rounded-full flex items-center justify-center border-2 border-white shadow-xl hover:scale-110 transition-transform"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${type.svg}</svg></div>`;
+                    const html = `<div style="background:${type.color};" class="w-10 h-10 rounded-full flex items-center justify-center border-2 border-white shadow-xl transition-transform hover:scale-110 active:scale-95"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${type.svg}</svg></div>`;
                     L.marker([r.lat, r.lng], { icon: L.divIcon({ html, className: '', iconSize: [40, 40], iconAnchor: [20, 20] }) }).addTo(map).on('click', () => onMarkerClick(r));
                 });
             }, [reports, userLoc, pharmacy]);
 
             return <div ref={mapRef} className="w-full h-full" />;
         };
+
+        // --- APP PRINCIPAL ---
 
         const App = () => {
             const [view, setView] = useState('home');
@@ -238,32 +348,25 @@
             const [selectedReport, setSelectedReport] = useState(null);
             const [config, setConfig] = useState({});
             const [pharmacy, setPharmacy] = useState(null);
+            const [isAdmin, setIsAdmin] = useState(false);
 
             useEffect(() => {
-                onSnapshot(query(collection(db, 'reports'), orderBy('timestamp', 'desc')), snap => setReports(snap.docs.map(d => ({id: d.id, ...d.data()}))));
-                onSnapshot(doc(db, 'settings', 'global'), snap => { if(snap.exists()) setConfig(snap.data()); });
+                onSnapshot(query(collection(db, 'reports'), orderBy('timestamp', 'desc')), (snap) => setReports(snap.docs.map(d => ({id: d.id, ...d.data()}))));
+                onSnapshot(doc(db, 'settings', 'global'), (snap) => { if(snap.exists()) setConfig(snap.data()); });
             }, []);
 
             const enableGPS = () => {
                 if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(p => { setUserLoc({lat: p.coords.latitude, lng: p.coords.longitude}); setView('map'); }, () => setView('map'));
+                    navigator.geolocation.getCurrentPosition((p) => { setUserLoc({lat: p.coords.latitude, lng: p.coords.longitude}); setView('map'); }, () => setView('map'));
                 } else setView('map');
             };
 
-            const SocialLinks = () => (
-                <div className="flex gap-3 justify-center flex-wrap" onClick={e=>e.stopPropagation()}>
-                    {['threads', 'youtube', 'tiktok', 'instagram', 'facebook'].map(net => {
-                        const icons = { facebook: Facebook, instagram: Instagram, youtube: Youtube, threads: Hash, tiktok: MessageCircle };
-                        const Icon = icons[net];
-                        if(!config[net]) return null;
-                        return (
-                            <a key={net} href={config[net]} target="_blank" className="p-3 bg-white/5 hover:bg-gold/20 hover:text-gold rounded-xl transition border border-white/5 shadow-md">
-                                <Icon size={20}/>
-                            </a>
-                        );
-                    })}
-                </div>
-            );
+            const deleteReport = async (id) => {
+                if(confirm("¿Eliminar este reporte?")) {
+                    await deleteDoc(doc(db, 'reports', id));
+                    setSelectedReport(null);
+                }
+            };
 
             return (
                 <div className="h-dvh font-sans text-white overflow-hidden" onClick={() => { if(!awake) setAwake(true); }}>
@@ -271,18 +374,24 @@
                     {awake && <div className="glass-overlay"></div>}
 
                     {view === 'home' && (
-                        <div className="h-full flex flex-col items-center justify-center p-6 text-center">
+                        <div className="h-full flex flex-col items-center justify-center p-6 text-center relative">
                             {!awake && <div className="absolute inset-0 bg-black z-[-1]"></div>}
                             <div className="relative z-10 cursor-pointer mb-8"><BadBunnyEye awake={awake} /></div>
-                            <h1 className="text-7xl font-black mb-2 tracking-tighter">SOY<br/><span className={awake ? 'text-gold' : 'text-zinc-900'}>TOMÉ</span></h1>
-                            <p className="relative z-10 text-zinc-600 mb-10 font-black uppercase text-[10px] tracking-[0.4em]">Red de Emergencia Ciudadana</p>
+                            <h1 className="text-7xl font-black mb-2 tracking-tighter drop-shadow-2xl">SOY<br/><span className={awake ? 'text-gold' : 'text-zinc-900'}>TOMÉ</span></h1>
+                            <p className="relative z-10 text-zinc-600 mb-12 font-black uppercase text-[10px] tracking-[0.4em] opacity-80">Red de Emergencia Ciudadana</p>
                             {awake && (
                                 <div className="animate-in fade-in slide-in-from-bottom-8 flex flex-col items-center w-full max-w-sm">
-                                    <button onClick={(e) => { e.stopPropagation(); enableGPS(); }} className="bg-gold text-black px-12 py-5 rounded-full font-black shadow-[0_0_50px_rgba(245,158,11,0.5)] hover:scale-105 active:scale-95 transition-all w-full mb-8 uppercase text-xs">Ingresar</button>
-                                    <div className="mb-8 w-full flex justify-center" onClick={e=>e.stopPropagation()}>
-                                        <PharmacyWidget onDataLoaded={setPharmacy} />
+                                    <button onClick={(e) => { e.stopPropagation(); enableGPS(); }} className="bg-gold text-black px-12 py-5 rounded-full font-black shadow-[0_0_50px_rgba(245,158,11,0.5)] hover:scale-105 transition-all w-full mb-8 uppercase text-xs tracking-widest">Ingresar</button>
+                                    
+                                    <div className="mb-10 w-full flex justify-center" onClick={e=>e.stopPropagation()}>
+                                        <PharmacyWidget onPharmacyFound={setPharmacy} />
                                     </div>
-                                    <SocialLinks />
+
+                                    <div className="flex gap-3 justify-center flex-wrap" onClick={e=>e.stopPropagation()}>
+                                        {['threads', 'youtube', 'tiktok', 'instagram', 'facebook'].map(net => (
+                                            <SocialIcon key={net} type={net} url={config[net]} />
+                                        ))}
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -292,17 +401,20 @@
                         <div className="absolute inset-0">
                             <LeafletMap reports={reports} userLoc={userLoc} pharmacy={pharmacy} onMapClick={(coords)=>{ setCreateLoc(coords); setShowCreate(true); }} onMarkerClick={setSelectedReport} />
                             <div className="fixed top-4 left-0 right-0 z-[500] px-4 flex gap-2 pointer-events-none">
-                                <div className="flex gap-2 items-center pointer-events-auto py-1">
-                                    <button onClick={()=>setView('home')} className="bg-black/80 backdrop-blur-xl p-3.5 rounded-2xl border border-white/10 text-white shadow-2xl active:scale-90 transition"><ArrowLeft size={22}/></button>
+                                <div className="flex gap-2 items-center pointer-events-auto py-1 overflow-x-auto no-scrollbar">
+                                    <button onClick={()=>setView('home')} className="flex-shrink-0 bg-black/80 backdrop-blur-xl p-3.5 rounded-2xl border border-white/10 text-white shadow-2xl active:scale-90 transition"><ArrowLeft size={22}/></button>
                                     <WeatherWidget/>
-                                    <PharmacyWidget onDataLoaded={setPharmacy} />
+                                    <PharmacyWidget onPharmacyFound={setPharmacy} />
                                 </div>
                             </div>
                             {!showCreate && (
-                                <button onClick={()=>{ if(userLoc) { setCreateLoc(userLoc); setShowCreate(true); } else enableGPS(); }} className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[500] bg-brand-card border border-gold/40 text-gold px-12 py-5 rounded-2xl shadow-2xl font-black flex items-center gap-4 hover:scale-105 active:scale-95 transition-all pointer-events-auto uppercase text-xs tracking-widest shadow-2xl"><Plus size={24}/> Reportar</button>
+                                <button onClick={()=>{ if(userLoc) { setCreateLoc(userLoc); setShowCreate(true); } else enableGPS(); }} className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[500] bg-brand-card border border-gold/40 text-gold px-12 py-5 rounded-2xl shadow-2xl font-black flex items-center gap-4 hover:scale-105 active:scale-95 transition-all pointer-events-auto uppercase text-xs tracking-widest"><Plus size={24}/> Reportar</button>
                             )}
                         </div>
                     )}
+
+                    {showCreate && <CreateReportModal lat={createLoc.lat} lng={createLoc.lng} onClose={()=>setShowCreate(false)} />}
+                    {selectedReport && <ReportDetailModal report={selectedReport} isAdmin={isAdmin} onDelete={deleteReport} onClose={()=>setSelectedReport(null)} />}
                 </div>
             );
         };
