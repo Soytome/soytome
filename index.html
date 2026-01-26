@@ -20,9 +20,11 @@
                     },
                     animation: {
                         'liquid': 'liquid 20s ease infinite',
+                        'eye-open': 'eyeOpen 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
                     },
                     keyframes: {
-                        liquid: { '0%': { backgroundPosition: '0% 50%' }, '50%': { backgroundPosition: '100% 50%' }, '100%': { backgroundPosition: '0% 50%' } }
+                        liquid: { '0%': { backgroundPosition: '0% 50%' }, '50%': { backgroundPosition: '100% 50%' }, '100%': { backgroundPosition: '0% 50%' } },
+                        eyeOpen: { '0%': { transform: 'scaleY(0.1)' }, '100%': { transform: 'scaleY(1)' } }
                     }
                 }
             }
@@ -48,15 +50,18 @@
     
     <style>
         body { background-color: #050505; color: #fff; margin: 0; user-select: none; -webkit-tap-highlight-color: transparent; height: 100dvh; overflow: hidden; }
-        .leaflet-container { width: 100%; height: 100%; z-index: 0; background: #f0f0f0; }
+        .leaflet-container { width: 100%; height: 100%; z-index: 0; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
+        
         .liquid-glass-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; background: linear-gradient(-45deg, #000000, #3d2b00, #6b4e00, #000000); background-size: 300% 300%; animation: liquid 15s ease infinite; }
-        .glass-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; backdrop-filter: blur(20px); background: rgba(0,0,0,0.4); }
+        .glass-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; backdrop-filter: blur(20px); background: rgba(0,0,0,0.4); box-shadow: inset 0 0 100px rgba(0,0,0,0.8); }
         .user-pulse { animation: pulse-blue 2s infinite; }
         @keyframes pulse-blue { 0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(59, 130, 246, 0); } 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); } }
+        .z-highest { z-index: 9999; }
         .vertical-text { writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(180deg); }
+
         .eye-container { width: 160px; height: 90px; background: #e5e5e5; border-radius: 50% 50% 50% 50% / 70% 70% 40% 40%; position: relative; overflow: hidden; box-shadow: 0 0 40px rgba(251, 191, 36, 0.3); border-top: 4px solid #000; }
-        .eye-pupil { width: 45px; height: 45px; background: #09090b; border-radius: 50%; position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%); transition: transform 0.08s ease-out; }
+        .eye-pupil { width: 45px; height: 45px; background: #09090b; border-radius: 50%; position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 10px rgba(0,0,0,0.5); transition: transform 0.08s ease-out; }
     </style>
 </head>
 <body>
@@ -66,6 +71,7 @@
         import React, { useState, useEffect, useRef } from 'react';
         import { createRoot } from 'react-dom/client';
         import { MapPin, Plus, X, Siren, Shield, Flame, Dog, AlertTriangle, Heart, Zap, Camera, Navigation, Star, Phone, User, Layers, Eye, EyeOff, MessageCircle, Send, Settings, Trash2, Cloud, Sun, CloudRain, Facebook, Instagram, Youtube, Hash, Save, ArrowLeft, ShoppingBag, Utensils, Sparkles, PartyPopper, Wrench, Pill, Fuel, Hammer, Search, Shirt, Apple, Package, Lightbulb, Briefcase, Home, Key, Pencil, Bath } from 'lucide-react';
+        
         import { initializeApp } from 'firebase/app';
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc, setDoc, getDoc } from 'firebase/firestore';
         import { getAuth, signInAnonymously } from 'firebase/auth';
@@ -80,14 +86,33 @@
             measurementId: "G-6YGWLM475M"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        signInAnonymously(getAuth(app)).catch(console.error);
+        let db;
+        try {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            const auth = getAuth(app);
+            signInAnonymously(auth).catch(console.error);
+        } catch(e) { console.error(e); }
 
         const ICONS_SVG = {
             siren: '<path d="M7 18v-6a5 5 0 1 1 10 0v6"/><path d="M5 21a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2"/><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8"/><path d="M3 11.5a8.38 8.38 0 0 0 .9 3.8"/>',
             heart: '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
+            alert: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
             shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+            flame: '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.1.2-2.2.5-3.3.3-1.4 1-2.7 2-4 .5.3 1 .8 1 1.8z"/>',
+            food: '<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>',
+            beauty: '<path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275-1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M9 5H3"/><path d="M5 19v4"/><path d="M9 21H3"/>',
+            shop: '<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>',
+            event: '<path d="M5.8 11.3 2 22l10.7-3.79"/><path d="M4 3h.01"/><path d="M22 8h.01"/><path d="M15 2h.01"/><path d="M22 20h.01"/><path d="m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12v0c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10"/><path d="m22 13-.82-.33c-.86-.34-1.82.2-1.98 1.11v0c-.11.7-.72 1.22-1.43 1.22H17"/><path d="m11 2 .33.82c.34.86-.2 1.82-1.11 1.98v0C9.52 4.9 9 5.52 9 6.23V7"/><path d="M11 13c1.93 1.93 2.83 4.17 2 5-.83.83-3.07-.07-5-2-1.93-1.93-2.83-4.17-2-5 .83-.83 3.07.07 5 2Z"/>',
+            dog: '<path d="M10 5.172C10 3.782 8.423 2.679 6.5 3c-2.823.47-4.113 6.006-4 7 .08.703 1.725 1.722 3.656 1 1.261-.472 1.96-1.45 2.344-2.5"/><path d="M14.267 5.172c0-1.39 1.577-2.493 3.5-2.172 2.823.47 4.113 6.006 4 7-.08.703-1.725 1.722-3.656 1-1.261-.472-1.96-1.45-2.344-2.5"/><path d="M8 14v.5"/><path d="M16 14v.5"/><path d="M11.25 16.25h1.5L12 17l-.75-.75Z"/>',
+            wrench: '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',
+            pill: '<path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/>',
+            fuel: '<line x1="3" x2="15" y1="22" y2="22"/><line x1="4" x2="14" y1="9" y2="9"/><path d="M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"/><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L18 5"/>',
+            hammer: '<path d="m15 12-8.5 8.5c-.83.83-2.17.83-3 0 0 0 0 0 0 0a2.12 2.12 0 0 1 0-3L12 9"/><path d="M17.64 15 22 10.64"/><path d="m20.91 11.7-1.25-1.25c-.6-.6-.93-1.4-.93-2.25V7.86c0-.55-.45-1-1-1H14c-.55 0-1 .45-1 1v3.8c0 .85-.33 1.65-.93 2.25L10.82 15"/>',
+            lightbulb: '<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/>',
+            briefcase: '<rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',
+            home: '<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
+            key: '<circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/>',
             toilet: '<path d="M9 12h6m-6 4h6m2 5v-7a3 3 0 0 0-3-3H10a3 3 0 0 0-3 3v7"/><path d="M6 12V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v7"/>'
         };
 
@@ -95,13 +120,122 @@
             { id: 'sos_help', label: 'NECESITO AYUDA', icon: Siren, color: '#ef4444', svg: ICONS_SVG.siren },
             { id: 'sos_offer', label: 'OFREZCO AYUDA', icon: Heart, color: '#10b981', svg: ICONS_SVG.heart },
             { id: 'restroom', label: 'Baño', icon: Bath, color: '#a16207', svg: ICONS_SVG.toilet },
-            { id: 'food', label: 'Fast Food', icon: Utensils, color: '#eab308' },
-            { id: 'cabins', label: 'Cabañas', icon: Home, color: '#d97706' },
-            { id: 'rent', label: 'Arriendos', icon: Key, color: '#4f46e5' },
-            { id: 'market', label: 'Emprendimiento', icon: ShoppingBag, color: '#8b5cf6' },
-            { id: 'services', label: 'Servicios', icon: Briefcase, color: '#6366f1' },
-            { id: 'data', label: 'Dato Útil', icon: Lightbulb, color: '#14b8a6' },
+            { id: 'food', label: 'Fast Food', icon: Utensils, color: '#eab308', svg: ICONS_SVG.food },
+            { id: 'cabins', label: 'Cabañas', icon: Home, color: '#d97706', svg: ICONS_SVG.home },
+            { id: 'rent', label: 'Arriendos', icon: Key, color: '#4f46e5', svg: ICONS_SVG.key },
+            { id: 'market', label: 'Emprendimiento', icon: ShoppingBag, color: '#8b5cf6', svg: ICONS_SVG.shop },
+            { id: 'services', label: 'Servicios', icon: Briefcase, color: '#6366f1', svg: ICONS_SVG.briefcase },
+            { id: 'data', label: 'Dato Útil', icon: Lightbulb, color: '#14b8a6', svg: ICONS_SVG.lightbulb },
+            { id: 'beauty', label: 'Belleza', icon: Sparkles, color: '#ec4899', svg: ICONS_SVG.beauty },
+            { id: 'event', label: 'Eventos', icon: PartyPopper, color: '#d946ef', svg: ICONS_SVG.event },
+            { id: 'vulcan', label: 'Vulcanización', icon: Wrench, color: '#64748b', svg: ICONS_SVG.wrench },
+            { id: 'gas', label: 'Bencinera', icon: Fuel, color: '#be123c', svg: ICONS_SVG.fuel },
+            { id: 'pharma', label: 'Farmacia', icon: Pill, color: '#0ea5e9', svg: ICONS_SVG.pill },
+            { id: 'hardware', label: 'Ferretería', icon: Hammer, color: '#854d0e', svg: ICONS_SVG.hammer },
+            { id: 'accident', label: 'Accidente', icon: AlertTriangle, color: '#f59e0b', svg: ICONS_SVG.alert },
+            { id: 'security', label: 'Seguridad', icon: Shield, color: '#3b82f6', svg: ICONS_SVG.shield },
+            { id: 'fire', label: 'Incendio', icon: Flame, color: '#f97316', svg: ICONS_SVG.flame },
+            { id: 'pet', label: 'Mascota', icon: Dog, color: '#a8a29e', svg: ICONS_SVG.dog },
         ];
+
+        const processImage = (file) => {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        const MAX_WIDTH = 500;
+                        const scaleSize = MAX_WIDTH / img.width;
+                        const width = (img.width > MAX_WIDTH) ? MAX_WIDTH : img.width;
+                        const height = (img.width > MAX_WIDTH) ? (img.height * scaleSize) : img.height;
+                        canvas.width = width; canvas.height = height;
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', 0.6));
+                    };
+                };
+                reader.onerror = error => reject(error);
+            });
+        };
+
+        const BadBunnyEye = ({ awake }) => {
+            const [pupilPos, setPupilPos] = useState({ x: 0, y: 0 });
+            useEffect(() => {
+                const handleMove = (e) => {
+                    if (!awake) return;
+                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                    const moveX = Math.min(Math.max((clientX / window.innerWidth - 0.5) * 50, -20), 20);
+                    const moveY = Math.min(Math.max((clientY / window.innerHeight - 0.5) * 30, -10), 15);
+                    setPupilPos({ x: moveX, y: moveY });
+                };
+                window.addEventListener('mousemove', handleMove);
+                window.addEventListener('touchmove', handleMove);
+                return () => { window.removeEventListener('mousemove', handleMove); window.removeEventListener('touchmove', handleMove); };
+            }, [awake]);
+            if (!awake) return <div className="w-[160px] h-[30px] bg-zinc-800 rounded-full flex items-center justify-center border-t-2 border-black"><div className="w-[90%] h-[2px] bg-zinc-600"></div></div>;
+            return <div className="eye-container"><div className="eye-pupil" style={{ transform: `translate(calc(-50% + ${pupilPos.x}px), calc(-50% + ${pupilPos.y}px))` }}></div></div>;
+        };
+
+        const WeatherWidget = () => {
+            const [weather, setWeather] = useState(null);
+            const [time, setTime] = useState(new Date());
+            useEffect(() => {
+                const fetchWeather = async () => {
+                    try {
+                        const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-36.6158&longitude=-72.9575&current=temperature_2m,is_day,weather_code&timezone=auto');
+                        const data = await res.json(); setWeather(data.current);
+                    } catch (e) { console.error(e); }
+                };
+                fetchWeather(); const timer = setInterval(() => setTime(new Date()), 60000); return () => clearInterval(timer);
+            }, []);
+            if (!weather) return <div className="animate-pulse h-10 w-24 bg-white/10 rounded-xl"></div>;
+            let WeatherIcon = Sun; if (weather.weather_code > 50) WeatherIcon = CloudRain; else if (weather.weather_code > 2) WeatherIcon = Cloud; if (weather.is_day === 0 && weather.weather_code < 3) WeatherIcon = Star;
+            return (
+                <div className="flex items-center gap-3 bg-black/60 backdrop-blur-xl px-4 py-2 rounded-2xl border border-white/10 shadow-lg pointer-events-auto">
+                    <div className="text-right"><div className="text-xl font-black leading-none">{Math.round(weather.temperature_2m)}°</div><div className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Tomé</div></div>
+                    <div className="h-8 w-[1px] bg-white/20"></div><WeatherIcon className="text-gold" size={24} /><div className="text-xs font-mono text-zinc-300">{time.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                </div>
+            );
+        };
+
+        const PharmacyWidget = () => {
+            const [pharmacy, setPharmacy] = useState(null);
+            const [loading, setLoading] = useState(true);
+
+            useEffect(() => {
+                const fetchPharmacy = async () => {
+                    try {
+                        const targetUrl = 'https://midas.minsal.cl/farmacia_v2/WS/getLocalesTurnos.php';
+                        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+                        const res = await fetch(proxyUrl);
+                        const data = await res.json();
+                        const today = data.find(f => f.comuna_nombre && f.comuna_nombre.toUpperCase() === 'TOME');
+                        if (today) setPharmacy(today);
+                    } catch (e) { console.error("Error farmacia:", e); } finally { setLoading(false); }
+                };
+                fetchPharmacy();
+            }, []);
+
+            if (loading) return <div className="h-10 w-10 sm:w-28 bg-white/5 rounded-2xl animate-pulse"></div>;
+            if (!pharmacy) return null;
+
+            const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(pharmacy.local_nombre + ' ' + pharmacy.local_direccion + ' Tome')}`;
+
+            return (
+                <a href={mapsUrl} target="_blank" className="flex items-center gap-2 sm:gap-3 bg-red-600/90 backdrop-blur-xl px-3 sm:px-4 py-2 rounded-2xl border border-red-400/50 shadow-lg transition-all active:scale-95 pointer-events-auto">
+                    <div className="flex flex-col text-right">
+                        <span className="text-[9px] text-white/80 uppercase tracking-tighter leading-none mb-0.5">Turno</span>
+                        <span className="text-[11px] sm:text-xs font-black text-white truncate max-w-[60px] sm:max-w-[100px]">{pharmacy.local_nombre.split(' ')[0]}</span>
+                    </div>
+                    <div className="h-6 w-[1px] bg-white/20"></div>
+                    <Pill className="text-white animate-pulse" size={18} />
+                </a>
+            );
+        };
 
         const LeafletMap = ({ reports, onMapClick, onMarkerClick, userLoc, styleMode, filter }) => {
             const mapContainer = useRef(null);
@@ -110,10 +244,10 @@
             const userMarkerRef = useRef(null);
 
             const MAP_STYLES = {
-                urban: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', // CLARO MINIMALISTA (Voyager)
+                dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
                 satellite: 'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', 
-                light: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', // EXTRA LIMPIO (Positron)
-                dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' // NEGRO PREMIUM
+                urban: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', 
+                heatmap: 'https://a.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png' 
             };
 
             useEffect(() => {
@@ -135,19 +269,208 @@
 
                 if(userLoc) {
                     if(userMarkerRef.current) map.removeLayer(userMarkerRef.current);
-                    const userIcon = L.divIcon({ html: `<div class="user-pulse w-6 h-6 flex items-center justify-center"><div class="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg"></div></div>`, className: '', iconSize: [24, 24] });
+                    const userIcon = L.divIcon({ html: `<div class="user-pulse flex items-center justify-center w-6 h-6"><div class="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg"></div></div>`, className: '', iconSize: [24, 24] });
                     userMarkerRef.current = L.marker([userLoc.lat, userLoc.lng], { icon: userIcon, zIndexOffset: 1000 }).addTo(map);
                 }
 
                 const visibleReports = filter === 'all' ? reports : reports.filter(r => r.type === filter);
+
                 visibleReports.forEach(r => {
                     const type = REPORT_TYPES.find(t => t.id === r.type) || REPORT_TYPES[0];
-                    const iconHtml = `<div style="background:${type.color};" class="w-10 h-10 rounded-full flex items-center justify-center border-2 border-white shadow-xl scale-90 hover:scale-105 transition-transform"><MapPin size={18} color="white"/></div>`;
-                    L.marker([r.lat, r.lng], { icon: L.divIcon({ html: iconHtml, className: '', iconSize: [40, 40] }) }).addTo(map).on('click', () => onMarkerClick(r));
+                    const isSOS = r.type === 'sos_help';
+                    const iconHtml = `
+                        <div class="${isSOS ? 'animate-pulse' : ''} transition-transform hover:scale-110">
+                            <div style="background:${type.color};" class="w-10 h-10 rounded-full flex items-center justify-center border-2 border-white shadow-xl">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    ${type.svg}
+                                </svg>
+                            </div>
+                        </div>`;
+                    L.marker([r.lat, r.lng], { icon: L.divIcon({ html: iconHtml, className: '', iconSize: [40, 40], iconAnchor: [20, 20] }) }).addTo(map).on('click', () => onMarkerClick(r));
                 });
             }, [reports, userLoc, filter]);
 
+            const searchLocation = async (query) => {
+                try {
+                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}, Tomé, Chile`);
+                    const data = await res.json();
+                    if(data && data.length > 0) { const { lat, lon } = data[0]; mapInstance.current.flyTo([lat, lon], 16); } else { alert("Lugar no encontrado en Tomé"); }
+                } catch(e) { console.error(e); }
+            };
+            window.searchLoc = searchLocation;
+
             return <div ref={mapContainer} className="w-full h-full" />;
+        };
+
+        const EditReportModal = ({ report, onClose, onSave }) => {
+            const [data, setData] = useState(report);
+            const handleUpdate = () => { onSave(report.id, data); };
+            return (
+                <div className="fixed inset-0 z-[120] bg-black/90 flex items-center justify-center p-4">
+                    <div className="bg-zinc-900 w-full max-w-md rounded-2xl p-6 border border-gold/50 shadow-2xl">
+                        <h3 className="text-lg font-black text-white mb-4 flex items-center gap-2"><Pencil size={18}/> EDITAR REPORTE</h3>
+                        <div className="space-y-4">
+                            <div><label className="text-xs text-zinc-500 font-black uppercase">Descripción</label><textarea value={data.desc} onChange={e=>setData({...data, desc:e.target.value})} className="w-full bg-black border border-zinc-700 p-3 rounded-lg text-white h-24 outline-none"/></div>
+                            <div><label className="text-xs text-zinc-500 font-black uppercase">Contacto</label><input type="text" value={data.contact} onChange={e=>setData({...data, contact:e.target.value})} className="w-full bg-black border border-zinc-700 p-3 rounded-lg text-white outline-none"/></div>
+                        </div>
+                        <div className="flex gap-2 mt-6"><button onClick={onClose} className="flex-1 bg-zinc-800 py-3 rounded-xl font-black">CANCELAR</button><button onClick={handleUpdate} className="flex-1 bg-gold text-black py-3 rounded-xl font-black">GUARDAR</button></div>
+                    </div>
+                </div>
+            );
+        };
+
+        const CreateReportModal = ({ lat, lng, onClose }) => {
+            const [data, setData] = useState({ type: 'sos_help', desc: '', contact: '', name: localStorage.getItem('st_username') || '', details: {} });
+            const [files, setFiles] = useState([]);
+            const [loading, setLoading] = useState(false);
+            const [status, setStatus] = useState("PUBLICAR");
+            
+            const [subCat, setSubCat] = useState(null); 
+            const [clothingSize, setClothingSize] = useState([]);
+            const [shoeSize, setShoeSize] = useState("");
+            const [gender, setGender] = useState("");
+            const [foodDetail, setFoodDetail] = useState("");
+            const [restroomType, setRestroomType] = useState("");
+
+            const isSOS = data.type === 'sos_help' || data.type === 'sos_offer';
+            const isRestroom = data.type === 'restroom';
+
+            const handleFileSelect = (e) => {
+                const selected = Array.from(e.target.files);
+                if (files.length + selected.length > 3) return alert("Máximo 3 fotos");
+                setFiles([...files, ...selected]);
+            };
+
+            const toggleSize = (size) => {
+                if(clothingSize.includes(size)) setClothingSize(clothingSize.filter(s => s !== size));
+                else setClothingSize([...clothingSize, size]);
+            };
+
+            const handleSubmit = async () => {
+                if(!data.desc) return alert("Falta descripción");
+                if(isRestroom && !restroomType) return alert("Selecciona tipo de baño");
+                setLoading(true);
+                localStorage.setItem('st_username', data.name); 
+                
+                try {
+                    const mediaUrls = [];
+                    for (let i = 0; i < files.length; i++) {
+                        setStatus(`Procesando foto ${i + 1}...`);
+                        const base64Image = await processImage(files[i]);
+                        mediaUrls.push({ url: base64Image, type: 'image' });
+                    }
+
+                    const finalDetails = {
+                        subCat: isSOS ? subCat : null,
+                        clothingSize: (isSOS && subCat === 'clothing') ? clothingSize : [],
+                        shoeSize: (isSOS && subCat === 'clothing') ? shoeSize : '',
+                        gender: (isSOS && subCat === 'clothing') ? gender : '',
+                        foodDetail: (isSOS && subCat === 'food') ? foodDetail : '',
+                        restroomType: isRestroom ? restroomType : ''
+                    };
+
+                    setStatus("Guardando...");
+                    const docRef = await addDoc(collection(db, 'reports'), { 
+                        ...data, lat, lng, media: mediaUrls, details: finalDetails, 
+                        timestamp: Date.now(), dateString: new Date().toLocaleTimeString(), xp: 50, comments: [] 
+                    });
+                    
+                    const myReports = JSON.parse(localStorage.getItem('st_my_reports') || '[]');
+                    myReports.push(docRef.id);
+                    localStorage.setItem('st_my_reports', JSON.stringify(myReports));
+
+                    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                    localStorage.setItem('st_xp', parseInt(localStorage.getItem('st_xp') || '0') + 50);
+                    onClose();
+                } catch (e) { alert("Error: " + e.message); } finally { setLoading(false); setStatus("PUBLICAR"); }
+            };
+
+            return (
+                <div className="fixed inset-0 z-[1000] bg-black/90 backdrop-blur-md flex items-end sm:items-center justify-center pt-10 sm:p-4 animate-in fade-in">
+                    <div className="bg-brand-card w-full max-w-lg rounded-t-3xl border-t border-white/10 p-6 shadow-2xl h-[90vh] sm:h-auto overflow-y-auto relative z-highest">
+                        <div className="w-12 h-1.5 bg-zinc-700 rounded-full mx-auto mb-6 sm:hidden"></div>
+                        <div className="flex justify-between items-center mb-6"><h3 className="text-xl font-black text-white flex items-center gap-2"><Zap className="text-gold" fill="currentColor"/> NUEVO REPORTE</h3><button onClick={onClose} className="p-2 bg-white/10 rounded-full"><X size={20}/></button></div>
+                        
+                        <div className="grid grid-cols-2 gap-3 mb-6">
+                            <button onClick={()=>setData({...data, type: 'sos_help'})} className={`p-4 rounded-xl border-2 font-black flex flex-col items-center gap-2 transition-all ${data.type === 'sos_help' ? 'bg-red-500/20 border-red-500 text-red-500 scale-105 shadow-lg' : 'border-white/10 text-zinc-500'}`}><Siren size={32}/> NECESITO AYUDA</button>
+                            <button onClick={()=>setData({...data, type: 'sos_offer'})} className={`p-4 rounded-xl border-2 font-black flex flex-col items-center gap-2 transition-all ${data.type === 'sos_offer' ? 'bg-green-500/20 border-green-500 text-green-500 scale-105 shadow-lg' : 'border-white/10 text-zinc-500'}`}><Heart size={32}/> OFREZCO AYUDA</button>
+                        </div>
+
+                        <div className="mb-6">
+                            <p className="text-xs font-black text-zinc-500 mb-2 uppercase tracking-wider">O selecciona una categoría:</p>
+                            <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar">
+                                {REPORT_TYPES.slice(2).map(t => (
+                                    <button key={t.id} onClick={()=>setData({...data, type: t.id})} 
+                                        className={`flex-shrink-0 px-4 py-3 rounded-xl border text-xs font-black flex flex-col items-center gap-2 min-w-[80px] transition-all ${data.type===t.id ? 'bg-gold text-black border-gold scale-105 shadow-lg' : 'bg-zinc-900 border-zinc-800 text-zinc-400'}`}>
+                                        <t.icon size={20}/> {t.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {isRestroom && (
+                            <div className="bg-zinc-900/50 p-4 rounded-xl mb-6 border border-gold/30">
+                                <p className="text-xs font-black text-gold mb-3 uppercase tracking-wider">Tipo de Baño 💩</p>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <button onClick={()=>setRestroomType('Gratis')} className={`p-3 rounded-lg border text-sm font-black ${restroomType==='Gratis' ? 'bg-green-600 text-white border-green-500' : 'bg-black border-zinc-700'}`}>GRATIS</button>
+                                    <button onClick={()=>setRestroomType('Pago')} className={`p-3 rounded-lg border text-sm font-black ${restroomType==='Pago' ? 'bg-red-600 text-white border-red-500' : 'bg-black border-zinc-700'}`}>PAGO ($)</button>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="space-y-4 mb-6">
+                            <input type="text" value={data.name} onChange={e=>setData({...data, name:e.target.value})} className="w-full bg-black border border-zinc-700 p-3 rounded-xl text-white outline-none" placeholder="Tu nombre"/>
+                            <input type="text" value={data.contact} onChange={e=>setData({...data, contact:e.target.value})} className="w-full bg-black border border-zinc-700 p-3 rounded-xl text-white outline-none" placeholder="WhatsApp (Ej: +569...)"/>
+                            <textarea value={data.desc} onChange={e=>setData({...data, desc:e.target.value})} className="w-full bg-black border border-zinc-700 p-4 rounded-xl text-white h-24 outline-none" placeholder="Descripción detallada..."></textarea>
+                        </div>
+                        <div className="mb-6"><label className="block w-full p-4 border-2 border-dashed border-zinc-700 rounded-xl text-center cursor-pointer text-zinc-400"><input type="file" multiple accept="image/*" onChange={handleFileSelect} className="hidden" /><Camera className="mx-auto mb-2"/><span className="text-xs font-black uppercase tracking-wider">Agregar Fotos</span></label></div>
+                        <button onClick={handleSubmit} disabled={loading} className="w-full bg-gradient-to-r from-gold to-orange-600 text-black font-black rounded-xl py-4 shadow-xl mb-8 transition-all">{loading ? status : 'PUBLICAR REPORTE'}</button>
+                    </div>
+                </div>
+            );
+        };
+
+        const ReportDetailModal = ({ report, onClose, isAdmin, onDelete, onComment, onUpdate }) => {
+            const [newComment, setNewComment] = useState("");
+            const [showEdit, setShowEdit] = useState(false);
+            const isOwner = JSON.parse(localStorage.getItem('st_my_reports') || '[]').includes(report.id);
+            const typeInfo = REPORT_TYPES.find(t=>t.id===report.type) || REPORT_TYPES[0];
+
+            if(showEdit) return <EditReportModal report={report} onClose={()=>setShowEdit(false)} onSave={(id, data)=>{ onUpdate(id, data); setShowEdit(false); }} />;
+
+            return (
+                <div className="fixed inset-0 flex items-end sm:items-center justify-center sm:p-4 bg-black/95 backdrop-blur-sm z-[2000]" onClick={onClose}>
+                    <div className="w-full max-w-md bg-brand-card rounded-t-3xl sm:rounded-2xl border border-white/10 overflow-hidden relative h-[85vh] sm:h-auto overflow-y-auto" onClick={e=>e.stopPropagation()}>
+                        <div className="p-6"> 
+                            <div className="flex justify-between items-start mb-4">
+                                <div className="flex items-center gap-3"><div style={{background: typeInfo.color}} className="p-3 rounded-full text-white shadow-xl"><typeInfo.icon size={24}/></div><div><h3 className="text-lg font-black text-white tracking-tighter">{typeInfo.label}</h3><p className="text-xs text-zinc-500 uppercase font-black">{report.dateString} • {report.name || 'Anónimo'}</p></div></div>
+                                <div className="flex gap-2">
+                                    {isOwner && <button onClick={()=>setShowEdit(true)} className="bg-zinc-800 text-gold p-2 rounded-full border border-gold/30 shadow-md"><Pencil size={16}/></button>}
+                                    <button onClick={onClose} className="text-zinc-500 bg-white/10 p-2 rounded-full shadow-md"><X size={16}/></button>
+                                </div>
+                            </div>
+                            <p className="text-white text-lg leading-relaxed mb-6 font-medium">{report.desc}</p>
+                            {report.media && report.media.length > 0 && (<div className="flex overflow-x-auto gap-3 pb-4 mb-6 no-scrollbar">{report.media.map((m, i) => (<div key={i} className="flex-shrink-0 w-72 h-72 rounded-xl overflow-hidden bg-black border border-zinc-700 shadow-xl"><img src={m.url} className="w-full h-full object-cover" /></div>))}</div>)}
+                            <div className="flex gap-2 mb-6">{report.contact && (<a href={`https://wa.me/${report.contact.replace(/\D/g,'')}`} target="_blank" className="flex-1 bg-green-600 text-white py-4 rounded-xl font-black text-sm flex items-center justify-center gap-2 shadow-lg tracking-wider uppercase"><MessageCircle size={18}/> Contactar</a>)}{isAdmin && (<button onClick={()=>onDelete(report.id)} className="bg-red-600 p-4 rounded-xl text-white shadow-lg"><Trash2 size={20}/></button>)}</div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const SettingsModal = ({ config, onClose, onSave }) => {
+            const [links, setLinks] = useState(config);
+            return (
+                <div className="fixed inset-0 z-[3000] bg-black/95 flex items-center justify-center p-4">
+                    <div className="bg-zinc-900 w-full max-w-md rounded-2xl p-6 border border-gold/30 shadow-2xl">
+                        <h3 className="text-xl font-black text-white mb-6 tracking-tighter uppercase">Configurar Redes</h3>
+                        <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+                            {['whatsapp_support', 'facebook', 'instagram', 'tiktok', 'youtube', 'threads'].map(net => (<div key={net}><label className="text-[10px] uppercase text-zinc-500 font-black tracking-widest">{net.replace('_', ' ')}</label><input type="text" value={links[net] || ''} onChange={e=>setLinks({...links, [net]: e.target.value})} className="w-full bg-black border border-zinc-800 p-3 rounded-lg text-sm text-gold outline-none mt-1" placeholder="https://..." /></div>))}
+                        </div>
+                        <div className="flex gap-2 mt-8"><button onClick={onClose} className="flex-1 bg-zinc-800 py-4 rounded-xl font-black uppercase text-xs">Cancelar</button><button onClick={()=>onSave(links)} className="flex-1 bg-gold text-black py-4 rounded-xl font-black uppercase text-xs shadow-lg">Guardar Cambios</button></div>
+                    </div>
+                </div>
+            );
         };
 
         const App = () => {
@@ -158,67 +481,99 @@
             const [showCreate, setShowCreate] = useState(false);
             const [createLoc, setCreateLoc] = useState(null);
             const [selectedReport, setSelectedReport] = useState(null);
-            const [mapStyle, setMapStyle] = useState('urban'); // EMPIEZA EN ESTILO URBANO CLARO
+            const [mapStyle, setMapStyle] = useState('dark');
+            const [isAdmin, setIsAdmin] = useState(false);
+            const [config, setConfig] = useState({});
+            const [showSettings, setShowSettings] = useState(false);
             const [filter, setFilter] = useState('all');
 
             useEffect(() => {
-                const q = query(collection(db, 'reports'), orderBy('timestamp', 'desc'));
-                onSnapshot(q, (snap) => setReports(snap.docs.map(d => ({id: d.id, ...d.data()}))));
+                if(db) {
+                    const q = query(collection(db, 'reports'), orderBy('timestamp', 'desc'));
+                    onSnapshot(q, (snap) => setReports(snap.docs.map(d => ({id: d.id, ...d.data()}))));
+                    onSnapshot(doc(db, 'settings', 'global'), (snap) => { if(snap.exists()) setConfig(snap.data()); });
+                }
             }, []);
 
             const enableGPS = () => {
                 if(navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition((p) => setUserLoc({lat: p.coords.latitude, lng: p.coords.longitude}));
+                    navigator.geolocation.watchPosition((p) => setUserLoc({lat: p.coords.latitude, lng: p.coords.longitude}), (err) => console.warn(err), { enableHighAccuracy: true });
                     setView('map');
-                } else { setView('map'); }
+                } else { alert("GPS no disponible"); setView('map'); }
             };
 
+            const toggleAdmin = () => { if(isAdmin) setShowSettings(true); else { const pass = prompt("Clave Maestra:"); if(pass === "soytome123") { setIsAdmin(true); alert("Modo Admin Activado."); } } };
+            const saveSettings = async (newConfig) => { await setDoc(doc(db, 'settings', 'global'), newConfig, { merge: true }); setShowSettings(false); alert("Actualizado"); };
+            const updateReport = async (id, updatedData) => { await updateDoc(doc(db, 'reports', id), updatedData); alert("Actualizado"); };
+            const deleteReport = async (id) => { if(confirm("¿Borrar?")) { await deleteDoc(doc(db, 'reports', id)); setSelectedReport(null); } };
+
+            const SocialIcon = ({ type, url }) => { if(!url) return null; const icons = { facebook: Facebook, instagram: Instagram, youtube: Youtube, threads: Hash, tiktok: MessageCircle, whatsapp: MessageCircle }; const Icon = icons[type] || MessageCircle; return <a href={url} target="_blank" className="p-3 bg-white/5 hover:bg-gold/20 hover:text-gold rounded-xl transition border border-white/5"><Icon size={20}/></a>; };
+
             return (
-                <div className={`h-dvh font-sans text-white transition-all duration-1000 ${awake ? 'bg-zinc-950' : 'bg-black'}`} onClick={() => !awake && setAwake(true)}>
+                <div className="h-dvh font-sans text-white overflow-hidden" onClick={() => { if(!awake) setAwake(true); }}>
                     {awake && <div className="liquid-glass-bg"></div>}
                     {awake && <div className="glass-overlay"></div>}
 
                     {view === 'home' && (
-                        <div className="h-full flex flex-col items-center justify-center p-6 text-center">
-                            <h1 className={`text-6xl font-black mb-2 tracking-tighter ${awake ? 'text-white' : 'text-zinc-800'}`}>SOY<br/><span className={awake ? 'text-gold' : 'text-zinc-900'}>TOMÉ</span></h1>
-                            <p className="text-zinc-500 mb-8 font-medium">Red de Emergencia Ciudadana</p>
+                        <div className="h-full flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
+                            {!awake && <div className="absolute inset-0 bg-black z-[-1]"></div>}
+                            <div className="relative z-10 cursor-pointer mb-8 transition-transform hover:scale-110"><BadBunnyEye awake={awake} /></div>
+                            <h1 className={`text-6xl font-black mb-2 tracking-tighter relative z-10 transition-all duration-1000 ${awake ? 'text-white drop-shadow-2xl' : 'text-zinc-800'}`}>SOY<br/><span className={awake ? 'text-gold' : 'text-zinc-900'}>TOMÉ</span></h1>
+                            <p className="relative z-10 text-zinc-600 mb-8 font-black uppercase text-[10px] tracking-widest">Red de Emergencia Ciudadana</p>
                             {awake && (
-                                <button onClick={(e) => { e.stopPropagation(); enableGPS(); }} className="bg-gold text-black px-10 py-5 rounded-full font-black shadow-[0_0_40px_rgba(245,158,11,0.5)] hover:scale-105 transition flex items-center gap-3"><Navigation fill="black"/> INGRESAR</button>
+                                <div className="animate-in fade-in slide-in-from-bottom-8 flex flex-col items-center w-full max-w-sm">
+                                    <button onClick={(e) => { e.stopPropagation(); enableGPS(); }} className="bg-gold text-black px-10 py-5 rounded-full font-black shadow-[0_0_50px_rgba(245,158,11,0.6)] hover:scale-105 transition flex items-center gap-3 w-full justify-center mb-8 uppercase tracking-widest text-sm"><Navigation fill="black" size={18}/> Ingresar</button>
+                                    <div className="flex gap-2 justify-center flex-wrap" onClick={e=>e.stopPropagation()}><SocialIcon type="threads" url={config.threads} /><SocialIcon type="youtube" url={config.youtube} /><SocialIcon type="tiktok" url={config.tiktok} /><SocialIcon type="instagram" url={config.instagram} /><SocialIcon type="facebook" url={config.facebook} /></div>
+                                </div>
                             )}
                         </div>
                     )}
 
                     {view === 'map' && (
-                        <div className="absolute inset-0">
+                        <div className="absolute inset-0 h-full w-full">
                             <LeafletMap reports={reports} userLoc={userLoc} styleMode={mapStyle} filter={filter} onMapClick={(coords)=>{ setCreateLoc(coords); setShowCreate(true); }} onMarkerClick={setSelectedReport} />
                             
-                            <div className="fixed top-4 left-4 right-4 z-[500] flex gap-2 overflow-x-auto no-scrollbar pb-2 pointer-events-auto">
-                                <button onClick={()=>setFilter('all')} className={`flex-shrink-0 px-4 py-2 rounded-xl text-xs font-bold border backdrop-blur-md ${filter === 'all' ? 'bg-gold text-black border-gold' : 'bg-black/60 text-zinc-400 border-white/10'}`}>TODOS</button>
-                                {REPORT_TYPES.map(t => (
-                                    <button key={t.id} onClick={()=>setFilter(t.id)} className={`flex-shrink-0 px-4 py-2 rounded-xl text-xs font-bold border backdrop-blur-md flex items-center gap-2 ${filter === t.id ? 'bg-white text-black' : 'bg-black/60 text-zinc-400 border-white/10'}`}>
-                                        <t.icon size={12}/> {t.label}
-                                    </button>
-                                ))}
+                            {/* CONTROLES SUPERIORES RESPONSIVOS */}
+                            <div className="fixed top-4 left-0 right-0 z-[500] px-3 sm:px-4 flex flex-col gap-3 pointer-events-none">
+                                <div className="flex gap-2 items-center pointer-events-auto overflow-x-auto no-scrollbar py-1">
+                                    <button onClick={()=>setView('home')} className="flex-shrink-0 bg-black/80 backdrop-blur-xl p-3 rounded-2xl border border-white/10 text-white shadow-xl"><ArrowLeft size={22}/></button>
+                                    <WeatherWidget/>
+                                    <PharmacyWidget/>
+                                    <div className="flex-grow sm:flex-grow-0 bg-black/80 backdrop-blur-xl p-2.5 rounded-2xl border border-white/10 flex items-center gap-2 shadow-xl min-w-[120px]">
+                                        <Search size={16} className="text-zinc-500"/>
+                                        <input type="text" placeholder="Buscar lugar..." className="bg-transparent text-xs text-white outline-none w-full" onKeyDown={(e)=>{ if(e.key==='Enter') window.searchLoc(e.target.value) }}/>
+                                    </div>
+                                </div>
+                                <div className="flex gap-2 overflow-x-auto pointer-events-auto no-scrollbar pb-2">
+                                    <button onClick={()=>setFilter('all')} className={`flex-shrink-0 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider border shadow-md ${filter === 'all' ? 'bg-gold text-black border-gold' : 'bg-black/80 text-zinc-500 border-white/10'}`}>Todos</button>
+                                    {REPORT_TYPES.map(t => (
+                                        <button key={t.id} onClick={()=>setFilter(t.id)} className={`flex-shrink-0 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider border shadow-md flex items-center gap-2 ${filter === t.id ? 'bg-white text-black border-white' : 'bg-black/80 text-zinc-500 border-white/10'}`}>
+                                            <t.icon size={12}/> {t.label}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
 
-                            <div className="fixed top-20 right-4 z-[1000] flex flex-col gap-3">
-                                <button onClick={()=>{ 
-                                    const styles = ['urban', 'satellite', 'light', 'dark'];
-                                    const next = styles[(styles.indexOf(mapStyle) + 1) % styles.length];
-                                    setMapStyle(next);
-                                }} className="bg-black/80 p-3 rounded-full border border-white/20 text-white shadow-xl"><Layers size={20}/></button>
+                            <div className="fixed top-24 right-3 z-[500] flex flex-col gap-3 pointer-events-auto">
+                                <button onClick={()=>{ if(mapStyle==='dark') setMapStyle('satellite'); else if(mapStyle==='satellite') setMapStyle('urban'); else if(mapStyle==='urban') setMapStyle('heatmap'); else setMapStyle('dark'); }} className="bg-black/80 p-3 rounded-full border border-white/10 text-white shadow-xl"><Layers size={20}/></button>
+                                <button onClick={toggleAdmin} className={`p-3 rounded-full border border-white/10 shadow-xl ${isAdmin ? 'bg-gold text-black' : 'bg-black/80 text-white'}`}><Settings size={20}/></button>
                             </div>
 
-                            <button onClick={()=>{ if(userLoc) { setCreateLoc(userLoc); setShowCreate(true); } }} className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[1000] bg-brand-card border border-gold/50 text-gold px-8 py-4 rounded-2xl shadow-2xl font-black flex items-center gap-3 hover:bg-gold hover:text-black transition-all">
-                                <Plus size={24}/> REPORTAR
-                            </button>
+                            {!showCreate && (
+                                <button onClick={()=>{ if(userLoc) { setCreateLoc(userLoc); setShowCreate(true); } else enableGPS(); }} className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[500] bg-brand-card border border-gold/40 text-gold px-10 py-5 rounded-2xl shadow-2xl font-black flex items-center gap-3 hover:scale-105 transition-all pointer-events-auto uppercase tracking-widest text-sm"><Plus size={24}/> Reportar</button>
+                            )}
                         </div>
                     )}
+
+                    {showCreate && <CreateReportModal lat={createLoc.lat} lng={createLoc.lng} onClose={()=>setShowCreate(false)} />}
+                    {selectedReport && <ReportDetailModal report={selectedReport} onClose={()=>setSelectedReport(null)} isAdmin={isAdmin} onDelete={deleteReport} onUpdate={updateReport} />}
+                    {showSettings && <SettingsModal config={config} onClose={()=>setShowSettings(false)} onSave={saveSettings} />}
                 </div>
             );
         };
 
-        createRoot(document.getElementById('root')).render(<App />);
+        const root = createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
 </html>
