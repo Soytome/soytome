@@ -194,7 +194,7 @@
             if (!weather) return <div className="animate-pulse h-10 w-24 bg-white/10 rounded-xl"></div>;
             let WeatherIcon = Sun; if (weather.weather_code > 50) WeatherIcon = CloudRain; else if (weather.weather_code > 2) WeatherIcon = Cloud; if (weather.is_day === 0 && weather.weather_code < 3) WeatherIcon = Star;
             return (
-                <div className="flex items-center gap-3 bg-black/60 backdrop-blur-xl px-4 py-2 rounded-2xl border border-white/10 shadow-lg">
+                <div className="flex items-center gap-3 bg-black/60 backdrop-blur-xl px-4 py-2 rounded-2xl border border-white/10 shadow-lg pointer-events-auto">
                     <div className="text-right"><div className="text-xl font-black leading-none">{Math.round(weather.temperature_2m)}°</div><div className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Tomé</div></div>
                     <div className="h-8 w-[1px] bg-white/20"></div><WeatherIcon className="text-gold" size={24} /><div className="text-xs font-mono text-zinc-300">{time.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
                 </div>
@@ -208,36 +208,30 @@
             useEffect(() => {
                 const fetchPharmacy = async () => {
                     try {
-                        // Usamos AllOrigins para evitar errores de CORS en GitHub Pages
                         const targetUrl = 'https://midas.minsal.cl/farmacia_v2/WS/getLocalesTurnos.php';
                         const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
-                        
                         const res = await fetch(proxyUrl);
                         const data = await res.json();
-                        const today = data.find(f => f.comuna_nombre.toUpperCase() === 'TOME');
+                        const today = data.find(f => f.comuna_nombre && f.comuna_nombre.toUpperCase() === 'TOME');
                         if (today) setPharmacy(today);
-                    } catch (e) {
-                        console.error("Error al cargar farmacia:", e);
-                    } finally {
-                        setLoading(false);
-                    }
+                    } catch (e) { console.error("Error farmacia:", e); } finally { setLoading(false); }
                 };
                 fetchPharmacy();
             }, []);
 
-            if (loading) return <div className="animate-pulse h-10 w-32 bg-white/10 rounded-2xl"></div>;
+            if (loading) return <div className="h-10 w-10 sm:w-28 bg-white/5 rounded-2xl animate-pulse"></div>;
             if (!pharmacy) return null;
 
             const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(pharmacy.local_nombre + ' ' + pharmacy.local_direccion + ' Tome')}`;
 
             return (
-                <a href={mapsUrl} target="_blank" className="flex items-center gap-3 bg-red-600/20 backdrop-blur-xl px-4 py-2 rounded-2xl border border-red-500/30 shadow-lg transition-all hover:bg-red-600/40 active:scale-95 pointer-events-auto">
-                    <div className="text-right">
-                        <div className="text-[10px] text-red-400 font-bold uppercase tracking-wider leading-none mb-1">Turno</div>
-                        <div className="text-xs font-black text-white truncate max-w-[80px]">{pharmacy.local_nombre}</div>
+                <a href={mapsUrl} target="_blank" className="flex items-center gap-2 sm:gap-3 bg-red-600/90 backdrop-blur-xl px-3 sm:px-4 py-2 rounded-2xl border border-red-400/50 shadow-lg transition-all active:scale-95 pointer-events-auto">
+                    <div className="flex flex-col text-right">
+                        <span className="text-[9px] text-white/80 uppercase tracking-tighter leading-none mb-0.5">Turno</span>
+                        <span className="text-[11px] sm:text-xs font-black text-white truncate max-w-[60px] sm:max-w-[100px]">{pharmacy.local_nombre.split(' ')[0]}</span>
                     </div>
-                    <div className="h-8 w-[1px] bg-red-500/20"></div>
-                    <Pill className="text-red-500" size={20} />
+                    <div className="h-6 w-[1px] bg-white/20"></div>
+                    <Pill className="text-white animate-pulse" size={18} />
                 </a>
             );
         };
@@ -313,12 +307,12 @@
             return (
                 <div className="fixed inset-0 z-[120] bg-black/90 flex items-center justify-center p-4">
                     <div className="bg-zinc-900 w-full max-w-md rounded-2xl p-6 border border-gold/50 shadow-2xl">
-                        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><Pencil size={18}/> EDITAR REPORTE</h3>
+                        <h3 className="text-lg font-black text-white mb-4 flex items-center gap-2"><Pencil size={18}/> EDITAR REPORTE</h3>
                         <div className="space-y-4">
-                            <div><label className="text-xs text-zinc-500 font-bold">DESCRIPCIÓN</label><textarea value={data.desc} onChange={e=>setData({...data, desc:e.target.value})} className="w-full bg-black border border-zinc-700 p-3 rounded-lg text-white h-24"/></div>
-                            <div><label className="text-xs text-zinc-500 font-bold">CONTACTO</label><input type="text" value={data.contact} onChange={e=>setData({...data, contact:e.target.value})} className="w-full bg-black border border-zinc-700 p-3 rounded-lg text-white"/></div>
+                            <div><label className="text-xs text-zinc-500 font-black uppercase">Descripción</label><textarea value={data.desc} onChange={e=>setData({...data, desc:e.target.value})} className="w-full bg-black border border-zinc-700 p-3 rounded-lg text-white h-24 outline-none"/></div>
+                            <div><label className="text-xs text-zinc-500 font-black uppercase">Contacto</label><input type="text" value={data.contact} onChange={e=>setData({...data, contact:e.target.value})} className="w-full bg-black border border-zinc-700 p-3 rounded-lg text-white outline-none"/></div>
                         </div>
-                        <div className="flex gap-2 mt-6"><button onClick={onClose} className="flex-1 bg-zinc-800 py-3 rounded-xl font-bold">CANCELAR</button><button onClick={handleUpdate} className="flex-1 bg-gold text-black py-3 rounded-xl font-bold">GUARDAR CAMBIOS</button></div>
+                        <div className="flex gap-2 mt-6"><button onClick={onClose} className="flex-1 bg-zinc-800 py-3 rounded-xl font-black">CANCELAR</button><button onClick={handleUpdate} className="flex-1 bg-gold text-black py-3 rounded-xl font-black">GUARDAR</button></div>
                     </div>
                 </div>
             );
@@ -353,7 +347,7 @@
 
             const handleSubmit = async () => {
                 if(!data.desc) return alert("Falta descripción");
-                if(isRestroom && !restroomType) return alert("Selecciona si el baño es Gratis o Pago");
+                if(isRestroom && !restroomType) return alert("Selecciona tipo de baño");
                 setLoading(true);
                 localStorage.setItem('st_username', data.name); 
                 
@@ -390,28 +384,23 @@
                 } catch (e) { alert("Error: " + e.message); } finally { setLoading(false); setStatus("PUBLICAR"); }
             };
 
-            const setNormalType = (id) => {
-                setData({...data, type: id});
-                setSubCat(null);
-            };
-
             return (
-                <div className="fixed inset-0 z-[60] bg-black/90 backdrop-blur-md flex items-end sm:items-center justify-center pt-10 sm:p-4 animate-in fade-in" style={{zIndex: 9999}}>
+                <div className="fixed inset-0 z-[1000] bg-black/90 backdrop-blur-md flex items-end sm:items-center justify-center pt-10 sm:p-4 animate-in fade-in">
                     <div className="bg-brand-card w-full max-w-lg rounded-t-3xl border-t border-white/10 p-6 shadow-2xl h-[90vh] sm:h-auto overflow-y-auto relative z-highest">
                         <div className="w-12 h-1.5 bg-zinc-700 rounded-full mx-auto mb-6 sm:hidden"></div>
                         <div className="flex justify-between items-center mb-6"><h3 className="text-xl font-black text-white flex items-center gap-2"><Zap className="text-gold" fill="currentColor"/> NUEVO REPORTE</h3><button onClick={onClose} className="p-2 bg-white/10 rounded-full"><X size={20}/></button></div>
                         
                         <div className="grid grid-cols-2 gap-3 mb-6">
-                            <button onClick={()=>setData({...data, type: 'sos_help'})} className={`p-4 rounded-xl border-2 font-bold flex flex-col items-center gap-2 transition-all ${data.type === 'sos_help' ? 'bg-red-500/20 border-red-500 text-red-500 scale-105' : 'border-white/10 text-zinc-500'}`}><Siren size={32}/> NECESITO AYUDA</button>
-                            <button onClick={()=>setData({...data, type: 'sos_offer'})} className={`p-4 rounded-xl border-2 font-bold flex flex-col items-center gap-2 transition-all ${data.type === 'sos_offer' ? 'bg-green-500/20 border-green-500 text-green-500 scale-105' : 'border-white/10 text-zinc-500'}`}><Heart size={32}/> OFREZCO AYUDA</button>
+                            <button onClick={()=>setData({...data, type: 'sos_help'})} className={`p-4 rounded-xl border-2 font-black flex flex-col items-center gap-2 transition-all ${data.type === 'sos_help' ? 'bg-red-500/20 border-red-500 text-red-500 scale-105 shadow-lg' : 'border-white/10 text-zinc-500'}`}><Siren size={32}/> NECESITO AYUDA</button>
+                            <button onClick={()=>setData({...data, type: 'sos_offer'})} className={`p-4 rounded-xl border-2 font-black flex flex-col items-center gap-2 transition-all ${data.type === 'sos_offer' ? 'bg-green-500/20 border-green-500 text-green-500 scale-105 shadow-lg' : 'border-white/10 text-zinc-500'}`}><Heart size={32}/> OFREZCO AYUDA</button>
                         </div>
 
                         <div className="mb-6">
-                            <p className="text-xs font-bold text-zinc-500 mb-2 uppercase tracking-wider">O selecciona una categoría:</p>
+                            <p className="text-xs font-black text-zinc-500 mb-2 uppercase tracking-wider">O selecciona una categoría:</p>
                             <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar">
                                 {REPORT_TYPES.slice(2).map(t => (
-                                    <button key={t.id} onClick={()=>setNormalType(t.id)} 
-                                        className={`flex-shrink-0 px-4 py-3 rounded-xl border text-xs font-bold flex flex-col items-center gap-2 min-w-[80px] transition-all ${data.type===t.id ? 'bg-gold text-black border-gold scale-105 shadow-lg' : 'bg-zinc-900 border-zinc-800 text-zinc-400'}`}>
+                                    <button key={t.id} onClick={()=>setData({...data, type: t.id})} 
+                                        className={`flex-shrink-0 px-4 py-3 rounded-xl border text-xs font-black flex flex-col items-center gap-2 min-w-[80px] transition-all ${data.type===t.id ? 'bg-gold text-black border-gold scale-105 shadow-lg' : 'bg-zinc-900 border-zinc-800 text-zinc-400'}`}>
                                         <t.icon size={20}/> {t.label}
                                     </button>
                                 ))}
@@ -419,40 +408,22 @@
                         </div>
 
                         {isRestroom && (
-                            <div className="bg-zinc-900/50 p-4 rounded-xl mb-6 border border-gold/30 animate-in slide-in-from-top-5">
-                                <p className="text-xs font-bold text-gold mb-3 uppercase tracking-wider">TIPO DE BAÑO 💩</p>
+                            <div className="bg-zinc-900/50 p-4 rounded-xl mb-6 border border-gold/30">
+                                <p className="text-xs font-black text-gold mb-3 uppercase tracking-wider">Tipo de Baño 💩</p>
                                 <div className="grid grid-cols-2 gap-3">
-                                    <button onClick={()=>setRestroomType('Gratis')} className={`p-3 rounded-lg border text-sm font-bold ${restroomType==='Gratis' ? 'bg-green-600 text-white border-green-500' : 'bg-black border-zinc-700'}`}>GRATIS</button>
-                                    <button onClick={()=>setRestroomType('Pago')} className={`p-3 rounded-lg border text-sm font-bold ${restroomType==='Pago' ? 'bg-red-600 text-white border-red-500' : 'bg-black border-zinc-700'}`}>PAGO ($)</button>
+                                    <button onClick={()=>setRestroomType('Gratis')} className={`p-3 rounded-lg border text-sm font-black ${restroomType==='Gratis' ? 'bg-green-600 text-white border-green-500' : 'bg-black border-zinc-700'}`}>GRATIS</button>
+                                    <button onClick={()=>setRestroomType('Pago')} className={`p-3 rounded-lg border text-sm font-black ${restroomType==='Pago' ? 'bg-red-600 text-white border-red-500' : 'bg-black border-zinc-700'}`}>PAGO ($)</button>
                                 </div>
-                            </div>
-                        )}
-
-                        {isSOS && (
-                            <div className="bg-zinc-900/50 p-4 rounded-xl mb-6 border border-white/5 animate-in slide-in-from-top-5">
-                                <p className="text-xs font-bold text-zinc-400 mb-3 uppercase tracking-wider">¿Qué necesitas / Ofreces?</p>
-                                <div className="flex gap-2 overflow-x-auto no-scrollbar mb-4">
-                                    {[{id:'clothing', label:'Ropa', icon: Shirt}, {id:'food', label:'Comida', icon: Apple}, {id:'tools', label:'Herramientas', icon: Wrench}, {id:'other', label:'Otros', icon: Package}].map(cat => (
-                                        <button key={cat.id} onClick={()=>setSubCat(cat.id)} className={`flex-shrink-0 px-4 py-3 rounded-xl border flex flex-col items-center gap-1 ${subCat===cat.id ? 'bg-gold text-black border-gold' : 'border-zinc-700 text-zinc-400'}`}><cat.icon size={20}/> <span className="text-xs font-bold">{cat.label}</span></button>
-                                    ))}
-                                </div>
-                                {subCat === 'clothing' && (
-                                    <div className="space-y-4">
-                                        <div><p className="text-xs text-zinc-500 font-bold mb-2">TALLAS (Selecciona varias)</p><div className="flex gap-2">{['XS','S','M','L','XL'].map(s => (<button key={s} onClick={()=>toggleSize(s)} className={`w-10 h-10 rounded-lg font-bold text-sm ${clothingSize.includes(s) ? 'bg-white text-black' : 'bg-black border border-zinc-700'}`}>{s}</button>))}</div></div>
-                                        <div className="grid grid-cols-2 gap-4"><div><p className="text-xs text-zinc-500 font-bold mb-2">GÉNERO</p><select onChange={e=>setGender(e.target.value)} className="w-full bg-black border border-zinc-700 p-2 rounded-lg text-sm text-white outline-none"><option value="">Seleccionar</option><option value="Hombre">Hombre</option><option value="Mujer">Mujer</option><option value="Unisex">Unisex</option><option value="Niño/a">Niño/a</option></select></div><div><p className="text-xs text-zinc-500 font-bold mb-2">CALZADO (N°)</p><input type="text" placeholder="Ej: 38, 40" onChange={e=>setShoeSize(e.target.value)} className="w-full bg-black border border-zinc-700 p-2 rounded-lg text-sm text-white outline-none"/></div></div>
-                                    </div>
-                                )}
-                                {subCat === 'food' && (<div><p className="text-xs text-zinc-500 font-bold mb-2">DETALLE ALIMENTOS / ALERGIAS</p><input type="text" placeholder="Ej: Leche sin lactosa..." onChange={e=>setFoodDetail(e.target.value)} className="w-full bg-black border border-zinc-700 p-3 rounded-lg text-sm text-white outline-none"/></div>)}
                             </div>
                         )}
 
                         <div className="space-y-4 mb-6">
-                            <div className="relative"><User className="absolute left-3 top-3.5 text-zinc-500" size={16}/><input type="text" value={data.name} onChange={e=>setData({...data, name:e.target.value})} className="w-full bg-black border border-zinc-700 p-3 pl-10 rounded-xl text-white outline-none" placeholder="Tu nombre"/></div>
-                            <div className="relative"><Phone className="absolute left-3 top-3.5 text-zinc-500" size={16}/><input type="text" value={data.contact} onChange={e=>setData({...data, contact:e.target.value})} className="w-full bg-black border border-zinc-700 p-3 pl-10 rounded-xl text-white outline-none" placeholder="WhatsApp (Ej: +569...)"/></div>
-                            <textarea value={data.desc} onChange={e=>setData({...data, desc:e.target.value})} className="w-full bg-black border border-zinc-700 p-4 rounded-xl text-white h-24 outline-none" placeholder="Descripción general..."></textarea>
+                            <input type="text" value={data.name} onChange={e=>setData({...data, name:e.target.value})} className="w-full bg-black border border-zinc-700 p-3 rounded-xl text-white outline-none" placeholder="Tu nombre"/>
+                            <input type="text" value={data.contact} onChange={e=>setData({...data, contact:e.target.value})} className="w-full bg-black border border-zinc-700 p-3 rounded-xl text-white outline-none" placeholder="WhatsApp (Ej: +569...)"/>
+                            <textarea value={data.desc} onChange={e=>setData({...data, desc:e.target.value})} className="w-full bg-black border border-zinc-700 p-4 rounded-xl text-white h-24 outline-none" placeholder="Descripción detallada..."></textarea>
                         </div>
-                        <div className="mb-6"><label className="block w-full p-4 border-2 border-dashed border-zinc-700 rounded-xl text-center cursor-pointer hover:border-gold transition text-zinc-400"><input type="file" multiple accept="image/*" onChange={handleFileSelect} className="hidden" /><Camera className="mx-auto mb-2"/><span className="text-xs font-bold">AGREGAR FOTOS</span>{files.length > 0 && <p className="text-gold text-xs mt-2">{files.length} seleccionadas</p>}</label></div>
-                        <button onClick={handleSubmit} disabled={loading} className="w-full bg-gradient-to-r from-gold to-orange-600 text-black font-black rounded-xl py-4 shadow-lg mb-8 transition-all">{loading ? status : 'PUBLICAR REPORTE'}</button>
+                        <div className="mb-6"><label className="block w-full p-4 border-2 border-dashed border-zinc-700 rounded-xl text-center cursor-pointer text-zinc-400"><input type="file" multiple accept="image/*" onChange={handleFileSelect} className="hidden" /><Camera className="mx-auto mb-2"/><span className="text-xs font-black uppercase tracking-wider">Agregar Fotos</span></label></div>
+                        <button onClick={handleSubmit} disabled={loading} className="w-full bg-gradient-to-r from-gold to-orange-600 text-black font-black rounded-xl py-4 shadow-xl mb-8 transition-all">{loading ? status : 'PUBLICAR REPORTE'}</button>
                     </div>
                 </div>
             );
@@ -461,51 +432,25 @@
         const ReportDetailModal = ({ report, onClose, isAdmin, onDelete, onComment, onUpdate }) => {
             const [newComment, setNewComment] = useState("");
             const [showEdit, setShowEdit] = useState(false);
-            const myReports = JSON.parse(localStorage.getItem('st_my_reports') || '[]');
-            const isOwner = myReports.includes(report.id);
-
-            if(!report) return null;
+            const isOwner = JSON.parse(localStorage.getItem('st_my_reports') || '[]').includes(report.id);
             const typeInfo = REPORT_TYPES.find(t=>t.id===report.type) || REPORT_TYPES[0];
-            const userName = localStorage.getItem('st_username') || 'Vecino';
-            const details = report.details || {};
-            const cleanPhone = report.contact ? report.contact.replace(/[^0-9]/g, '') : '';
-            const waLink = cleanPhone ? `https://wa.me/${cleanPhone}` : '#';
 
             if(showEdit) return <EditReportModal report={report} onClose={()=>setShowEdit(false)} onSave={(id, data)=>{ onUpdate(id, data); setShowEdit(false); }} />;
 
             return (
-                <div className="fixed inset-0 flex items-end sm:items-center justify-center sm:p-4 bg-black/90 backdrop-blur-sm pt-10" style={{zIndex: 9999}} onClick={onClose}>
-                    <div className="w-full max-w-md bg-brand-card rounded-t-3xl sm:rounded-2xl border border-white/10 overflow-hidden relative h-[85dvh] sm:h-auto overflow-y-auto" onClick={e=>e.stopPropagation()}>
-                        <div className="p-6 pb-20"> 
+                <div className="fixed inset-0 flex items-end sm:items-center justify-center sm:p-4 bg-black/95 backdrop-blur-sm z-[2000]" onClick={onClose}>
+                    <div className="w-full max-w-md bg-brand-card rounded-t-3xl sm:rounded-2xl border border-white/10 overflow-hidden relative h-[85vh] sm:h-auto overflow-y-auto" onClick={e=>e.stopPropagation()}>
+                        <div className="p-6"> 
                             <div className="flex justify-between items-start mb-4">
-                                <div className="flex items-center gap-3"><div style={{background: typeInfo.color}} className="p-3 rounded-full text-white shadow-lg"><typeInfo.icon size={24}/></div><div><h3 className="text-lg font-black text-white">{typeInfo.label}</h3><p className="text-xs text-zinc-400">{report.dateString} • {report.name || 'Anónimo'}</p></div></div>
+                                <div className="flex items-center gap-3"><div style={{background: typeInfo.color}} className="p-3 rounded-full text-white shadow-xl"><typeInfo.icon size={24}/></div><div><h3 className="text-lg font-black text-white tracking-tighter">{typeInfo.label}</h3><p className="text-xs text-zinc-500 uppercase font-black">{report.dateString} • {report.name || 'Anónimo'}</p></div></div>
                                 <div className="flex gap-2">
-                                    {isOwner && <button onClick={()=>setShowEdit(true)} className="bg-zinc-800 text-gold p-2 rounded-full border border-gold/30"><Pencil size={16}/></button>}
-                                    <button onClick={onClose} className="text-zinc-500 bg-white/10 p-2 rounded-full"><X size={16}/></button>
+                                    {isOwner && <button onClick={()=>setShowEdit(true)} className="bg-zinc-800 text-gold p-2 rounded-full border border-gold/30 shadow-md"><Pencil size={16}/></button>}
+                                    <button onClick={onClose} className="text-zinc-500 bg-white/10 p-2 rounded-full shadow-md"><X size={16}/></button>
                                 </div>
                             </div>
-                            
-                            {details.restroomType && (
-                                <div className="mb-4">
-                                    <span className={`px-4 py-2 rounded-xl text-sm font-bold ${details.restroomType==='Gratis' ? 'bg-green-600' : 'bg-red-600'}`}>BAÑO {details.restroomType.toUpperCase()}</span>
-                                </div>
-                            )}
-
-                            {(details.subCat || details.clothingSize?.length > 0) && (
-                                <div className="flex flex-wrap gap-2 mb-4">
-                                    {details.subCat && <span className="bg-zinc-800 text-white px-3 py-1 rounded-full text-xs font-bold uppercase border border-zinc-700">{details.subCat}</span>}
-                                    {details.gender && <span className="bg-zinc-800 text-gold px-3 py-1 rounded-full text-xs font-bold border border-zinc-700">{details.gender}</span>}
-                                    {details.clothingSize?.map(s => <span key={s} className="bg-gold text-black px-2 py-1 rounded-md text-xs font-black">Talla {s}</span>)}
-                                    {details.shoeSize && <span className="bg-zinc-800 text-white px-3 py-1 rounded-full text-xs font-bold border border-zinc-700">👟 {details.shoeSize}</span>}
-                                </div>
-                            )}
-                            
-                            <p className="text-white text-lg leading-relaxed mb-4 font-medium">{report.desc}</p>
-                            {details.foodDetail && <div className="bg-orange-900/30 border border-orange-700/50 p-3 rounded-lg mb-4 text-orange-200 text-sm font-bold">🍎 {details.foodDetail}</div>}
-
-                            {report.media && report.media.length > 0 && (<div className="flex overflow-x-auto gap-3 pb-4 mb-4 no-scrollbar">{report.media.map((m, i) => (<div key={i} className="flex-shrink-0 w-72 h-72 rounded-xl overflow-hidden bg-black border border-zinc-700 relative group"><img src={m.url} className="w-full h-full object-cover" /><div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition pointer-events-none"><span className="text-white text-xs font-bold">VER FULL</span></div></div>))}</div>)}
-                            <div className="flex gap-2 mb-6">{report.contact && (<a href={waLink} target="_blank" className="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-green-500 transition"><MessageCircle size={18}/> WHATSAPP</a>)}{isAdmin && (<button onClick={()=>onDelete(report.id)} className="bg-red-600 p-3 rounded-xl text-white"><Trash2 size={18}/></button>)}</div>
-                            <div className="border-t border-zinc-800 pt-4"><h4 className="text-sm font-bold text-zinc-500 mb-3 uppercase">Comentarios</h4><div className="space-y-3 mb-4 max-h-40 overflow-y-auto">{report.comments && report.comments.map((c, idx) => (<div key={idx} className="bg-zinc-900 p-3 rounded-lg text-sm"><span className="text-gold font-bold text-xs block">{c.author}</span><span className="text-zinc-300">{c.text}</span></div>))}</div><div className="flex gap-2"><input type="text" value={newComment} onChange={e=>setNewComment(e.target.value)} placeholder="Comentar..." className="flex-1 bg-black border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-gold"/><button onClick={()=>{ if(newComment) { onComment(report.id, newComment, userName); setNewComment(""); } }} className="bg-gold text-black p-2 rounded-lg font-bold"><Send size={16}/></button></div></div>
+                            <p className="text-white text-lg leading-relaxed mb-6 font-medium">{report.desc}</p>
+                            {report.media && report.media.length > 0 && (<div className="flex overflow-x-auto gap-3 pb-4 mb-6 no-scrollbar">{report.media.map((m, i) => (<div key={i} className="flex-shrink-0 w-72 h-72 rounded-xl overflow-hidden bg-black border border-zinc-700 shadow-xl"><img src={m.url} className="w-full h-full object-cover" /></div>))}</div>)}
+                            <div className="flex gap-2 mb-6">{report.contact && (<a href={`https://wa.me/${report.contact.replace(/\D/g,'')}`} target="_blank" className="flex-1 bg-green-600 text-white py-4 rounded-xl font-black text-sm flex items-center justify-center gap-2 shadow-lg tracking-wider uppercase"><MessageCircle size={18}/> Contactar</a>)}{isAdmin && (<button onClick={()=>onDelete(report.id)} className="bg-red-600 p-4 rounded-xl text-white shadow-lg"><Trash2 size={20}/></button>)}</div>
                         </div>
                     </div>
                 </div>
@@ -514,15 +459,14 @@
 
         const SettingsModal = ({ config, onClose, onSave }) => {
             const [links, setLinks] = useState(config);
-            const handleChange = (key, val) => setLinks({...links, [key]: val});
             return (
-                <div className="fixed inset-0 z-[110] bg-black/90 flex items-center justify-center p-4">
-                    <div className="bg-zinc-900 w-full max-w-md rounded-2xl p-6 border border-gold/30">
-                        <h3 className="text-xl font-bold text-white mb-4">CONFIGURAR REDES</h3>
-                        <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
-                            {['whatsapp_support', 'facebook', 'instagram', 'tiktok', 'youtube', 'threads'].map(net => (<div key={net}><label className="text-xs uppercase text-zinc-500 font-bold">{net.replace('_', ' ')}</label><input type="text" value={links[net] || ''} onChange={e=>handleChange(net, e.target.value)} className="w-full bg-black border border-zinc-700 p-2 rounded text-sm text-gold" placeholder="https://..." /></div>))}
+                <div className="fixed inset-0 z-[3000] bg-black/95 flex items-center justify-center p-4">
+                    <div className="bg-zinc-900 w-full max-w-md rounded-2xl p-6 border border-gold/30 shadow-2xl">
+                        <h3 className="text-xl font-black text-white mb-6 tracking-tighter uppercase">Configurar Redes</h3>
+                        <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+                            {['whatsapp_support', 'facebook', 'instagram', 'tiktok', 'youtube', 'threads'].map(net => (<div key={net}><label className="text-[10px] uppercase text-zinc-500 font-black tracking-widest">{net.replace('_', ' ')}</label><input type="text" value={links[net] || ''} onChange={e=>setLinks({...links, [net]: e.target.value})} className="w-full bg-black border border-zinc-800 p-3 rounded-lg text-sm text-gold outline-none mt-1" placeholder="https://..." /></div>))}
                         </div>
-                        <div className="flex gap-2 mt-6"><button onClick={onClose} className="flex-1 bg-zinc-800 py-3 rounded-xl font-bold">CANCELAR</button><button onClick={()=>onSave(links)} className="flex-1 bg-gold text-black py-3 rounded-xl font-bold flex items-center justify-center gap-2"><Save size={16}/> GUARDAR</button></div>
+                        <div className="flex gap-2 mt-8"><button onClick={onClose} className="flex-1 bg-zinc-800 py-4 rounded-xl font-black uppercase text-xs">Cancelar</button><button onClick={()=>onSave(links)} className="flex-1 bg-gold text-black py-4 rounded-xl font-black uppercase text-xs shadow-lg">Guardar Cambios</button></div>
                     </div>
                 </div>
             );
@@ -558,19 +502,14 @@
             };
 
             const toggleAdmin = () => { if(isAdmin) setShowSettings(true); else { const pass = prompt("Clave Maestra:"); if(pass === "soytome123") { setIsAdmin(true); alert("Modo Admin Activado."); } } };
-            const saveSettings = async (newConfig) => { await setDoc(doc(db, 'settings', 'global'), newConfig, { merge: true }); setShowSettings(false); alert("Configuración actualizada."); };
-            const addComment = async (reportId, text, author) => { const reportRef = doc(db, 'reports', reportId); const report = reports.find(r => r.id === reportId); const newComments = [...(report.comments || []), { text, author, timestamp: Date.now() }]; await updateDoc(reportRef, { comments: newComments }); };
+            const saveSettings = async (newConfig) => { await setDoc(doc(db, 'settings', 'global'), newConfig, { merge: true }); setShowSettings(false); alert("Actualizado"); };
+            const updateReport = async (id, updatedData) => { await updateDoc(doc(db, 'reports', id), updatedData); alert("Actualizado"); };
             const deleteReport = async (id) => { if(confirm("¿Borrar?")) { await deleteDoc(doc(db, 'reports', id)); setSelectedReport(null); } };
-            
-            const updateReport = async (id, updatedData) => {
-                await updateDoc(doc(db, 'reports', id), updatedData);
-                alert("Reporte actualizado");
-            };
 
             const SocialIcon = ({ type, url }) => { if(!url) return null; const icons = { facebook: Facebook, instagram: Instagram, youtube: Youtube, threads: Hash, tiktok: MessageCircle, whatsapp: MessageCircle }; const Icon = icons[type] || MessageCircle; return <a href={url} target="_blank" className="p-3 bg-white/5 hover:bg-gold/20 hover:text-gold rounded-xl transition border border-white/5"><Icon size={20}/></a>; };
 
             return (
-                <div className={`h-dvh font-sans text-white transition-all duration-1000 ${awake ? 'premium-mode' : 'grayscale-mode'}`} onClick={() => { if(!awake) setAwake(true); }}>
+                <div className="h-dvh font-sans text-white overflow-hidden" onClick={() => { if(!awake) setAwake(true); }}>
                     {awake && <div className="liquid-glass-bg"></div>}
                     {awake && <div className="glass-overlay"></div>}
 
@@ -578,12 +517,11 @@
                         <div className="h-full flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
                             {!awake && <div className="absolute inset-0 bg-black z-[-1]"></div>}
                             <div className="relative z-10 cursor-pointer mb-8 transition-transform hover:scale-110"><BadBunnyEye awake={awake} /></div>
-                            <h1 className={`text-6xl font-black mb-2 tracking-tighter relative z-10 transition-all duration-1000 ${awake ? 'text-white drop-shadow-xl' : 'text-zinc-700'}`}>SOY<br/><span className={awake ? 'text-gold' : 'text-zinc-800'}>TOMÉ</span></h1>
-                            <p className="relative z-10 text-zinc-500 mb-8 font-medium">Red de Emergencia Ciudadana</p>
-                            
+                            <h1 className={`text-6xl font-black mb-2 tracking-tighter relative z-10 transition-all duration-1000 ${awake ? 'text-white drop-shadow-2xl' : 'text-zinc-800'}`}>SOY<br/><span className={awake ? 'text-gold' : 'text-zinc-900'}>TOMÉ</span></h1>
+                            <p className="relative z-10 text-zinc-600 mb-8 font-black uppercase text-[10px] tracking-widest">Red de Emergencia Ciudadana</p>
                             {awake && (
                                 <div className="animate-in fade-in slide-in-from-bottom-8 flex flex-col items-center w-full max-w-sm">
-                                    <button onClick={(e) => { e.stopPropagation(); enableGPS(); }} className="bg-gold text-black px-10 py-5 rounded-full font-black shadow-[0_0_40px_rgba(245,158,11,0.5)] hover:scale-105 transition flex items-center gap-3 w-full justify-center mb-8"><Navigation fill="black"/> INGRESAR</button>
+                                    <button onClick={(e) => { e.stopPropagation(); enableGPS(); }} className="bg-gold text-black px-10 py-5 rounded-full font-black shadow-[0_0_50px_rgba(245,158,11,0.6)] hover:scale-105 transition flex items-center gap-3 w-full justify-center mb-8 uppercase tracking-widest text-sm"><Navigation fill="black" size={18}/> Ingresar</button>
                                     <div className="flex gap-2 justify-center flex-wrap" onClick={e=>e.stopPropagation()}><SocialIcon type="threads" url={config.threads} /><SocialIcon type="youtube" url={config.youtube} /><SocialIcon type="tiktok" url={config.tiktok} /><SocialIcon type="instagram" url={config.instagram} /><SocialIcon type="facebook" url={config.facebook} /></div>
                                 </div>
                             )}
@@ -591,52 +529,43 @@
                     )}
 
                     {view === 'map' && (
-                        <div className="absolute inset-0">
+                        <div className="absolute inset-0 h-full w-full">
                             <LeafletMap reports={reports} userLoc={userLoc} styleMode={mapStyle} filter={filter} onMapClick={(coords)=>{ setCreateLoc(coords); setShowCreate(true); }} onMarkerClick={setSelectedReport} />
                             
-                            {/* TOP CONTROLS CON NUEVA INTEGRACIÓN DE FARMACIA */}
-                            <div className="fixed top-4 left-0 right-0 z-[500] px-4 flex flex-col gap-3 pointer-events-none">
-                                <div className="flex gap-2 items-center pointer-events-auto overflow-x-auto no-scrollbar">
-                                    <button onClick={()=>setView('home')} className="flex-shrink-0 bg-black/60 backdrop-blur-xl p-3 rounded-2xl border border-white/10 text-white hover:bg-white/20"><ArrowLeft size={24}/></button>
-                                    <div className="flex-shrink-0"><WeatherWidget/></div>
-                                    <div className="flex-shrink-0"><PharmacyWidget/></div>
-                                    <div className="flex-shrink-0 bg-black/60 backdrop-blur-xl p-2 rounded-2xl border border-white/10 flex items-center gap-2">
-                                        <Search size={16} className="text-zinc-400"/>
-                                        <input type="text" placeholder="Buscar..." className="bg-transparent text-xs text-white outline-none w-20" onKeyDown={(e)=>{ if(e.key==='Enter') window.searchLoc(e.target.value) }}/>
+                            {/* CONTROLES SUPERIORES RESPONSIVOS */}
+                            <div className="fixed top-4 left-0 right-0 z-[500] px-3 sm:px-4 flex flex-col gap-3 pointer-events-none">
+                                <div className="flex gap-2 items-center pointer-events-auto overflow-x-auto no-scrollbar py-1">
+                                    <button onClick={()=>setView('home')} className="flex-shrink-0 bg-black/80 backdrop-blur-xl p-3 rounded-2xl border border-white/10 text-white shadow-xl"><ArrowLeft size={22}/></button>
+                                    <WeatherWidget/>
+                                    <PharmacyWidget/>
+                                    <div className="flex-grow sm:flex-grow-0 bg-black/80 backdrop-blur-xl p-2.5 rounded-2xl border border-white/10 flex items-center gap-2 shadow-xl min-w-[120px]">
+                                        <Search size={16} className="text-zinc-500"/>
+                                        <input type="text" placeholder="Buscar lugar..." className="bg-transparent text-xs text-white outline-none w-full" onKeyDown={(e)=>{ if(e.key==='Enter') window.searchLoc(e.target.value) }}/>
                                     </div>
                                 </div>
                                 <div className="flex gap-2 overflow-x-auto pointer-events-auto no-scrollbar pb-2">
-                                    <button onClick={()=>setFilter('all')} className={`flex-shrink-0 px-4 py-2 rounded-xl text-xs font-bold border whitespace-nowrap backdrop-blur-md ${filter === 'all' ? 'bg-gold text-black border-gold' : 'bg-black/60 text-zinc-400 border-white/10'}`}>TODOS</button>
+                                    <button onClick={()=>setFilter('all')} className={`flex-shrink-0 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider border shadow-md ${filter === 'all' ? 'bg-gold text-black border-gold' : 'bg-black/80 text-zinc-500 border-white/10'}`}>Todos</button>
                                     {REPORT_TYPES.map(t => (
-                                        <button key={t.id} onClick={()=>setFilter(t.id)} className={`flex-shrink-0 px-4 py-2 rounded-xl text-xs font-bold border whitespace-nowrap backdrop-blur-md flex items-center gap-2 ${filter === t.id ? 'bg-white text-black border-white' : 'bg-black/60 text-zinc-400 border-white/10'}`}>
+                                        <button key={t.id} onClick={()=>setFilter(t.id)} className={`flex-shrink-0 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider border shadow-md flex items-center gap-2 ${filter === t.id ? 'bg-white text-black border-white' : 'bg-black/80 text-zinc-500 border-white/10'}`}>
                                             <t.icon size={12}/> {t.label}
                                         </button>
                                     ))}
                                 </div>
                             </div>
 
-                            <div className="fixed top-20 right-4 z-[1000] flex flex-col gap-3">
-                                <button onClick={()=>{ if(mapStyle==='dark') setMapStyle('satellite'); else if(mapStyle==='satellite') setMapStyle('urban'); else if(mapStyle==='urban') setMapStyle('heatmap'); else setMapStyle('dark'); }} className="bg-black/80 p-3 rounded-full border border-white/20 text-white"><Layers size={20}/></button>
-                                <button onClick={toggleAdmin} className={`p-3 rounded-full border border-white/20 text-white ${isAdmin ? 'bg-gold text-black' : 'bg-black/80'}`}><Settings size={20}/></button>
+                            <div className="fixed top-24 right-3 z-[500] flex flex-col gap-3 pointer-events-auto">
+                                <button onClick={()=>{ if(mapStyle==='dark') setMapStyle('satellite'); else if(mapStyle==='satellite') setMapStyle('urban'); else if(mapStyle==='urban') setMapStyle('heatmap'); else setMapStyle('dark'); }} className="bg-black/80 p-3 rounded-full border border-white/10 text-white shadow-xl"><Layers size={20}/></button>
+                                <button onClick={toggleAdmin} className={`p-3 rounded-full border border-white/10 shadow-xl ${isAdmin ? 'bg-gold text-black' : 'bg-black/80 text-white'}`}><Settings size={20}/></button>
                             </div>
 
-                            {config.whatsapp_support && (
-                                <a href={config.whatsapp_support} target="_blank" className="fixed left-0 top-1/2 -translate-y-1/2 z-[1000] bg-[#25D366] py-4 pl-3 pr-2 rounded-r-2xl shadow-xl hover:pl-5 transition-all flex items-center gap-1 group pointer-events-auto">
-                                    <svg viewBox="0 0 24 24" width="24" height="24" fill="white" className="animate-pulse-slow"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
-                                    <span className="vertical-text text-[10px] font-black text-white tracking-widest hidden group-hover:block h-20 uppercase">Soporte</span>
-                                </a>
-                            )}
-
                             {!showCreate && (
-                                <button onClick={()=>{ if(userLoc) { setCreateLoc(userLoc); setShowCreate(true); } else enableGPS(); }} className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[1000] bg-brand-card border border-gold/50 text-gold px-8 py-4 rounded-2xl shadow-2xl font-black flex items-center gap-3 hover:bg-gold hover:text-black transition-all pointer-events-auto">
-                                    <Plus size={24}/> REPORTAR
-                                </button>
+                                <button onClick={()=>{ if(userLoc) { setCreateLoc(userLoc); setShowCreate(true); } else enableGPS(); }} className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[500] bg-brand-card border border-gold/40 text-gold px-10 py-5 rounded-2xl shadow-2xl font-black flex items-center gap-3 hover:scale-105 transition-all pointer-events-auto uppercase tracking-widest text-sm"><Plus size={24}/> Reportar</button>
                             )}
                         </div>
                     )}
 
                     {showCreate && <CreateReportModal lat={createLoc.lat} lng={createLoc.lng} onClose={()=>setShowCreate(false)} />}
-                    {selectedReport && <ReportDetailModal report={selectedReport} onClose={()=>setSelectedReport(null)} isAdmin={isAdmin} onDelete={deleteReport} onComment={addComment} onUpdate={updateReport} />}
+                    {selectedReport && <ReportDetailModal report={selectedReport} onClose={()=>setSelectedReport(null)} isAdmin={isAdmin} onDelete={deleteReport} onUpdate={updateReport} />}
                     {showSettings && <SettingsModal config={config} onClose={()=>setShowSettings(false)} onSave={saveSettings} />}
                 </div>
             );
