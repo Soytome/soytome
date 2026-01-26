@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Soy Tomé - Hub</title>
+    <title>Soy Tomé - MasterHub</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -52,44 +52,15 @@
         .leaflet-container { width: 100%; height: 100%; z-index: 0; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
-        .liquid-glass-bg {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2;
-            background: linear-gradient(-45deg, #000000, #3d2b00, #6b4e00, #000000);
-            background-size: 300% 300%;
-            animation: liquid 15s ease infinite;
-        }
-        .glass-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
-            backdrop-filter: blur(20px);
-            background: rgba(0,0,0,0.4);
-            box-shadow: inset 0 0 100px rgba(0,0,0,0.8);
-        }
-
+        .liquid-glass-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; background: linear-gradient(-45deg, #000000, #3d2b00, #6b4e00, #000000); background-size: 300% 300%; animation: liquid 15s ease infinite; }
+        .glass-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; backdrop-filter: blur(20px); background: rgba(0,0,0,0.4); box-shadow: inset 0 0 100px rgba(0,0,0,0.8); }
         .user-pulse { animation: pulse-blue 2s infinite; }
         @keyframes pulse-blue { 0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(59, 130, 246, 0); } 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); } }
-        
         .z-highest { z-index: 9999; }
         .vertical-text { writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(180deg); }
 
-        .eye-container {
-            width: 160px; height: 90px;
-            background: #e5e5e5;
-            border-radius: 50% 50% 50% 50% / 70% 70% 40% 40%;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 0 40px rgba(251, 191, 36, 0.3);
-            border-top: 4px solid #000;
-        }
-        .eye-pupil {
-            width: 45px; height: 45px;
-            background: #09090b;
-            border-radius: 50%;
-            position: absolute;
-            top: 35%; left: 50%;
-            transform: translate(-50%, -50%);
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
-            transition: transform 0.08s ease-out;
-        }
+        .eye-container { width: 160px; height: 90px; background: #e5e5e5; border-radius: 50% 50% 50% 50% / 70% 70% 40% 40%; position: relative; overflow: hidden; box-shadow: 0 0 40px rgba(251, 191, 36, 0.3); border-top: 4px solid #000; }
+        .eye-pupil { width: 45px; height: 45px; background: #09090b; border-radius: 50%; position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 10px rgba(0,0,0,0.5); transition: transform 0.08s ease-out; }
     </style>
 </head>
 <body>
@@ -98,7 +69,7 @@
     <script type="text/babel" data-type="module">
         import React, { useState, useEffect, useRef } from 'react';
         import { createRoot } from 'react-dom/client';
-        import { MapPin, Plus, X, Siren, Shield, Flame, Dog, AlertTriangle, Heart, Zap, Camera, Navigation, Star, Phone, User, Layers, Eye, EyeOff, MessageCircle, Send, Settings, Trash2, Cloud, Sun, CloudRain, Facebook, Instagram, Youtube, Hash, Save, ArrowLeft, ShoppingBag, Utensils, Sparkles, PartyPopper, Wrench, Pill, Fuel, Hammer, Search, Shirt, Apple, Package, Lightbulb, Briefcase, Home, Key, Pencil } from 'lucide-react';
+        import { MapPin, Plus, X, Siren, Shield, Flame, Dog, AlertTriangle, Heart, Zap, Camera, Navigation, Star, Phone, User, Layers, Eye, EyeOff, MessageCircle, Send, Settings, Trash2, Cloud, Sun, CloudRain, Facebook, Instagram, Youtube, Hash, Save, ArrowLeft, ShoppingBag, Utensils, Sparkles, PartyPopper, Wrench, Pill, Fuel, Hammer, Search, Shirt, Apple, Package, Lightbulb, Briefcase, Home, Key, Pencil, Bath, Coins, Ticket } from 'lucide-react';
         
         import { initializeApp } from 'firebase/app';
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc, setDoc, getDoc } from 'firebase/firestore';
@@ -122,7 +93,7 @@
             signInAnonymously(auth).catch(console.error);
         } catch(e) { console.error(e); }
 
-        // --- ICONOS SVG MAPPED (INCLUYE CABAÑAS Y ARRIENDOS) ---
+        // --- ICONOS SVG MAPPED ---
         const ICONS_SVG = {
             siren: '<path d="M7 18v-6a5 5 0 1 1 10 0v6"/><path d="M5 21a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2"/><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8"/><path d="M3 11.5a8.38 8.38 0 0 0 .9 3.8"/>',
             heart: '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
@@ -141,15 +112,17 @@
             lightbulb: '<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/>',
             briefcase: '<rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',
             home: '<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
-            key: '<circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/>'
+            key: '<circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/>',
+            toilet: '<path d="M7 12h13a3 3 0 0 1 0 6H7a3 3 0 0 1 0-6Z"/><path d="M5 20a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z"/><path d="M19 12v-3a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v3"/>'
         };
 
         const REPORT_TYPES = [
             { id: 'sos_help', label: 'NECESITO AYUDA', icon: Siren, color: '#ef4444', svg: ICONS_SVG.siren },
             { id: 'sos_offer', label: 'OFREZCO AYUDA', icon: Heart, color: '#10b981', svg: ICONS_SVG.heart },
-            { id: 'cabins', label: 'Cabañas', icon: Home, color: '#d97706', svg: ICONS_SVG.home }, // NUEVO
-            { id: 'rent', label: 'Arriendos', icon: Key, color: '#4f46e5', svg: ICONS_SVG.key }, // NUEVO
+            { id: 'cabins', label: 'Cabañas', icon: Home, color: '#d97706', svg: ICONS_SVG.home },
+            { id: 'rent', label: 'Arriendos', icon: Key, color: '#4f46e5', svg: ICONS_SVG.key },
             { id: 'food', label: 'Fast Food', icon: Utensils, color: '#eab308', svg: ICONS_SVG.food },
+            { id: 'restroom', label: 'Baño', icon: Bath, color: '#854d0e', svg: ICONS_SVG.toilet }, // NUEVO BAÑO
             { id: 'market', label: 'Emprendimiento', icon: ShoppingBag, color: '#8b5cf6', svg: ICONS_SVG.shop },
             { id: 'services', label: 'Servicios', icon: Briefcase, color: '#6366f1', svg: ICONS_SVG.briefcase },
             { id: 'data', label: 'Dato Útil', icon: Lightbulb, color: '#14b8a6', svg: ICONS_SVG.lightbulb },
@@ -294,32 +267,18 @@
             return <div ref={mapContainer} className="w-full h-full" />;
         };
 
-        // --- COMPONENTE DE EDICIÓN ---
         const EditReportModal = ({ report, onClose, onSave }) => {
             const [data, setData] = useState(report);
-            
-            const handleUpdate = () => {
-                onSave(report.id, data);
-            };
-
+            const handleUpdate = () => { onSave(report.id, data); };
             return (
                 <div className="fixed inset-0 z-[120] bg-black/90 flex items-center justify-center p-4">
                     <div className="bg-zinc-900 w-full max-w-md rounded-2xl p-6 border border-gold/50 shadow-2xl">
                         <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><Pencil size={18}/> EDITAR REPORTE</h3>
                         <div className="space-y-4">
-                            <div>
-                                <label className="text-xs text-zinc-500 font-bold">DESCRIPCIÓN</label>
-                                <textarea value={data.desc} onChange={e=>setData({...data, desc:e.target.value})} className="w-full bg-black border border-zinc-700 p-3 rounded-lg text-white h-24"/>
-                            </div>
-                            <div>
-                                <label className="text-xs text-zinc-500 font-bold">CONTACTO</label>
-                                <input type="text" value={data.contact} onChange={e=>setData({...data, contact:e.target.value})} className="w-full bg-black border border-zinc-700 p-3 rounded-lg text-white"/>
-                            </div>
+                            <div><label className="text-xs text-zinc-500 font-bold">DESCRIPCIÓN</label><textarea value={data.desc} onChange={e=>setData({...data, desc:e.target.value})} className="w-full bg-black border border-zinc-700 p-3 rounded-lg text-white h-24"/></div>
+                            <div><label className="text-xs text-zinc-500 font-bold">CONTACTO</label><input type="text" value={data.contact} onChange={e=>setData({...data, contact:e.target.value})} className="w-full bg-black border border-zinc-700 p-3 rounded-lg text-white"/></div>
                         </div>
-                        <div className="flex gap-2 mt-6">
-                            <button onClick={onClose} className="flex-1 bg-zinc-800 py-3 rounded-xl font-bold">CANCELAR</button>
-                            <button onClick={handleUpdate} className="flex-1 bg-gold text-black py-3 rounded-xl font-bold">GUARDAR CAMBIOS</button>
-                        </div>
+                        <div className="flex gap-2 mt-6"><button onClick={onClose} className="flex-1 bg-zinc-800 py-3 rounded-xl font-bold">CANCELAR</button><button onClick={handleUpdate} className="flex-1 bg-gold text-black py-3 rounded-xl font-bold">GUARDAR CAMBIOS</button></div>
                     </div>
                 </div>
             );
@@ -336,8 +295,10 @@
             const [shoeSize, setShoeSize] = useState("");
             const [gender, setGender] = useState("");
             const [foodDetail, setFoodDetail] = useState("");
+            const [restroomType, setRestroomType] = useState(""); // NUEVO BAÑO
 
             const isSOS = data.type === 'sos_help' || data.type === 'sos_offer';
+            const isRestroom = data.type === 'restroom';
 
             const handleFileSelect = (e) => {
                 const selected = Array.from(e.target.files);
@@ -352,6 +313,7 @@
 
             const handleSubmit = async () => {
                 if(!data.desc) return alert("Falta descripción");
+                if(isRestroom && !restroomType) return alert("Selecciona si el baño es Gratis o Pago");
                 setLoading(true);
                 localStorage.setItem('st_username', data.name); 
                 
@@ -368,7 +330,8 @@
                         clothingSize: (isSOS && subCat === 'clothing') ? clothingSize : [],
                         shoeSize: (isSOS && subCat === 'clothing') ? shoeSize : '',
                         gender: (isSOS && subCat === 'clothing') ? gender : '',
-                        foodDetail: (isSOS && subCat === 'food') ? foodDetail : ''
+                        foodDetail: (isSOS && subCat === 'food') ? foodDetail : '',
+                        restroomType: isRestroom ? restroomType : ''
                     };
 
                     setStatus("Guardando...");
@@ -377,11 +340,9 @@
                         timestamp: Date.now(), dateString: new Date().toLocaleTimeString(), xp: 50, comments: [] 
                     });
                     
-                    // --- GUARDAR HUELLA DE PROPIETARIO ---
                     const myReports = JSON.parse(localStorage.getItem('st_my_reports') || '[]');
                     myReports.push(docRef.id);
                     localStorage.setItem('st_my_reports', JSON.stringify(myReports));
-                    // ------------------------------------
 
                     confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
                     localStorage.setItem('st_xp', parseInt(localStorage.getItem('st_xp') || '0') + 50);
@@ -417,36 +378,29 @@
                             </div>
                         </div>
 
+                        {/* SUB-FORMULARIO BAÑO */}
+                        {isRestroom && (
+                            <div className="bg-zinc-900/50 p-4 rounded-xl mb-6 border border-gold/30 animate-in slide-in-from-top-5">
+                                <p className="text-xs font-bold text-gold mb-3 uppercase tracking-wider">TIPO DE BAÑO 💩</p>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <button onClick={()=>setRestroomType('Gratis')} className={`p-3 rounded-lg border text-sm font-bold ${restroomType==='Gratis' ? 'bg-green-600 text-white border-green-500' : 'bg-black border-zinc-700'}`}>GRATIS</button>
+                                    <button onClick={()=>setRestroomType('Pago')} className={`p-3 rounded-lg border text-sm font-bold ${restroomType==='Pago' ? 'bg-red-600 text-white border-red-500' : 'bg-black border-zinc-700'}`}>PAGO ($)</button>
+                                </div>
+                            </div>
+                        )}
+
                         {isSOS && (
                             <div className="bg-zinc-900/50 p-4 rounded-xl mb-6 border border-white/5 animate-in slide-in-from-top-5">
                                 <p className="text-xs font-bold text-zinc-400 mb-3 uppercase tracking-wider">¿Qué necesitas / Ofreces?</p>
                                 <div className="flex gap-2 overflow-x-auto no-scrollbar mb-4">
-                                    {[
-                                        {id:'clothing', label:'Ropa', icon: Shirt},
-                                        {id:'food', label:'Comida', icon: Apple},
-                                        {id:'tools', label:'Herramientas', icon: Wrench},
-                                        {id:'other', label:'Otros', icon: Package}
-                                    ].map(cat => (
-                                        <button key={cat.id} onClick={()=>setSubCat(cat.id)} className={`flex-shrink-0 px-4 py-3 rounded-xl border flex flex-col items-center gap-1 ${subCat===cat.id ? 'bg-gold text-black border-gold' : 'border-zinc-700 text-zinc-400'}`}>
-                                            <cat.icon size={20}/> <span className="text-xs font-bold">{cat.label}</span>
-                                        </button>
+                                    {[{id:'clothing', label:'Ropa', icon: Shirt}, {id:'food', label:'Comida', icon: Apple}, {id:'tools', label:'Herramientas', icon: Wrench}, {id:'other', label:'Otros', icon: Package}].map(cat => (
+                                        <button key={cat.id} onClick={()=>setSubCat(cat.id)} className={`flex-shrink-0 px-4 py-3 rounded-xl border flex flex-col items-center gap-1 ${subCat===cat.id ? 'bg-gold text-black border-gold' : 'border-zinc-700 text-zinc-400'}`}><cat.icon size={20}/> <span className="text-xs font-bold">{cat.label}</span></button>
                                     ))}
                                 </div>
-
                                 {subCat === 'clothing' && (
                                     <div className="space-y-4">
-                                        <div>
-                                            <p className="text-xs text-zinc-500 font-bold mb-2">TALLAS (Selecciona varias)</p>
-                                            <div className="flex gap-2">
-                                                {['XS','S','M','L','XL'].map(s => (
-                                                    <button key={s} onClick={()=>toggleSize(s)} className={`w-10 h-10 rounded-lg font-bold text-sm ${clothingSize.includes(s) ? 'bg-white text-black' : 'bg-black border border-zinc-700'}`}>{s}</button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div><p className="text-xs text-zinc-500 font-bold mb-2">GÉNERO</p><select onChange={e=>setGender(e.target.value)} className="w-full bg-black border border-zinc-700 p-2 rounded-lg text-sm text-white outline-none"><option value="">Seleccionar</option><option value="Hombre">Hombre</option><option value="Mujer">Mujer</option><option value="Unisex">Unisex</option><option value="Niño/a">Niño/a</option></select></div>
-                                            <div><p className="text-xs text-zinc-500 font-bold mb-2">CALZADO (N°)</p><input type="text" placeholder="Ej: 38, 40" onChange={e=>setShoeSize(e.target.value)} className="w-full bg-black border border-zinc-700 p-2 rounded-lg text-sm text-white outline-none"/></div>
-                                        </div>
+                                        <div><p className="text-xs text-zinc-500 font-bold mb-2">TALLAS (Selecciona varias)</p><div className="flex gap-2">{['XS','S','M','L','XL'].map(s => (<button key={s} onClick={()=>toggleSize(s)} className={`w-10 h-10 rounded-lg font-bold text-sm ${clothingSize.includes(s) ? 'bg-white text-black' : 'bg-black border border-zinc-700'}`}>{s}</button>))}</div></div>
+                                        <div className="grid grid-cols-2 gap-4"><div><p className="text-xs text-zinc-500 font-bold mb-2">GÉNERO</p><select onChange={e=>setGender(e.target.value)} className="w-full bg-black border border-zinc-700 p-2 rounded-lg text-sm text-white outline-none"><option value="">Seleccionar</option><option value="Hombre">Hombre</option><option value="Mujer">Mujer</option><option value="Unisex">Unisex</option><option value="Niño/a">Niño/a</option></select></div><div><p className="text-xs text-zinc-500 font-bold mb-2">CALZADO (N°)</p><input type="text" placeholder="Ej: 38, 40" onChange={e=>setShoeSize(e.target.value)} className="w-full bg-black border border-zinc-700 p-2 rounded-lg text-sm text-white outline-none"/></div></div>
                                     </div>
                                 )}
                                 {subCat === 'food' && (<div><p className="text-xs text-zinc-500 font-bold mb-2">DETALLE ALIMENTOS / ALERGIAS</p><input type="text" placeholder="Ej: Leche sin lactosa..." onChange={e=>setFoodDetail(e.target.value)} className="w-full bg-black border border-zinc-700 p-3 rounded-lg text-sm text-white outline-none"/></div>)}
@@ -468,8 +422,6 @@
         const ReportDetailModal = ({ report, onClose, isAdmin, onDelete, onComment, onUpdate }) => {
             const [newComment, setNewComment] = useState("");
             const [showEdit, setShowEdit] = useState(false);
-            
-            // CHECK OWNERSHIP
             const myReports = JSON.parse(localStorage.getItem('st_my_reports') || '[]');
             const isOwner = myReports.includes(report.id);
 
@@ -494,6 +446,12 @@
                                 </div>
                             </div>
                             
+                            {details.restroomType && (
+                                <div className="mb-4">
+                                    <span className={`px-4 py-2 rounded-xl text-sm font-bold ${details.restroomType==='Gratis' ? 'bg-green-600' : 'bg-red-600'}`}>BAÑO {details.restroomType.toUpperCase()}</span>
+                                </div>
+                            )}
+
                             {(details.subCat || details.clothingSize?.length > 0) && (
                                 <div className="flex flex-wrap gap-2 mb-4">
                                     {details.subCat && <span className="bg-zinc-800 text-white px-3 py-1 rounded-full text-xs font-bold uppercase border border-zinc-700">{details.subCat}</span>}
@@ -565,7 +523,6 @@
             const addComment = async (reportId, text, author) => { const reportRef = doc(db, 'reports', reportId); const report = reports.find(r => r.id === reportId); const newComments = [...(report.comments || []), { text, author, timestamp: Date.now() }]; await updateDoc(reportRef, { comments: newComments }); };
             const deleteReport = async (id) => { if(confirm("¿Borrar?")) { await deleteDoc(doc(db, 'reports', id)); setSelectedReport(null); } };
             
-            // FUNCIÓN ACTUALIZAR REPORTE
             const updateReport = async (id, updatedData) => {
                 await updateDoc(doc(db, 'reports', id), updatedData);
                 alert("Reporte actualizado");
@@ -598,27 +555,27 @@
                         <div className="absolute inset-0">
                             <LeafletMap reports={reports} userLoc={userLoc} styleMode={mapStyle} filter={filter} onMapClick={(coords)=>{ setCreateLoc(coords); setShowCreate(true); }} onMarkerClick={setSelectedReport} />
                             
-                            {/* TOP CONTROLS CON FILTRO */}
-                            <div className="fixed top-4 left-4 z-[500] flex flex-col gap-2">
-                                <div className="flex gap-2 items-center">
-                                    <button onClick={()=>setView('home')} className="bg-black/60 backdrop-blur-xl p-3 rounded-2xl border border-white/10 text-white hover:bg-white/20"><ArrowLeft size={24}/></button>
-                                    <WeatherWidget/>
-                                    <div className="bg-black/60 backdrop-blur-xl p-2 rounded-2xl border border-white/10 flex items-center gap-2">
+                            {/* TOP CONTROLS CON MEJOR LAYOUT MOVIL */}
+                            <div className="fixed top-4 left-0 right-0 z-[500] px-4 flex flex-col gap-3 pointer-events-none">
+                                <div className="flex gap-2 items-center pointer-events-auto overflow-x-auto no-scrollbar">
+                                    <button onClick={()=>setView('home')} className="flex-shrink-0 bg-black/60 backdrop-blur-xl p-3 rounded-2xl border border-white/10 text-white hover:bg-white/20"><ArrowLeft size={24}/></button>
+                                    <div className="flex-shrink-0"><WeatherWidget/></div>
+                                    <div className="flex-shrink-0 bg-black/60 backdrop-blur-xl p-2 rounded-2xl border border-white/10 flex items-center gap-2">
                                         <Search size={16} className="text-zinc-400"/>
-                                        <input type="text" placeholder="Buscar en Tomé..." className="bg-transparent text-xs text-white outline-none w-24 sm:w-32" onKeyDown={(e)=>{ if(e.key==='Enter') window.searchLoc(e.target.value) }}/>
+                                        <input type="text" placeholder="Buscar..." className="bg-transparent text-xs text-white outline-none w-20" onKeyDown={(e)=>{ if(e.key==='Enter') window.searchLoc(e.target.value) }}/>
                                     </div>
                                 </div>
-                                <div className="flex gap-2 overflow-x-auto w-[85vw] no-scrollbar pb-2">
-                                    <button onClick={()=>setFilter('all')} className={`px-4 py-2 rounded-xl text-xs font-bold border whitespace-nowrap backdrop-blur-md ${filter === 'all' ? 'bg-gold text-black border-gold' : 'bg-black/60 text-zinc-400 border-white/10'}`}>TODOS</button>
+                                <div className="flex gap-2 overflow-x-auto pointer-events-auto no-scrollbar pb-2">
+                                    <button onClick={()=>setFilter('all')} className={`flex-shrink-0 px-4 py-2 rounded-xl text-xs font-bold border whitespace-nowrap backdrop-blur-md ${filter === 'all' ? 'bg-gold text-black border-gold' : 'bg-black/60 text-zinc-400 border-white/10'}`}>TODOS</button>
                                     {REPORT_TYPES.map(t => (
-                                        <button key={t.id} onClick={()=>setFilter(t.id)} className={`px-4 py-2 rounded-xl text-xs font-bold border whitespace-nowrap backdrop-blur-md flex items-center gap-2 ${filter === t.id ? 'bg-white text-black border-white' : 'bg-black/60 text-zinc-400 border-white/10'}`}>
+                                        <button key={t.id} onClick={()=>setFilter(t.id)} className={`flex-shrink-0 px-4 py-2 rounded-xl text-xs font-bold border whitespace-nowrap backdrop-blur-md flex items-center gap-2 ${filter === t.id ? 'bg-white text-black border-white' : 'bg-black/60 text-zinc-400 border-white/10'}`}>
                                             <t.icon size={12}/> {t.label}
                                         </button>
                                     ))}
                                 </div>
                             </div>
 
-                            <div className="fixed top-4 right-4 z-[1000] flex flex-col gap-3">
+                            <div className="fixed top-20 right-4 z-[1000] flex flex-col gap-3">
                                 <button onClick={()=>{ if(mapStyle==='dark') setMapStyle('satellite'); else if(mapStyle==='satellite') setMapStyle('urban'); else if(mapStyle==='urban') setMapStyle('heatmap'); else setMapStyle('dark'); }} className="bg-black/80 p-3 rounded-full border border-white/20 text-white"><Layers size={20}/></button>
                                 <button onClick={toggleAdmin} className={`p-3 rounded-full border border-white/20 text-white ${isAdmin ? 'bg-gold text-black' : 'bg-black/80'}`}><Settings size={20}/></button>
                             </div>
