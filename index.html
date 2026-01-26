@@ -51,12 +51,12 @@
         body { background-color: #050505; color: #fff; margin: 0; user-select: none; -webkit-tap-highlight-color: transparent; height: 100dvh; overflow: hidden; }
         .leaflet-container { width: 100%; height: 100%; z-index: 0; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        
         .liquid-glass-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; background: linear-gradient(-45deg, #000000, #3d2b00, #6b4e00, #000000); background-size: 300% 300%; animation: liquid 15s ease infinite; }
         .glass-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; backdrop-filter: blur(20px); background: rgba(0,0,0,0.4); box-shadow: inset 0 0 100px rgba(0,0,0,0.8); }
         .user-pulse { animation: pulse-blue 2s infinite; }
         @keyframes pulse-blue { 0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(59, 130, 246, 0); } 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); } }
-        .z-highest { z-index: 9999; }
+        .eye-container { width: 160px; height: 90px; background: #e5e5e5; border-radius: 50%; position: relative; overflow: hidden; box-shadow: 0 0 40px rgba(251, 191, 36, 0.3); }
+        .eye-pupil { width: 45px; height: 45px; background: #09090b; border-radius: 50%; position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%); transition: transform 0.1s ease-out; }
     </style>
 </head>
 <body>
@@ -66,7 +66,6 @@
         import React, { useState, useEffect, useRef } from 'react';
         import { createRoot } from 'react-dom/client';
         import { MapPin, Plus, X, Siren, Shield, Flame, Dog, AlertTriangle, Heart, Zap, Camera, Navigation, Star, Phone, User, Layers, Eye, EyeOff, MessageCircle, Send, Settings, Trash2, Cloud, Sun, CloudRain, Facebook, Instagram, Youtube, Hash, Save, ArrowLeft, ShoppingBag, Utensils, Sparkles, PartyPopper, Wrench, Pill, Fuel, Hammer, Search, Shirt, Apple, Package, Lightbulb, Briefcase, Home, Key, Pencil, Bath, Music } from 'lucide-react';
-        
         import { initializeApp } from 'firebase/app';
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc, setDoc, getDoc } from 'firebase/firestore';
         import { getAuth, signInAnonymously } from 'firebase/auth';
@@ -81,13 +80,10 @@
             measurementId: "G-6YGWLM475M"
         };
 
-        let db;
-        try {
-            const app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            const auth = getAuth(app);
-            signInAnonymously(auth).catch(console.error);
-        } catch(e) { console.error(e); }
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        signInAnonymously(auth).catch(console.error);
 
         const ICONS_SVG = {
             siren: '<path d="M7 18v-6a5 5 0 1 1 10 0v6"/><path d="M5 21a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2"/><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8"/><path d="M3 11.5a8.38 8.38 0 0 0 .9 3.8"/>',
@@ -96,7 +92,7 @@
             shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
             flame: '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.1.2-2.2.5-3.3.3-1.4 1-2.7 2-4 .5.3 1 .8 1 1.8z"/>',
             toilet: '<path d="M9 6 6.5 3.5c-1-1-2.5-1-3.5 0s-1 2.5 0 3.5L5.5 9.5c.2.2.4.4.6.5-.4.6-.6 1.4-.6 2.2v1c0 1.1.9 2 2 2h9c1.1 0 2-.9 2-2v-1c0-.8-.2-1.6-.6-2.2.2-.1.4-.3.6-.5l2.5-2.5c1-1 1-2.5 0-3.5s-2.5-1-3.5 0L15 6"/><path d="M10 16v3a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2v-3"/>',
-            pharmacy: '<path d="M12 2H2v10h10V2zM8 7H6V5h2v2zm0 4H6V9h2v2zm4-4h-2V5h2v2zm0 4h-2V9h2v2zm10-5h-8v10h8V6zm-2 5h-4V8h4v3z"/>'
+            pill: '<path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/>'
         };
 
         const REPORT_TYPES = [
@@ -121,90 +117,86 @@
             { id: 'pet', label: 'Mascota', icon: Dog, color: '#a8a29e', svg: ICONS_SVG.dog },
         ];
 
-        const SocialIcon = ({ type, url }) => { 
-            if(!url) return null; 
-            const icons = { 
-                facebook: Facebook, 
-                instagram: Instagram, 
-                youtube: Youtube, 
-                threads: Hash, 
-                tiktok: Music, 
-                whatsapp: MessageCircle 
-            }; 
-            const Icon = icons[type] || MessageCircle; 
-            return (
-                <a href={url} target="_blank" rel="noopener noreferrer" className="p-3 bg-white/5 hover:bg-gold/20 hover:text-gold rounded-xl transition border border-white/5 shadow-md">
-                    <Icon size={20}/>
-                </a>
-            ); 
+        const BadBunnyEye = ({ awake }) => {
+            const [pupilPos, setPupilPos] = useState({ x: 0, y: 0 });
+            useEffect(() => {
+                const handleMove = (e) => {
+                    if (!awake) return;
+                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                    const moveX = Math.min(Math.max((clientX / window.innerWidth - 0.5) * 50, -20), 20);
+                    const moveY = Math.min(Math.max((clientY / window.innerHeight - 0.5) * 30, -10), 15);
+                    setPupilPos({ x: moveX, y: moveY });
+                };
+                window.addEventListener('mousemove', handleMove);
+                window.addEventListener('touchmove', handleMove);
+                return () => { window.removeEventListener('mousemove', handleMove); window.removeEventListener('touchmove', handleMove); };
+            }, [awake]);
+            if (!awake) return <div className="w-[160px] h-[30px] bg-zinc-800 rounded-full flex items-center justify-center border-t-2 border-black"><div className="w-[90%] h-[2px] bg-zinc-600"></div></div>;
+            return <div className="eye-container"><div className="eye-pupil" style={{ transform: `translate(calc(-50% + ${pupilPos.x}px), calc(-50% + ${pupilPos.y}px))` }}></div></div>;
         };
 
         const WeatherWidget = () => {
             const [weather, setWeather] = useState(null);
-            const [time, setTime] = useState(new Date());
             useEffect(() => {
-                const fetchWeather = async () => {
-                    try {
-                        const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-36.6158&longitude=-72.9575&current=temperature_2m,is_day,weather_code&timezone=auto');
-                        const data = await res.json(); setWeather(data.current);
-                    } catch (e) { console.error(e); }
-                };
-                fetchWeather(); const timer = setInterval(() => setTime(new Date()), 60000); return () => clearInterval(timer);
+                fetch('https://api.open-meteo.com/v1/forecast?latitude=-36.6158&longitude=-72.9575&current=temperature_2m,is_day,weather_code&timezone=auto')
+                    .then(res => res.json()).then(data => setWeather(data.current)).catch(console.error);
             }, []);
-            if (!weather) return <div className="animate-pulse h-10 w-24 bg-white/10 rounded-xl"></div>;
-            let WeatherIcon = Sun; if (weather.weather_code > 50) WeatherIcon = CloudRain; else if (weather.weather_code > 2) WeatherIcon = Cloud; if (weather.is_day === 0 && weather.weather_code < 3) WeatherIcon = Star;
+            if (!weather) return <div className="h-10 w-24 bg-white/5 rounded-xl animate-pulse"></div>;
+            let Icon = weather.weather_code > 50 ? CloudRain : (weather.weather_code > 2 ? Cloud : Sun);
             return (
-                <div className="flex items-center gap-3 bg-black/60 backdrop-blur-xl px-4 py-2 rounded-2xl border border-white/10 shadow-lg pointer-events-auto">
-                    <div className="text-right"><div className="text-xl font-black leading-none">{Math.round(weather.temperature_2m)}°</div><div className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Tomé</div></div>
-                    <div className="h-8 w-[1px] bg-white/20"></div><WeatherIcon className="text-gold" size={24} /><div className="text-xs font-mono text-zinc-300">{time.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                <div className="flex items-center gap-3 bg-black/60 backdrop-blur-xl px-4 py-2 rounded-2xl border border-white/10 shadow-lg">
+                    <div className="text-xl font-black">{Math.round(weather.temperature_2m)}°</div>
+                    <div className="h-6 w-[1px] bg-white/20"></div>
+                    <Icon size={20} className="text-gold" />
                 </div>
             );
         };
 
-        const PharmacyWidget = ({ onDataLoaded }) => {
+        const PharmacyWidget = ({ onPharmacyFound }) => {
             const [pharmacy, setPharmacy] = useState(null);
             const [loading, setLoading] = useState(true);
 
             useEffect(() => {
-                const fetchPharmacy = async () => {
-                    try {
-                        const res = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent('https://midas.minsal.cl/farmacia_v2/WS/getLocalesTurnos.php'));
-                        const data = await res.json();
+                const url = 'https://midas.minsal.cl/farmacia_v2/WS/getLocalesTurnos.php';
+                fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url))
+                    .then(res => res.json())
+                    .then(data => {
                         const today = data.find(f => (f.comuna_nombre || "").toUpperCase().includes("TOME"));
                         if (today) {
                             setPharmacy(today);
-                            if(onDataLoaded) onDataLoaded(today);
+                            if (onPharmacyFound) onPharmacyFound(today);
                         }
-                    } catch (e) { console.error(e); } finally { setLoading(false); }
-                };
-                fetchPharmacy();
+                    })
+                    .catch(console.error)
+                    .finally(() => setLoading(false));
             }, []);
 
-            if (loading) return <div className="h-10 w-32 bg-white/5 rounded-2xl animate-pulse"></div>;
+            if (loading) return <div className="h-12 w-32 bg-white/5 rounded-2xl animate-pulse"></div>;
             if (!pharmacy) return null;
 
             const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${pharmacy.local_lat},${pharmacy.local_lng}`;
 
             return (
-                <a href={mapsUrl} target="_blank" className="flex items-center gap-3 bg-red-600/90 backdrop-blur-xl px-4 py-2 rounded-2xl border border-red-400/50 shadow-lg active:scale-95 transition-all pointer-events-auto">
-                    <div className="flex flex-col text-right">
-                        <span className="text-[9px] text-white/80 uppercase tracking-tighter leading-none mb-0.5 font-black">Turno</span>
-                        <span className="text-[11px] sm:text-xs font-black text-white truncate max-w-[80px] sm:max-w-[100px] uppercase tracking-wider">{pharmacy.local_nombre.split(' ')[0]}</span>
+                <a href={mapsUrl} target="_blank" className="flex items-center gap-3 bg-red-600/90 backdrop-blur-xl px-4 py-3 rounded-2xl border border-red-400/50 shadow-lg transition-transform active:scale-95">
+                    <div className="text-right">
+                        <div className="text-[9px] font-black uppercase tracking-tighter text-white/80">Turno Hoy</div>
+                        <div className="text-xs font-black text-white truncate max-w-[100px] uppercase">{pharmacy.local_nombre.split(' ')[0]}</div>
                     </div>
                     <div className="h-6 w-[1px] bg-white/20"></div>
-                    <Pill className="text-white animate-pulse" size={18} />
+                    <Pill className="text-white animate-pulse" size={20} />
                 </a>
             );
         };
 
-        const LeafletMap = ({ reports, onMapClick, onMarkerClick, userLoc, pharmacyData }) => {
-            const mapContainer = useRef(null);
+        const LeafletMap = ({ reports, userLoc, pharmacy, onMapClick, onMarkerClick }) => {
+            const mapRef = useRef(null);
             const mapInstance = useRef(null);
 
             useEffect(() => {
-                if (!mapInstance.current && mapContainer.current) {
+                if (!mapInstance.current && mapRef.current) {
                     const center = userLoc ? [userLoc.lat, userLoc.lng] : [-36.6158, -72.9575];
-                    const map = L.map(mapContainer.current, { zoomControl: false }).setView(center, 14);
+                    const map = L.map(mapRef.current, { zoomControl: false }).setView(center, 14);
                     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
                     mapInstance.current = map;
                     map.on('click', (e) => onMapClick(e.latlng));
@@ -213,27 +205,62 @@
 
             useEffect(() => {
                 const map = mapInstance.current;
-                if(!map) return;
-                map.eachLayer(l => { if(l instanceof L.Marker) map.removeLayer(l); });
+                if (!map) return;
+                map.eachLayer(l => { if (l instanceof L.Marker) map.removeLayer(l); });
 
-                if(userLoc) {
-                    const userIcon = L.divIcon({ html: `<div class="user-pulse flex items-center justify-center w-6 h-6"><div class="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg"></div></div>`, className: '', iconSize: [24, 24] });
-                    L.marker([userLoc.lat, userLoc.lng], { icon: userIcon, zIndexOffset: 1000 }).addTo(map);
+                if (userLoc) {
+                    const icon = L.divIcon({ html: `<div class="user-pulse w-6 h-6 bg-blue-500 rounded-full border-2 border-white shadow-lg"></div>`, className: '', iconSize: [24, 24] });
+                    L.marker([userLoc.lat, userLoc.lng], { icon, zIndexOffset: 1000 }).addTo(map);
                 }
 
-                if(pharmacyData && pharmacyData.local_lat) {
-                    const pharmIcon = L.divIcon({ html: `<div class="animate-bounce"><div style="background:#dc2626;" class="w-10 h-10 rounded-full flex items-center justify-center border-2 border-white shadow-2xl"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg></div></div>`, className: '', iconSize: [40, 40], iconAnchor: [20, 20] });
-                    L.marker([pharmacyData.local_lat, pharmacyData.local_lng], { icon: pharmIcon }).addTo(map).bindPopup(`<div style="color:black; font-family:Inter; font-weight:900;">🔥 FARMACIA DE TURNO: ${pharmacyData.local_nombre}</div>`);
+                if (pharmacy && pharmacy.local_lat) {
+                    const icon = L.divIcon({ html: `<div class="animate-bounce bg-red-600 p-2 rounded-full border-2 border-white shadow-2xl"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">${ICONS_SVG.pill}</svg></div>`, className: '', iconSize: [32, 32], iconAnchor: [16, 16] });
+                    L.marker([pharmacy.local_lat, pharmacy.local_lng], { icon }).addTo(map).bindPopup(`<div style="color:black; font-family:Inter; font-weight:900;">FARMACIA DE TURNO: ${pharmacy.local_nombre}</div>`);
                 }
 
                 reports.forEach(r => {
                     const type = REPORT_TYPES.find(t => t.id === r.type) || REPORT_TYPES[0];
-                    const iconHtml = `<div style="background:${type.color};" class="w-10 h-10 rounded-full flex items-center justify-center border-2 border-white shadow-xl transition-transform hover:scale-110"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${type.svg}</svg></div>`;
-                    L.marker([r.lat, r.lng], { icon: L.divIcon({ html: iconHtml, className: '', iconSize: [40, 40], iconAnchor: [20, 20] }) }).addTo(map).on('click', () => onMarkerClick(r));
+                    const html = `<div style="background:${type.color};" class="w-10 h-10 rounded-full flex items-center justify-center border-2 border-white shadow-xl"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${type.svg}</svg></div>`;
+                    L.marker([r.lat, r.lng], { icon: L.divIcon({ html, className: '', iconSize: [40, 40], iconAnchor: [20, 20] }) }).addTo(map).on('click', () => onMarkerClick(r));
                 });
-            }, [reports, userLoc, pharmacyData]);
+            }, [reports, userLoc, pharmacy]);
 
-            return <div ref={mapContainer} className="w-full h-full" />;
+            return <div ref={mapRef} className="w-full h-full" />;
+        };
+
+        const CreateReportModal = ({ lat, lng, onClose }) => {
+            const [data, setData] = useState({ type: 'sos_help', desc: '', contact: '', name: localStorage.getItem('st_username') || '', details: {} });
+            const [loading, setLoading] = useState(false);
+            const [restroomType, setRestroomType] = useState("");
+
+            const handleSubmit = async () => {
+                if (!data.desc) return alert("Falta descripción");
+                setLoading(true);
+                try {
+                    await addDoc(collection(db, 'reports'), { 
+                        ...data, lat, lng, timestamp: Date.now(), dateString: new Date().toLocaleTimeString(),
+                        details: { restroomType: data.type === 'restroom' ? restroomType : '' }
+                    });
+                    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                    onClose();
+                } catch (e) { alert("Error"); } finally { setLoading(false); }
+            };
+
+            return (
+                <div className="fixed inset-0 z-[2000] bg-black/90 backdrop-blur-md flex items-end sm:items-center justify-center pt-10 sm:p-4">
+                    <div className="bg-brand-card w-full max-w-lg rounded-t-3xl sm:rounded-3xl border-t border-white/10 p-6 shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar">
+                        <div className="flex justify-between items-center mb-6"><h3 className="text-xl font-black text-white uppercase tracking-tighter">Nuevo Reporte</h3><button onClick={onClose} className="p-2 bg-white/10 rounded-full"><X size={20}/></button></div>
+                        <div className="grid grid-cols-2 gap-3 mb-6">
+                            <button onClick={()=>setData({...data, type:'sos_help'})} className={`p-4 rounded-xl border-2 font-black flex flex-col items-center gap-2 ${data.type==='sos_help'?'bg-red-500/20 border-red-500':'border-white/10 text-zinc-500'}`}><Siren size={32}/> AYUDA</button>
+                            <button onClick={()=>setData({...data, type:'sos_offer'})} className={`p-4 rounded-xl border-2 font-black flex flex-col items-center gap-2 ${data.type==='sos_offer'?'bg-green-500/20 border-green-500':'border-white/10 text-zinc-500'}`}><Heart size={32}/> OFRECER</button>
+                        </div>
+                        <div className="mb-6"><div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar">{REPORT_TYPES.slice(2).map(t => (<button key={t.id} onClick={()=>setData({...data, type:t.id})} className={`flex-shrink-0 px-4 py-3 rounded-xl border text-xs font-black flex flex-col items-center gap-2 min-w-[80px] ${data.type===t.id?'bg-gold text-black border-gold':'bg-zinc-900 border-zinc-800 text-zinc-400'}`}><t.icon size={20}/> {t.label}</button>))}</div></div>
+                        {data.type === 'restroom' && (<div className="bg-zinc-900/50 p-4 rounded-xl mb-6 border border-gold/30"><div className="grid grid-cols-2 gap-3"><button onClick={()=>setRestroomType('Gratis')} className={`p-3 rounded-lg border text-sm font-black ${restroomType==='Gratis'?'bg-green-600 border-green-500':'bg-black border-zinc-700'}`}>GRATIS</button><button onClick={()=>setRestroomType('Pago')} className={`p-3 rounded-lg border text-sm font-black ${restroomType==='Pago'?'bg-red-600 border-red-500':'bg-black border-zinc-700'}`}>PAGO</button></div></div>)}
+                        <textarea value={data.desc} onChange={e=>setData({...data, desc:e.target.value})} className="w-full bg-black border border-zinc-800 p-4 rounded-xl text-white h-24 mb-6 outline-none" placeholder="Detalles..."></textarea>
+                        <button onClick={handleSubmit} disabled={loading} className="w-full bg-gradient-to-r from-gold to-orange-600 text-black font-black rounded-xl py-4 shadow-xl uppercase tracking-widest">{loading ? '...' : 'Publicar'}</button>
+                    </div>
+                </div>
+            );
         };
 
         const App = () => {
@@ -245,21 +272,26 @@
             const [createLoc, setCreateLoc] = useState(null);
             const [selectedReport, setSelectedReport] = useState(null);
             const [config, setConfig] = useState({});
-            const [pharmacyData, setPharmacyData] = useState(null);
+            const [pharmacy, setPharmacy] = useState(null);
 
             useEffect(() => {
-                if(db) {
-                    const q = query(collection(db, 'reports'), orderBy('timestamp', 'desc'));
-                    onSnapshot(q, (snap) => setReports(snap.docs.map(d => ({id: d.id, ...d.data()}))));
-                    onSnapshot(doc(db, 'settings', 'global'), (snap) => { if(snap.exists()) setConfig(snap.data()); });
-                }
+                onSnapshot(query(collection(db, 'reports'), orderBy('timestamp', 'desc')), (snap) => setReports(snap.docs.map(d => ({id: d.id, ...d.data()}))));
+                onSnapshot(doc(db, 'settings', 'global'), (snap) => { if(snap.exists()) setConfig(snap.data()); });
             }, []);
 
             const enableGPS = () => {
-                if(navigator.geolocation) {
+                if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition((p) => { setUserLoc({lat: p.coords.latitude, lng: p.coords.longitude}); setView('map'); }, () => setView('map'));
-                } else { setView('map'); }
+                } else setView('map');
             };
+
+            const SocialLinks = () => (
+                <div className="flex gap-3 justify-center flex-wrap" onClick={e=>e.stopPropagation()}>
+                    {['threads', 'youtube', 'tiktok', 'instagram', 'facebook'].map(net => (
+                        <SocialIcon key={net} type={net} url={config[net]} />
+                    ))}
+                </div>
+            );
 
             return (
                 <div className="h-dvh font-sans text-white overflow-hidden" onClick={() => { if(!awake) setAwake(true); }}>
@@ -274,37 +306,32 @@
                             <p className="relative z-10 text-zinc-600 mb-12 font-black uppercase text-[10px] tracking-[0.4em]">Red de Emergencia Ciudadana</p>
                             {awake && (
                                 <div className="animate-in fade-in slide-in-from-bottom-8 flex flex-col items-center w-full max-w-sm">
-                                    <button onClick={(e) => { e.stopPropagation(); enableGPS(); }} className="bg-gold text-black px-12 py-5 rounded-full font-black shadow-[0_0_50px_rgba(245,158,11,0.5)] hover:scale-105 transition-all w-full mb-8 uppercase tracking-[0.2em] text-xs">Ingresar</button>
+                                    <button onClick={(e) => { e.stopPropagation(); enableGPS(); }} className="bg-gold text-black px-12 py-5 rounded-full font-black shadow-[0_0_50px_rgba(245,158,11,0.5)] hover:scale-105 transition-all w-full mb-8 uppercase text-xs">Ingresar</button>
                                     <div className="mb-10 w-full flex justify-center" onClick={e=>e.stopPropagation()}>
-                                        <PharmacyWidget onDataLoaded={setPharmacyData} />
+                                        <PharmacyWidget onPharmacyFound={setPharmacy} />
                                     </div>
-                                    <div className="flex gap-3 justify-center flex-wrap" onClick={e=>e.stopPropagation()}>
-                                        <SocialIcon type="threads" url={config.threads} />
-                                        <SocialIcon type="youtube" url={config.youtube} />
-                                        <SocialIcon type="tiktok" url={config.tiktok} />
-                                        <SocialIcon type="instagram" url={config.instagram} />
-                                        <SocialIcon type="facebook" url={config.facebook} />
-                                    </div>
+                                    <SocialLinks />
                                 </div>
                             )}
                         </div>
                     )}
 
                     {view === 'map' && (
-                        <div className="absolute inset-0 h-full w-full">
-                            <LeafletMap reports={reports} userLoc={userLoc} pharmacyData={pharmacyData} onMapClick={(coords)=>{ setCreateLoc(coords); setShowCreate(true); }} onMarkerClick={setSelectedReport} />
+                        <div className="absolute inset-0">
+                            <LeafletMap reports={reports} userLoc={userLoc} pharmacy={pharmacy} onMapClick={(coords)=>{ setCreateLoc(coords); setShowCreate(true); }} onMarkerClick={setSelectedReport} />
                             <div className="fixed top-4 left-0 right-0 z-[500] px-4 flex gap-2 pointer-events-none">
                                 <div className="flex gap-2 items-center pointer-events-auto py-1 overflow-x-auto no-scrollbar">
-                                    <button onClick={()=>setView('home')} className="flex-shrink-0 bg-black/80 backdrop-blur-xl p-3.5 rounded-2xl border border-white/10 text-white shadow-2xl active:scale-90 transition"><ArrowLeft size={22}/></button>
+                                    <button onClick={()=>setView('home')} className="bg-black/80 backdrop-blur-xl p-3.5 rounded-2xl border border-white/10 text-white shadow-2xl active:scale-90 transition"><ArrowLeft size={22}/></button>
                                     <WeatherWidget/>
-                                    <PharmacyWidget />
+                                    <PharmacyWidget onPharmacyFound={setPharmacy} />
                                 </div>
                             </div>
                             {!showCreate && (
-                                <button onClick={()=>{ if(userLoc) { setCreateLoc(userLoc); setShowCreate(true); } else enableGPS(); }} className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[500] bg-brand-card border border-gold/40 text-gold px-12 py-5 rounded-2xl shadow-2xl font-black flex items-center gap-4 hover:scale-105 active:scale-95 transition-all pointer-events-auto uppercase tracking-[0.2em] text-xs"><Plus size={24}/> Reportar</button>
+                                <button onClick={()=>{ if(userLoc) { setCreateLoc(userLoc); setShowCreate(true); } else enableGPS(); }} className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[500] bg-brand-card border border-gold/40 text-gold px-12 py-5 rounded-2xl font-black flex items-center gap-4 hover:scale-105 transition-all pointer-events-auto uppercase text-xs tracking-widest shadow-2xl"><Plus size={24}/> Reportar</button>
                             )}
                         </div>
                     )}
+                    {showCreate && <CreateReportModal lat={createLoc.lat} lng={createLoc.lng} onClose={()=>setShowCreate(false)} />}
                 </div>
             );
         };
