@@ -98,7 +98,7 @@
     <script type="text/babel" data-type="module">
         import React, { useState, useEffect, useRef } from 'react';
         import { createRoot } from 'react-dom/client';
-        import { MapPin, Plus, X, Siren, Shield, Flame, Dog, AlertTriangle, Heart, Zap, Camera, Navigation, Star, Phone, User, Layers, Eye, EyeOff, MessageCircle, Send, Settings, Trash2, Cloud, Sun, CloudRain, Facebook, Instagram, Youtube, Hash, Save, ArrowLeft, ShoppingBag, Utensils, Sparkles, PartyPopper, Wrench, Pill, Fuel, Hammer, Search, Shirt, Apple, Package, Lightbulb, Briefcase } from 'lucide-react';
+        import { MapPin, Plus, X, Siren, Shield, Flame, Dog, AlertTriangle, Heart, Zap, Camera, Navigation, Star, Phone, User, Layers, Eye, EyeOff, MessageCircle, Send, Settings, Trash2, Cloud, Sun, CloudRain, Facebook, Instagram, Youtube, Hash, Save, ArrowLeft, ShoppingBag, Utensils, Sparkles, PartyPopper, Wrench, Pill, Fuel, Hammer, Search, Shirt, Apple, Package, Lightbulb, Briefcase, Home, Key, Pencil } from 'lucide-react';
         
         import { initializeApp } from 'firebase/app';
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc, setDoc, getDoc } from 'firebase/firestore';
@@ -122,7 +122,7 @@
             signInAnonymously(auth).catch(console.error);
         } catch(e) { console.error(e); }
 
-        // --- ICONOS SVG MAPPED ---
+        // --- ICONOS SVG MAPPED (INCLUYE CABAÑAS Y ARRIENDOS) ---
         const ICONS_SVG = {
             siren: '<path d="M7 18v-6a5 5 0 1 1 10 0v6"/><path d="M5 21a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2"/><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8"/><path d="M3 11.5a8.38 8.38 0 0 0 .9 3.8"/>',
             heart: '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
@@ -130,7 +130,7 @@
             shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
             flame: '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.1.2-2.2.5-3.3.3-1.4 1-2.7 2-4 .5.3 1 .8 1 1.8z"/>',
             food: '<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>',
-            beauty: '<path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275-1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M9 5H3"/><path d="M5 19v4"/><path d="M9 21H3"/>',
+            beauty: '<path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M9 5H3"/><path d="M5 19v4"/><path d="M9 21H3"/>',
             shop: '<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>',
             event: '<path d="M5.8 11.3 2 22l10.7-3.79"/><path d="M4 3h.01"/><path d="M22 8h.01"/><path d="M15 2h.01"/><path d="M22 20h.01"/><path d="m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12v0c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10"/><path d="m22 13-.82-.33c-.86-.34-1.82.2-1.98 1.11v0c-.11.7-.72 1.22-1.43 1.22H17"/><path d="m11 2 .33.82c.34.86-.2 1.82-1.11 1.98v0C9.52 4.9 9 5.52 9 6.23V7"/><path d="M11 13c1.93 1.93 2.83 4.17 2 5-.83.83-3.07-.07-5-2-1.93-1.93-2.83-4.17-2-5 .83-.83 3.07.07 5 2Z"/>',
             dog: '<path d="M10 5.172C10 3.782 8.423 2.679 6.5 3c-2.823.47-4.113 6.006-4 7 .08.703 1.725 1.722 3.656 1 1.261-.472 1.96-1.45 2.344-2.5"/><path d="M14.267 5.172c0-1.39 1.577-2.493 3.5-2.172 2.823.47 4.113 6.006 4 7-.08.703-1.725 1.722-3.656 1-1.261-.472-1.96-1.45-2.344-2.5"/><path d="M8 14v.5"/><path d="M16 14v.5"/><path d="M11.25 16.25h1.5L12 17l-.75-.75Z"/>',
@@ -139,25 +139,29 @@
             fuel: '<line x1="3" x2="15" y1="22" y2="22"/><line x1="4" x2="14" y1="9" y2="9"/><path d="M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"/><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L18 5"/>',
             hammer: '<path d="m15 12-8.5 8.5c-.83.83-2.17.83-3 0 0 0 0 0 0 0a2.12 2.12 0 0 1 0-3L12 9"/><path d="M17.64 15 22 10.64"/><path d="m20.91 11.7-1.25-1.25c-.6-.6-.93-1.4-.93-2.25V7.86c0-.55-.45-1-1-1H14c-.55 0-1 .45-1 1v3.8c0 .85-.33 1.65-.93 2.25L10.82 15"/>',
             lightbulb: '<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/>',
-            briefcase: '<rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>'
+            briefcase: '<rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',
+            home: '<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
+            key: '<circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/>'
         };
 
         const REPORT_TYPES = [
             { id: 'sos_help', label: 'NECESITO AYUDA', icon: Siren, color: '#ef4444', svg: ICONS_SVG.siren },
             { id: 'sos_offer', label: 'OFREZCO AYUDA', icon: Heart, color: '#10b981', svg: ICONS_SVG.heart },
-            { id: 'accident', label: 'Accidente', icon: AlertTriangle, color: '#f59e0b', svg: ICONS_SVG.alert },
-            { id: 'security', label: 'Seguridad', icon: Shield, color: '#3b82f6', svg: ICONS_SVG.shield },
-            { id: 'fire', label: 'Incendio', icon: Flame, color: '#f97316', svg: ICONS_SVG.flame },
+            { id: 'cabins', label: 'Cabañas', icon: Home, color: '#d97706', svg: ICONS_SVG.home }, // NUEVO
+            { id: 'rent', label: 'Arriendos', icon: Key, color: '#4f46e5', svg: ICONS_SVG.key }, // NUEVO
             { id: 'food', label: 'Fast Food', icon: Utensils, color: '#eab308', svg: ICONS_SVG.food },
             { id: 'market', label: 'Emprendimiento', icon: ShoppingBag, color: '#8b5cf6', svg: ICONS_SVG.shop },
-            { id: 'services', label: 'Servicios', icon: Briefcase, color: '#6366f1', svg: ICONS_SVG.briefcase }, // NUEVO
-            { id: 'data', label: 'Dato Útil', icon: Lightbulb, color: '#14b8a6', svg: ICONS_SVG.lightbulb }, // NUEVO
+            { id: 'services', label: 'Servicios', icon: Briefcase, color: '#6366f1', svg: ICONS_SVG.briefcase },
+            { id: 'data', label: 'Dato Útil', icon: Lightbulb, color: '#14b8a6', svg: ICONS_SVG.lightbulb },
+            { id: 'beauty', label: 'Belleza', icon: Sparkles, color: '#ec4899', svg: ICONS_SVG.beauty },
+            { id: 'event', label: 'Eventos', icon: PartyPopper, color: '#d946ef', svg: ICONS_SVG.event },
             { id: 'vulcan', label: 'Vulcanización', icon: Wrench, color: '#64748b', svg: ICONS_SVG.wrench },
             { id: 'gas', label: 'Bencinera', icon: Fuel, color: '#be123c', svg: ICONS_SVG.fuel },
             { id: 'pharma', label: 'Farmacia', icon: Pill, color: '#0ea5e9', svg: ICONS_SVG.pill },
             { id: 'hardware', label: 'Ferretería', icon: Hammer, color: '#854d0e', svg: ICONS_SVG.hammer },
-            { id: 'beauty', label: 'Belleza', icon: Sparkles, color: '#ec4899', svg: ICONS_SVG.beauty },
-            { id: 'event', label: 'Eventos', icon: PartyPopper, color: '#d946ef', svg: ICONS_SVG.event },
+            { id: 'accident', label: 'Accidente', icon: AlertTriangle, color: '#f59e0b', svg: ICONS_SVG.alert },
+            { id: 'security', label: 'Seguridad', icon: Shield, color: '#3b82f6', svg: ICONS_SVG.shield },
+            { id: 'fire', label: 'Incendio', icon: Flame, color: '#f97316', svg: ICONS_SVG.flame },
             { id: 'pet', label: 'Mascota', icon: Dog, color: '#a8a29e', svg: ICONS_SVG.dog },
         ];
 
@@ -290,20 +294,49 @@
             return <div ref={mapContainer} className="w-full h-full" />;
         };
 
+        // --- COMPONENTE DE EDICIÓN ---
+        const EditReportModal = ({ report, onClose, onSave }) => {
+            const [data, setData] = useState(report);
+            
+            const handleUpdate = () => {
+                onSave(report.id, data);
+            };
+
+            return (
+                <div className="fixed inset-0 z-[120] bg-black/90 flex items-center justify-center p-4">
+                    <div className="bg-zinc-900 w-full max-w-md rounded-2xl p-6 border border-gold/50 shadow-2xl">
+                        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><Pencil size={18}/> EDITAR REPORTE</h3>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="text-xs text-zinc-500 font-bold">DESCRIPCIÓN</label>
+                                <textarea value={data.desc} onChange={e=>setData({...data, desc:e.target.value})} className="w-full bg-black border border-zinc-700 p-3 rounded-lg text-white h-24"/>
+                            </div>
+                            <div>
+                                <label className="text-xs text-zinc-500 font-bold">CONTACTO</label>
+                                <input type="text" value={data.contact} onChange={e=>setData({...data, contact:e.target.value})} className="w-full bg-black border border-zinc-700 p-3 rounded-lg text-white"/>
+                            </div>
+                        </div>
+                        <div className="flex gap-2 mt-6">
+                            <button onClick={onClose} className="flex-1 bg-zinc-800 py-3 rounded-xl font-bold">CANCELAR</button>
+                            <button onClick={handleUpdate} className="flex-1 bg-gold text-black py-3 rounded-xl font-bold">GUARDAR CAMBIOS</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
         const CreateReportModal = ({ lat, lng, onClose }) => {
             const [data, setData] = useState({ type: 'sos_help', desc: '', contact: '', name: localStorage.getItem('st_username') || '', details: {} });
             const [files, setFiles] = useState([]);
             const [loading, setLoading] = useState(false);
             const [status, setStatus] = useState("PUBLICAR");
             
-            // ESTADOS FORMULARIO
             const [subCat, setSubCat] = useState(null); 
             const [clothingSize, setClothingSize] = useState([]);
             const [shoeSize, setShoeSize] = useState("");
             const [gender, setGender] = useState("");
             const [foodDetail, setFoodDetail] = useState("");
 
-            // DETECTAR SI ES TIPO SOS (Para mostrar Sub-Formulario) O TIPO NORMAL
             const isSOS = data.type === 'sos_help' || data.type === 'sos_offer';
 
             const handleFileSelect = (e) => {
@@ -339,21 +372,26 @@
                     };
 
                     setStatus("Guardando...");
-                    await addDoc(collection(db, 'reports'), { 
+                    const docRef = await addDoc(collection(db, 'reports'), { 
                         ...data, lat, lng, media: mediaUrls, details: finalDetails, 
                         timestamp: Date.now(), dateString: new Date().toLocaleTimeString(), xp: 50, comments: [] 
                     });
                     
+                    // --- GUARDAR HUELLA DE PROPIETARIO ---
+                    const myReports = JSON.parse(localStorage.getItem('st_my_reports') || '[]');
+                    myReports.push(docRef.id);
+                    localStorage.setItem('st_my_reports', JSON.stringify(myReports));
+                    // ------------------------------------
+
                     confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
                     localStorage.setItem('st_xp', parseInt(localStorage.getItem('st_xp') || '0') + 50);
                     onClose();
                 } catch (e) { alert("Error: " + e.message); } finally { setLoading(false); setStatus("PUBLICAR"); }
             };
 
-            // FUNCIÓN PARA CAMBIAR A UN TIPO NORMAL (NO SOS)
             const setNormalType = (id) => {
                 setData({...data, type: id});
-                setSubCat(null); // Limpiar subcategoría SOS
+                setSubCat(null);
             };
 
             return (
@@ -362,13 +400,11 @@
                         <div className="w-12 h-1.5 bg-zinc-700 rounded-full mx-auto mb-6 sm:hidden"></div>
                         <div className="flex justify-between items-center mb-6"><h3 className="text-xl font-black text-white flex items-center gap-2"><Zap className="text-gold" fill="currentColor"/> NUEVO REPORTE</h3><button onClick={onClose} className="p-2 bg-white/10 rounded-full"><X size={20}/></button></div>
                         
-                        {/* BOTONES PRINCIPALES (SOS) */}
                         <div className="grid grid-cols-2 gap-3 mb-6">
                             <button onClick={()=>setData({...data, type: 'sos_help'})} className={`p-4 rounded-xl border-2 font-bold flex flex-col items-center gap-2 transition-all ${data.type === 'sos_help' ? 'bg-red-500/20 border-red-500 text-red-500 scale-105' : 'border-white/10 text-zinc-500'}`}><Siren size={32}/> NECESITO AYUDA</button>
                             <button onClick={()=>setData({...data, type: 'sos_offer'})} className={`p-4 rounded-xl border-2 font-bold flex flex-col items-center gap-2 transition-all ${data.type === 'sos_offer' ? 'bg-green-500/20 border-green-500 text-green-500 scale-105' : 'border-white/10 text-zinc-500'}`}><Heart size={32}/> OFREZCO AYUDA</button>
                         </div>
 
-                        {/* LISTA COMPLETA DE OTRAS CATEGORÍAS (SIEMPRE VISIBLE) */}
                         <div className="mb-6">
                             <p className="text-xs font-bold text-zinc-500 mb-2 uppercase tracking-wider">O selecciona una categoría:</p>
                             <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar">
@@ -381,7 +417,6 @@
                             </div>
                         </div>
 
-                        {/* SUB-FORMULARIO SOLO SI ES SOS */}
                         {isSOS && (
                             <div className="bg-zinc-900/50 p-4 rounded-xl mb-6 border border-white/5 animate-in slide-in-from-top-5">
                                 <p className="text-xs font-bold text-zinc-400 mb-3 uppercase tracking-wider">¿Qué necesitas / Ofreces?</p>
@@ -430,22 +465,34 @@
             );
         };
 
-        const ReportDetailModal = ({ report, onClose, isAdmin, onDelete, onComment }) => {
+        const ReportDetailModal = ({ report, onClose, isAdmin, onDelete, onComment, onUpdate }) => {
             const [newComment, setNewComment] = useState("");
+            const [showEdit, setShowEdit] = useState(false);
+            
+            // CHECK OWNERSHIP
+            const myReports = JSON.parse(localStorage.getItem('st_my_reports') || '[]');
+            const isOwner = myReports.includes(report.id);
+
             if(!report) return null;
             const typeInfo = REPORT_TYPES.find(t=>t.id===report.type) || REPORT_TYPES[0];
             const userName = localStorage.getItem('st_username') || 'Vecino';
             const details = report.details || {};
-
-            // FIX WHATSAPP URL
             const cleanPhone = report.contact ? report.contact.replace(/[^0-9]/g, '') : '';
             const waLink = cleanPhone ? `https://wa.me/${cleanPhone}` : '#';
+
+            if(showEdit) return <EditReportModal report={report} onClose={()=>setShowEdit(false)} onSave={(id, data)=>{ onUpdate(id, data); setShowEdit(false); }} />;
 
             return (
                 <div className="fixed inset-0 flex items-end sm:items-center justify-center sm:p-4 bg-black/90 backdrop-blur-sm pt-10" style={{zIndex: 9999}} onClick={onClose}>
                     <div className="w-full max-w-md bg-brand-card rounded-t-3xl sm:rounded-2xl border border-white/10 overflow-hidden relative h-[85dvh] sm:h-auto overflow-y-auto" onClick={e=>e.stopPropagation()}>
                         <div className="p-6 pb-20"> 
-                            <div className="flex justify-between items-start mb-4"><div className="flex items-center gap-3"><div style={{background: typeInfo.color}} className="p-3 rounded-full text-white shadow-lg"><typeInfo.icon size={24}/></div><div><h3 className="text-lg font-black text-white">{typeInfo.label}</h3><p className="text-xs text-zinc-400">{report.dateString} • {report.name || 'Anónimo'}</p></div></div><button onClick={onClose} className="text-zinc-500 bg-white/10 p-2 rounded-full"><X size={16}/></button></div>
+                            <div className="flex justify-between items-start mb-4">
+                                <div className="flex items-center gap-3"><div style={{background: typeInfo.color}} className="p-3 rounded-full text-white shadow-lg"><typeInfo.icon size={24}/></div><div><h3 className="text-lg font-black text-white">{typeInfo.label}</h3><p className="text-xs text-zinc-400">{report.dateString} • {report.name || 'Anónimo'}</p></div></div>
+                                <div className="flex gap-2">
+                                    {isOwner && <button onClick={()=>setShowEdit(true)} className="bg-zinc-800 text-gold p-2 rounded-full border border-gold/30"><Pencil size={16}/></button>}
+                                    <button onClick={onClose} className="text-zinc-500 bg-white/10 p-2 rounded-full"><X size={16}/></button>
+                                </div>
+                            </div>
                             
                             {(details.subCat || details.clothingSize?.length > 0) && (
                                 <div className="flex flex-wrap gap-2 mb-4">
@@ -517,6 +564,12 @@
             const saveSettings = async (newConfig) => { await setDoc(doc(db, 'settings', 'global'), newConfig, { merge: true }); setShowSettings(false); alert("Configuración actualizada."); };
             const addComment = async (reportId, text, author) => { const reportRef = doc(db, 'reports', reportId); const report = reports.find(r => r.id === reportId); const newComments = [...(report.comments || []), { text, author, timestamp: Date.now() }]; await updateDoc(reportRef, { comments: newComments }); };
             const deleteReport = async (id) => { if(confirm("¿Borrar?")) { await deleteDoc(doc(db, 'reports', id)); setSelectedReport(null); } };
+            
+            // FUNCIÓN ACTUALIZAR REPORTE
+            const updateReport = async (id, updatedData) => {
+                await updateDoc(doc(db, 'reports', id), updatedData);
+                alert("Reporte actualizado");
+            };
 
             const SocialIcon = ({ type, url }) => { if(!url) return null; const icons = { facebook: Facebook, instagram: Instagram, youtube: Youtube, threads: Hash, tiktok: MessageCircle, whatsapp: MessageCircle }; const Icon = icons[type] || MessageCircle; return <a href={url} target="_blank" className="p-3 bg-white/5 hover:bg-gold/20 hover:text-gold rounded-xl transition border border-white/5"><Icon size={20}/></a>; };
 
@@ -586,7 +639,7 @@
                     )}
 
                     {showCreate && <CreateReportModal lat={createLoc.lat} lng={createLoc.lng} onClose={()=>setShowCreate(false)} />}
-                    {selectedReport && <ReportDetailModal report={selectedReport} onClose={()=>setSelectedReport(null)} isAdmin={isAdmin} onDelete={deleteReport} onComment={addComment} />}
+                    {selectedReport && <ReportDetailModal report={selectedReport} onClose={()=>setSelectedReport(null)} isAdmin={isAdmin} onDelete={deleteReport} onComment={addComment} onUpdate={updateReport} />}
                     {showSettings && <SettingsModal config={config} onClose={()=>setShowSettings(false)} onSave={saveSettings} />}
                 </div>
             );
