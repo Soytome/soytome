@@ -51,12 +51,14 @@
         body { background-color: #050505; color: #fff; margin: 0; user-select: none; -webkit-tap-highlight-color: transparent; height: 100dvh; overflow: hidden; }
         .leaflet-container { width: 100%; height: 100%; z-index: 0; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
+        
         .liquid-glass-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; background: linear-gradient(-45deg, #000000, #3d2b00, #6b4e00, #000000); background-size: 300% 300%; animation: liquid 15s ease infinite; }
         .glass-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; backdrop-filter: blur(20px); background: rgba(0,0,0,0.4); box-shadow: inset 0 0 100px rgba(0,0,0,0.8); }
         .user-pulse { animation: pulse-blue 2s infinite; }
         @keyframes pulse-blue { 0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(59, 130, 246, 0); } 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); } }
-        .eye-container { width: 160px; height: 90px; background: #e5e5e5; border-radius: 50%; position: relative; overflow: hidden; box-shadow: 0 0 40px rgba(251, 191, 36, 0.3); }
-        .eye-pupil { width: 45px; height: 45px; background: #09090b; border-radius: 50%; position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%); transition: transform 0.1s ease-out; }
+        .z-highest { z-index: 9999; }
+        .eye-container { width: 160px; height: 90px; background: #e5e5e5; border-radius: 50% 50% 50% 50% / 70% 70% 40% 40%; position: relative; overflow: hidden; box-shadow: 0 0 40px rgba(251, 191, 36, 0.3); border-top: 4px solid #000; }
+        .eye-pupil { width: 45px; height: 45px; background: #09090b; border-radius: 50%; position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%); transition: transform 0.08s ease-out; }
     </style>
 </head>
 <body>
@@ -65,7 +67,7 @@
     <script type="text/babel" data-type="module">
         import React, { useState, useEffect, useRef } from 'react';
         import { createRoot } from 'react-dom/client';
-        import { MapPin, Plus, X, Siren, Shield, Flame, Dog, AlertTriangle, Heart, Zap, Camera, Navigation, Star, Phone, User, Layers, Eye, EyeOff, MessageCircle, Send, Settings, Trash2, Cloud, Sun, CloudRain, Facebook, Instagram, Youtube, Hash, Save, ArrowLeft, ShoppingBag, Utensils, Sparkles, PartyPopper, Wrench, Pill, Fuel, Hammer, Search, Shirt, Apple, Package, Lightbulb, Briefcase, Home, Key, Pencil, Bath, Music } from 'lucide-react';
+        import { MapPin, Plus, X, Siren, Shield, Flame, Dog, AlertTriangle, Heart, Zap, Camera, Navigation, Star, Phone, User, Layers, Eye, EyeOff, MessageCircle, Send, Settings, Trash2, Cloud, Sun, CloudRain, Facebook, Instagram, Youtube, Hash, Save, ArrowLeft, ShoppingBag, Utensils, Sparkles, PartyPopper, Wrench, Pill, Fuel, Hammer, Search, Shirt, Apple, Package, Lightbulb, Briefcase, Home, Key, Pencil, Bath } from 'lucide-react';
         import { initializeApp } from 'firebase/app';
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc, setDoc, getDoc } from 'firebase/firestore';
         import { getAuth, signInAnonymously } from 'firebase/auth';
@@ -91,8 +93,7 @@
             alert: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
             shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
             flame: '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.1.2-2.2.5-3.3.3-1.4 1-2.7 2-4 .5.3 1 .8 1 1.8z"/>',
-            toilet: '<path d="M9 6 6.5 3.5c-1-1-2.5-1-3.5 0s-1 2.5 0 3.5L5.5 9.5c.2.2.4.4.6.5-.4.6-.6 1.4-.6 2.2v1c0 1.1.9 2 2 2h9c1.1 0 2-.9 2-2v-1c0-.8-.2-1.6-.6-2.2.2-.1.4-.3.6-.5l2.5-2.5c1-1 1-2.5 0-3.5s-2.5-1-3.5 0L15 6"/><path d="M10 16v3a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2v-3"/>',
-            pill: '<path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/>'
+            toilet: '<path d="M9 12h6m-6 4h6m2 5v-7a3 3 0 0 0-3-3H10a3 3 0 0 0-3 3v7"/><path d="M6 12V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v7"/>'
         };
 
         const REPORT_TYPES = [
@@ -153,23 +154,22 @@
             );
         };
 
-        const PharmacyWidget = ({ onPharmacyFound }) => {
+        const PharmacyWidget = ({ onDataLoaded }) => {
             const [pharmacy, setPharmacy] = useState(null);
             const [loading, setLoading] = useState(true);
 
             useEffect(() => {
-                const url = 'https://midas.minsal.cl/farmacia_v2/WS/getLocalesTurnos.php';
-                fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url))
+                const target = 'https://midas.minsal.cl/farmacia_v2/WS/getLocalesTurnos.php';
+                fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(target))
                     .then(res => res.json())
                     .then(data => {
                         const today = data.find(f => (f.comuna_nombre || "").toUpperCase().includes("TOME"));
                         if (today) {
                             setPharmacy(today);
-                            if (onPharmacyFound) onPharmacyFound(today);
+                            if (onDataLoaded) onDataLoaded(today);
                         }
                     })
-                    .catch(console.error)
-                    .finally(() => setLoading(false));
+                    .catch(console.error).finally(() => setLoading(false));
             }, []);
 
             if (loading) return <div className="h-12 w-32 bg-white/5 rounded-2xl animate-pulse"></div>;
@@ -178,9 +178,9 @@
             const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${pharmacy.local_lat},${pharmacy.local_lng}`;
 
             return (
-                <a href={mapsUrl} target="_blank" className="flex items-center gap-3 bg-red-600/90 backdrop-blur-xl px-4 py-3 rounded-2xl border border-red-400/50 shadow-lg transition-transform active:scale-95">
+                <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 bg-red-600/90 backdrop-blur-xl px-4 py-3 rounded-2xl border border-red-400/50 shadow-lg active:scale-95 transition-all pointer-events-auto">
                     <div className="text-right">
-                        <div className="text-[9px] font-black uppercase tracking-tighter text-white/80">Turno Hoy</div>
+                        <div className="text-[9px] font-black uppercase text-white/80">Farmacia de Turno</div>
                         <div className="text-xs font-black text-white truncate max-w-[100px] uppercase">{pharmacy.local_nombre.split(' ')[0]}</div>
                     </div>
                     <div className="h-6 w-[1px] bg-white/20"></div>
@@ -214,53 +214,18 @@
                 }
 
                 if (pharmacy && pharmacy.local_lat) {
-                    const icon = L.divIcon({ html: `<div class="animate-bounce bg-red-600 p-2 rounded-full border-2 border-white shadow-2xl"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">${ICONS_SVG.pill}</svg></div>`, className: '', iconSize: [32, 32], iconAnchor: [16, 16] });
-                    L.marker([pharmacy.local_lat, pharmacy.local_lng], { icon }).addTo(map).bindPopup(`<div style="color:black; font-family:Inter; font-weight:900;">FARMACIA DE TURNO: ${pharmacy.local_nombre}</div>`);
+                    const pharmIcon = L.divIcon({ html: `<div class="animate-bounce bg-red-600 p-2 rounded-full border-2 border-white shadow-2xl"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg></div>`, className: '', iconSize: [32, 32], iconAnchor: [16, 16] });
+                    L.marker([pharmacy.local_lat, pharmacy.local_lng], { icon: pharmIcon }).addTo(map).bindPopup(`<div style="color:black; font-weight:900;">📍 ${pharmacy.local_nombre}<br/>${pharmacy.local_direccion}</div>`);
                 }
 
                 reports.forEach(r => {
                     const type = REPORT_TYPES.find(t => t.id === r.type) || REPORT_TYPES[0];
-                    const html = `<div style="background:${type.color};" class="w-10 h-10 rounded-full flex items-center justify-center border-2 border-white shadow-xl"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${type.svg}</svg></div>`;
+                    const html = `<div style="background:${type.color};" class="w-10 h-10 rounded-full flex items-center justify-center border-2 border-white shadow-xl hover:scale-110 transition-transform"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${type.svg}</svg></div>`;
                     L.marker([r.lat, r.lng], { icon: L.divIcon({ html, className: '', iconSize: [40, 40], iconAnchor: [20, 20] }) }).addTo(map).on('click', () => onMarkerClick(r));
                 });
             }, [reports, userLoc, pharmacy]);
 
             return <div ref={mapRef} className="w-full h-full" />;
-        };
-
-        const CreateReportModal = ({ lat, lng, onClose }) => {
-            const [data, setData] = useState({ type: 'sos_help', desc: '', contact: '', name: localStorage.getItem('st_username') || '', details: {} });
-            const [loading, setLoading] = useState(false);
-            const [restroomType, setRestroomType] = useState("");
-
-            const handleSubmit = async () => {
-                if (!data.desc) return alert("Falta descripción");
-                setLoading(true);
-                try {
-                    await addDoc(collection(db, 'reports'), { 
-                        ...data, lat, lng, timestamp: Date.now(), dateString: new Date().toLocaleTimeString(),
-                        details: { restroomType: data.type === 'restroom' ? restroomType : '' }
-                    });
-                    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-                    onClose();
-                } catch (e) { alert("Error"); } finally { setLoading(false); }
-            };
-
-            return (
-                <div className="fixed inset-0 z-[2000] bg-black/90 backdrop-blur-md flex items-end sm:items-center justify-center pt-10 sm:p-4">
-                    <div className="bg-brand-card w-full max-w-lg rounded-t-3xl sm:rounded-3xl border-t border-white/10 p-6 shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar">
-                        <div className="flex justify-between items-center mb-6"><h3 className="text-xl font-black text-white uppercase tracking-tighter">Nuevo Reporte</h3><button onClick={onClose} className="p-2 bg-white/10 rounded-full"><X size={20}/></button></div>
-                        <div className="grid grid-cols-2 gap-3 mb-6">
-                            <button onClick={()=>setData({...data, type:'sos_help'})} className={`p-4 rounded-xl border-2 font-black flex flex-col items-center gap-2 ${data.type==='sos_help'?'bg-red-500/20 border-red-500':'border-white/10 text-zinc-500'}`}><Siren size={32}/> AYUDA</button>
-                            <button onClick={()=>setData({...data, type:'sos_offer'})} className={`p-4 rounded-xl border-2 font-black flex flex-col items-center gap-2 ${data.type==='sos_offer'?'bg-green-500/20 border-green-500':'border-white/10 text-zinc-500'}`}><Heart size={32}/> OFRECER</button>
-                        </div>
-                        <div className="mb-6"><div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar">{REPORT_TYPES.slice(2).map(t => (<button key={t.id} onClick={()=>setData({...data, type:t.id})} className={`flex-shrink-0 px-4 py-3 rounded-xl border text-xs font-black flex flex-col items-center gap-2 min-w-[80px] ${data.type===t.id?'bg-gold text-black border-gold':'bg-zinc-900 border-zinc-800 text-zinc-400'}`}><t.icon size={20}/> {t.label}</button>))}</div></div>
-                        {data.type === 'restroom' && (<div className="bg-zinc-900/50 p-4 rounded-xl mb-6 border border-gold/30"><div className="grid grid-cols-2 gap-3"><button onClick={()=>setRestroomType('Gratis')} className={`p-3 rounded-lg border text-sm font-black ${restroomType==='Gratis'?'bg-green-600 border-green-500':'bg-black border-zinc-700'}`}>GRATIS</button><button onClick={()=>setRestroomType('Pago')} className={`p-3 rounded-lg border text-sm font-black ${restroomType==='Pago'?'bg-red-600 border-red-500':'bg-black border-zinc-700'}`}>PAGO</button></div></div>)}
-                        <textarea value={data.desc} onChange={e=>setData({...data, desc:e.target.value})} className="w-full bg-black border border-zinc-800 p-4 rounded-xl text-white h-24 mb-6 outline-none" placeholder="Detalles..."></textarea>
-                        <button onClick={handleSubmit} disabled={loading} className="w-full bg-gradient-to-r from-gold to-orange-600 text-black font-black rounded-xl py-4 shadow-xl uppercase tracking-widest">{loading ? '...' : 'Publicar'}</button>
-                    </div>
-                </div>
-            );
         };
 
         const App = () => {
@@ -275,21 +240,28 @@
             const [pharmacy, setPharmacy] = useState(null);
 
             useEffect(() => {
-                onSnapshot(query(collection(db, 'reports'), orderBy('timestamp', 'desc')), (snap) => setReports(snap.docs.map(d => ({id: d.id, ...d.data()}))));
-                onSnapshot(doc(db, 'settings', 'global'), (snap) => { if(snap.exists()) setConfig(snap.data()); });
+                onSnapshot(query(collection(db, 'reports'), orderBy('timestamp', 'desc')), snap => setReports(snap.docs.map(d => ({id: d.id, ...d.data()}))));
+                onSnapshot(doc(db, 'settings', 'global'), snap => { if(snap.exists()) setConfig(snap.data()); });
             }, []);
 
             const enableGPS = () => {
                 if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition((p) => { setUserLoc({lat: p.coords.latitude, lng: p.coords.longitude}); setView('map'); }, () => setView('map'));
+                    navigator.geolocation.getCurrentPosition(p => { setUserLoc({lat: p.coords.latitude, lng: p.coords.longitude}); setView('map'); }, () => setView('map'));
                 } else setView('map');
             };
 
             const SocialLinks = () => (
                 <div className="flex gap-3 justify-center flex-wrap" onClick={e=>e.stopPropagation()}>
-                    {['threads', 'youtube', 'tiktok', 'instagram', 'facebook'].map(net => (
-                        <SocialIcon key={net} type={net} url={config[net]} />
-                    ))}
+                    {['threads', 'youtube', 'tiktok', 'instagram', 'facebook'].map(net => {
+                        const icons = { facebook: Facebook, instagram: Instagram, youtube: Youtube, threads: Hash, tiktok: MessageCircle };
+                        const Icon = icons[net];
+                        if(!config[net]) return null;
+                        return (
+                            <a key={net} href={config[net]} target="_blank" className="p-3 bg-white/5 hover:bg-gold/20 hover:text-gold rounded-xl transition border border-white/5 shadow-md">
+                                <Icon size={20}/>
+                            </a>
+                        );
+                    })}
                 </div>
             );
 
@@ -303,12 +275,12 @@
                             {!awake && <div className="absolute inset-0 bg-black z-[-1]"></div>}
                             <div className="relative z-10 cursor-pointer mb-8"><BadBunnyEye awake={awake} /></div>
                             <h1 className="text-7xl font-black mb-2 tracking-tighter">SOY<br/><span className={awake ? 'text-gold' : 'text-zinc-900'}>TOMÉ</span></h1>
-                            <p className="relative z-10 text-zinc-600 mb-12 font-black uppercase text-[10px] tracking-[0.4em]">Red de Emergencia Ciudadana</p>
+                            <p className="relative z-10 text-zinc-600 mb-10 font-black uppercase text-[10px] tracking-[0.4em]">Red de Emergencia Ciudadana</p>
                             {awake && (
                                 <div className="animate-in fade-in slide-in-from-bottom-8 flex flex-col items-center w-full max-w-sm">
-                                    <button onClick={(e) => { e.stopPropagation(); enableGPS(); }} className="bg-gold text-black px-12 py-5 rounded-full font-black shadow-[0_0_50px_rgba(245,158,11,0.5)] hover:scale-105 transition-all w-full mb-8 uppercase text-xs">Ingresar</button>
-                                    <div className="mb-10 w-full flex justify-center" onClick={e=>e.stopPropagation()}>
-                                        <PharmacyWidget onPharmacyFound={setPharmacy} />
+                                    <button onClick={(e) => { e.stopPropagation(); enableGPS(); }} className="bg-gold text-black px-12 py-5 rounded-full font-black shadow-[0_0_50px_rgba(245,158,11,0.5)] hover:scale-105 active:scale-95 transition-all w-full mb-8 uppercase text-xs">Ingresar</button>
+                                    <div className="mb-8 w-full flex justify-center" onClick={e=>e.stopPropagation()}>
+                                        <PharmacyWidget onDataLoaded={setPharmacy} />
                                     </div>
                                     <SocialLinks />
                                 </div>
@@ -320,18 +292,17 @@
                         <div className="absolute inset-0">
                             <LeafletMap reports={reports} userLoc={userLoc} pharmacy={pharmacy} onMapClick={(coords)=>{ setCreateLoc(coords); setShowCreate(true); }} onMarkerClick={setSelectedReport} />
                             <div className="fixed top-4 left-0 right-0 z-[500] px-4 flex gap-2 pointer-events-none">
-                                <div className="flex gap-2 items-center pointer-events-auto py-1 overflow-x-auto no-scrollbar">
+                                <div className="flex gap-2 items-center pointer-events-auto py-1">
                                     <button onClick={()=>setView('home')} className="bg-black/80 backdrop-blur-xl p-3.5 rounded-2xl border border-white/10 text-white shadow-2xl active:scale-90 transition"><ArrowLeft size={22}/></button>
                                     <WeatherWidget/>
-                                    <PharmacyWidget onPharmacyFound={setPharmacy} />
+                                    <PharmacyWidget onDataLoaded={setPharmacy} />
                                 </div>
                             </div>
                             {!showCreate && (
-                                <button onClick={()=>{ if(userLoc) { setCreateLoc(userLoc); setShowCreate(true); } else enableGPS(); }} className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[500] bg-brand-card border border-gold/40 text-gold px-12 py-5 rounded-2xl font-black flex items-center gap-4 hover:scale-105 transition-all pointer-events-auto uppercase text-xs tracking-widest shadow-2xl"><Plus size={24}/> Reportar</button>
+                                <button onClick={()=>{ if(userLoc) { setCreateLoc(userLoc); setShowCreate(true); } else enableGPS(); }} className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[500] bg-brand-card border border-gold/40 text-gold px-12 py-5 rounded-2xl shadow-2xl font-black flex items-center gap-4 hover:scale-105 active:scale-95 transition-all pointer-events-auto uppercase text-xs tracking-widest shadow-2xl"><Plus size={24}/> Reportar</button>
                             )}
                         </div>
                     )}
-                    {showCreate && <CreateReportModal lat={createLoc.lat} lng={createLoc.lng} onClose={()=>setShowCreate(false)} />}
                 </div>
             );
         };
