@@ -80,7 +80,7 @@
         const { useState, useEffect, useRef } = window.React;
         
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc, getDoc, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
         // =========================================================================
@@ -105,6 +105,7 @@
 
         const getCatsPath = () => isCanvas ? `artifacts/${appId}/public/data/categorias` : 'hub_categorias';
         const getSettingsPath = () => isCanvas ? `artifacts/${appId}/public/data/config` : 'hub_settings';
+        const getBuzonPath = () => isCanvas ? `artifacts/${appId}/public/data/buzon` : 'hub_buzon';
 
         // NUEVAS OPCIONES PREMIUM (Diseño y Plantillas)
         const THEMES = {
@@ -154,7 +155,11 @@
             ctaEnabled: true,
             ctaText: 'Si no te ven, no existes. Aumenta tu visibilidad ahora.',
             ctaPhone: '56900000000',
-            ctaMessage: 'Hola Ian, quiero publicidad Black Label en Soy Tomé.'
+            ctaMessage: 'Hola Ian, quiero publicidad Black Label en Soy Tomé.',
+            // Configuración del Buzón
+            buzonEnabled: true,
+            buzonTitle: 'Buzón de Exclusivas',
+            buzonWa: '56900000000'
         };
 
         function App() {
@@ -165,6 +170,12 @@
             const [isAdmin, setIsAdmin] = useState(false);
             const [showLogin, setShowLogin] = useState(false);
             const [adminTab, setAdminTab] = useState('links'); 
+
+            // Estado del Buzón Público
+            const [showBuzon, setShowBuzon] = useState(false);
+            const [buzonForm, setBuzonForm] = useState({ name: '', type: 'noticia', message: '' });
+            const [buzonStatus, setBuzonStatus] = useState('idle'); // idle, sending, success, error
+            const [buzonReports, setBuzonReports] = useState([]); // Para el panel admin
 
             // Auth Local State
             const [username, setUsername] = useState('');
@@ -183,6 +194,9 @@
             const [editingLinkObj, setEditingLinkObj] = useState(null); // { catId, linkId }
             const [editLinkData, setEditLinkData] = useState({ title: '', url: '' });
 
+            // NUEVO: Radar de Errores del Motor
+            const [systemError, setSystemError] = useState('');
+
             // 1. AUTENTICACIÓN FIREBASE SEGURA
             useEffect(() => {
                 const initAuth = async () => {
@@ -194,6 +208,7 @@
                         }
                     } catch (e) {
                         console.error("Auth error", e);
+                        setSystemError("candado_auth");
                     }
                 };
                 initAuth();
@@ -211,18 +226,32 @@
                     // Ordenamos por la propiedad "order". Si no existe, por fecha de creación (ID)
                     loaded.sort((a, b) => (a.order || 0) - (b.order || 0) || a.id.localeCompare(b.id));
                     setCategories(loaded);
+                }, (error) => {
+                    console.error("Error en DB:", error);
+                    setSystemError("candado_bd");
                 });
 
                 const unsubSettings = onSnapshot(doc(db, getSettingsPath(), 'global'), (docSnap) => {
                     if (docSnap.exists()) {
                         setSettings({ ...DEFAULT_SETTINGS, ...docSnap.data() });
                     } else {
-                        setDoc(doc(db, getSettingsPath(), 'global'), DEFAULT_SETTINGS);
+                        setDoc(doc(db, getSettingsPath(), 'global'), DEFAULT_SETTINGS).catch(e => console.error(e));
                     }
                     setIsLoading(false);
+                }, (error) => {
+                    console.error("Error en Settings:", error);
+                    setSystemError("candado_bd");
                 });
 
-                return () => { unsubCats(); unsubSettings(); };
+                // Escuchar reportes del buzón (solo para el admin)
+                const unsubBuzon = onSnapshot(collection(db, getBuzonPath()), (snapshot) => {
+                    const loaded = [];
+                    snapshot.forEach(doc => loaded.push({ id: doc.id, ...doc.data() }));
+                    loaded.sort((a, b) => b.timestamp - a.timestamp); // Más recientes primero
+                    setBuzonReports(loaded);
+                }, (error) => console.error("Error buzon:", error));
+
+                return () => { unsubCats(); unsubSettings(); unsubBuzon(); };
             }, [user]);
 
             useEffect(() => {
@@ -244,6 +273,36 @@
                 const updated = { ...settings, ...newConfig };
                 setSettings(updated); 
                 await setDoc(doc(db, getSettingsPath(), 'global'), updated);
+            };
+
+            // ================= LÓGICA DEL BUZÓN DE REPORTES =================
+            const submitBuzon = async (e) => {
+                e.preventDefault();
+                if (!buzonForm.name.trim() || !buzonForm.message.trim()) return;
+                
+                setBuzonStatus('sending');
+                try {
+                    await addDoc(collection(db, getBuzonPath()), {
+                        ...buzonForm,
+                        timestamp: Date.now(),
+                        status: 'unread'
+                    });
+                    setBuzonStatus('success');
+                    setBuzonForm({ name: '', type: 'noticia', message: '' });
+                    setTimeout(() => {
+                        setShowBuzon(false);
+                        setBuzonStatus('idle');
+                    }, 3000);
+                } catch (error) {
+                    console.error("Error enviando reporte:", error);
+                    setBuzonStatus('error');
+                }
+            };
+
+            const deleteReport = async (reportId) => {
+                if(confirm('¿Eliminar este reporte permanentemente?')) {
+                    await deleteDoc(doc(db, getBuzonPath(), reportId));
+                }
             };
 
             // ================= CRUD CATEGORÍAS =================
@@ -346,6 +405,40 @@
                 return `https://wa.me/${phone}?text=${text}`;
             };
 
+            const generateBuzonWaLink = () => {
+                const phone = settings.buzonWa.replace(/\D/g, '');
+                const text = encodeURIComponent("Hola, tengo material audiovisual (fotos/videos) para enviar a Soy Tomé.");
+                return `https://wa.me/${phone}?text=${text}`;
+            };
+
+            // PANTALLAS DE EMERGENCIA Y BLOQUEOS
+            if (systemError === "candado_auth") {
+                return (
+                    <div className="min-h-screen flex flex-col items-center justify-center bg-[#030303] px-6 text-center">
+                        <i className="fa-solid fa-lock text-red-500 text-5xl mb-6"></i>
+                        <h2 className="text-2xl font-black text-white mb-2">Candado de Firebase Activado</h2>
+                        <p className="text-white/60 mb-6 max-w-sm">Para que el motor arranque, debes habilitar los usuarios anónimos en tu base de datos.</p>
+                        <div className="bg-white/5 border border-white/10 p-5 rounded-2xl text-left text-sm text-white/80 space-y-3 font-medium">
+                            <p>1. Ve a <b>Firebase Console</b> y entra a tu proyecto.</p>
+                            <p>2. En el menú izquierdo, haz clic en <b>Authentication</b>.</p>
+                            <p>3. Dale a <b>Comenzar</b> (Get Started).</p>
+                            <p>4. Ve a la pestaña <b>Sign-in method</b> (Método de acceso).</p>
+                            <p>5. Busca <b>Anónimo</b> (Anonymous), márcalo en <b>Habilitar</b> y Guarda.</p>
+                        </div>
+                    </div>
+                );
+            }
+
+            if (systemError === "candado_bd") {
+                return (
+                    <div className="min-h-screen flex flex-col items-center justify-center bg-[#030303] px-6 text-center">
+                        <i className="fa-solid fa-database text-red-500 text-5xl mb-6"></i>
+                        <h2 className="text-2xl font-black text-white mb-2">Reglas de Acceso Estrictas</h2>
+                        <p className="text-white/60 mb-6 max-w-sm">Firestore está bloqueando la conexión. Ve a Firebase &gt; Firestore Database &gt; Reglas, y asegúrate de que esté en Modo de Prueba.</p>
+                    </div>
+                );
+            }
+
             if (isLoading || !user) {
                 return (
                     <div className="min-h-screen flex flex-col items-center justify-center bg-[#030303]">
@@ -427,7 +520,11 @@
                                     <button onClick={() => setAdminTab('links')} className={`flex-1 min-w-[120px] py-4 text-xs uppercase tracking-widest font-bold transition-colors ${adminTab === 'links' ? 'text-white border-b-2 theme-border bg-white/5' : 'text-white/40 hover:text-white/70'}`}>Estructura</button>
                                     <button onClick={() => setAdminTab('design')} className={`flex-1 min-w-[120px] py-4 text-xs uppercase tracking-widest font-bold transition-colors ${adminTab === 'design' ? 'text-white border-b-2 theme-border bg-white/5' : 'text-white/40 hover:text-white/70'}`}>Apariencia</button>
                                     <button onClick={() => setAdminTab('profile')} className={`flex-1 min-w-[120px] py-4 text-xs uppercase tracking-widest font-bold transition-colors ${adminTab === 'profile' ? 'text-white border-b-2 theme-border bg-white/5' : 'text-white/40 hover:text-white/70'}`}>Identidad</button>
-                                    <button onClick={() => setAdminTab('marketing')} className={`flex-1 min-w-[120px] py-4 text-xs uppercase tracking-widest font-bold transition-colors ${adminTab === 'marketing' ? 'text-white border-b-2 theme-border bg-white/5' : 'text-white/40 hover:text-white/70'}`}>Marketing</button>
+                                    <button onClick={() => setAdminTab('marketing')} className={`flex-1 min-w-[120px] py-4 text-xs uppercase tracking-widest font-bold transition-colors ${adminTab === 'marketing' ? 'text-white border-b-2 theme-border bg-white/5' : 'text-white/40 hover:text-white/70'}`}>Ventas</button>
+                                    <button onClick={() => setAdminTab('inbox')} className={`flex-1 min-w-[120px] py-4 text-xs uppercase tracking-widest font-bold transition-colors relative ${adminTab === 'inbox' ? 'text-white border-b-2 theme-border bg-white/5' : 'text-white/40 hover:text-white/70'}`}>
+                                        Buzón
+                                        {buzonReports.length > 0 && <span className="absolute top-3 right-4 w-2 h-2 rounded-full theme-bg shadow-[0_0_10px_rgba(var(--primary-rgb),1)]"></span>}
+                                    </button>
                                 </div>
 
                                 <div className="p-6">
@@ -456,85 +553,7 @@
                                         </div>
                                     )}
 
-                                    {/* TAB: DISEÑO / APARIENCIA */}
-                                    {adminTab === 'design' && (
-                                        <div className="space-y-8 animate-fade-in">
-                                            <div>
-                                                <h4 className="text-white font-bold mb-3 flex items-center gap-2"><i className="fa-solid fa-palette theme-text"></i> Color Base Premium</h4>
-                                                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                                    {Object.entries(THEMES).map(([key, theme]) => (
-                                                        <button key={key} onClick={() => updateSettings({ theme: key })} className={`p-4 rounded-xl border text-left transition-all ${settings.theme === key ? 'border-white bg-white/10 shadow-[0_0_20px_rgba(255,255,255,0.1)]' : 'border-white/5 bg-black/50 hover:border-white/20'}`}>
-                                                            <div className="w-full h-6 rounded-lg mb-3 shadow-inner" style={{ backgroundColor: `rgb(${theme.rgb})` }}></div>
-                                                            <p className="text-[11px] text-white font-bold uppercase tracking-wider">{theme.name}</p>
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                            
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                <div>
-                                                    <h4 className="text-white font-bold mb-3 flex items-center gap-2"><i className="fa-solid fa-layer-group theme-text"></i> Disposición (Layout)</h4>
-                                                    <div className="space-y-3">
-                                                        {Object.entries(LAYOUTS).map(([key, layout]) => (
-                                                            <button key={key} onClick={() => updateSettings({ layout: key })} className={`w-full p-4 rounded-xl border flex items-center gap-3 transition-all ${settings.layout === key ? 'border-white bg-white/10 text-white' : 'border-white/5 bg-black/50 text-white/40 hover:text-white hover:bg-white/5'}`}>
-                                                                <i className={`fa-solid ${layout.icon} text-lg`}></i>
-                                                                <span className="font-bold text-sm">{layout.name}</span>
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <h4 className="text-white font-bold mb-3 flex items-center gap-2"><i className="fa-solid fa-wand-magic-sparkles theme-text"></i> Animación de Entrada</h4>
-                                                    <div className="space-y-3">
-                                                        {Object.entries(ANIMATIONS).map(([key, anim]) => (
-                                                            <button key={key} onClick={() => updateSettings({ animation: key })} className={`w-full p-4 rounded-xl border text-left transition-all ${settings.animation === key ? 'border-white bg-white/10 text-white' : 'border-white/5 bg-black/50 text-white/40 hover:text-white hover:bg-white/5'}`}>
-                                                                <span className="font-bold text-sm">{anim.name}</span>
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* TAB: IDENTIDAD (Logos y CEO) */}
-                                    {adminTab === 'profile' && (
-                                        <div className="space-y-6 animate-fade-in grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div className="space-y-4 bg-black/40 p-5 rounded-2xl border border-white/5">
-                                                <h4 className="text-white font-bold flex items-center gap-2 mb-4"><i className="fa-solid fa-image theme-text"></i> Marca y Logo</h4>
-                                                <div>
-                                                    <label className="block text-[10px] text-white/50 font-bold mb-1 uppercase tracking-widest">URL Logo Central (Opcional)</label>
-                                                    <input type="text" placeholder="https://ejemplo.com/logo.png" value={settings.logoUrl} onChange={(e) => updateSettings({ logoUrl: e.target.value })} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-white/30 outline-none" />
-                                                </div>
-                                            </div>
-
-                                            <div className="space-y-4 bg-black/40 p-5 rounded-2xl border border-white/5">
-                                                <div className="flex items-center justify-between mb-4">
-                                                    <h4 className="text-white font-bold flex items-center gap-2"><i className="fa-solid fa-id-badge theme-text"></i> Perfil CEO</h4>
-                                                    <label className="relative inline-flex items-center cursor-pointer">
-                                                        <input type="checkbox" checked={settings.showCeo} onChange={(e) => updateSettings({ showCeo: e.target.checked })} className="sr-only peer" />
-                                                        <div className="w-9 h-5 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all theme-peer-checked"></div>
-                                                    </label>
-                                                </div>
-                                                <div className="space-y-3" style={{ opacity: settings.showCeo ? 1 : 0.4 }}>
-                                                    <div>
-                                                        <label className="block text-[10px] text-white/50 font-bold mb-1 uppercase tracking-widest">Nombre Público</label>
-                                                        <input type="text" disabled={!settings.showCeo} value={settings.ceoName} onChange={(e) => updateSettings({ ceoName: e.target.value })} className="w-full bg-black border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:border-white/30 outline-none" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-[10px] text-white/50 font-bold mb-1 uppercase tracking-widest">Cargo / Título</label>
-                                                        <input type="text" disabled={!settings.showCeo} value={settings.ceoRole} onChange={(e) => updateSettings({ ceoRole: e.target.value })} className="w-full bg-black border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:border-white/30 outline-none" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-[10px] text-white/50 font-bold mb-1 uppercase tracking-widest">URL Foto Perfil</label>
-                                                        <input type="text" disabled={!settings.showCeo} value={settings.ceoPhoto} onChange={(e) => updateSettings({ ceoPhoto: e.target.value })} className="w-full bg-black border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:border-white/30 outline-none" />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* TAB: MARKETING */}
+                                    {/* TAB: MARKETING / VENTAS */}
                                     {adminTab === 'marketing' && (
                                         <div className="space-y-5 animate-fade-in">
                                             <div className="bg-black/50 p-6 rounded-2xl border border-white/5 relative overflow-hidden">
@@ -562,6 +581,62 @@
                                                         </div>
                                                     </div>
                                                 </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* TAB: BUZÓN Y AUDIENCIA */}
+                                    {adminTab === 'inbox' && (
+                                        <div className="space-y-6 animate-fade-in">
+                                            {/* Configuración del Buzón */}
+                                            <div className="bg-black/50 p-6 rounded-2xl border border-white/5 relative overflow-hidden">
+                                                <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <h4 className="text-white font-bold text-lg flex items-center gap-2"><i className="fa-solid fa-bullhorn text-blue-400"></i> Módulo de Aportes Ciudadanos</h4>
+                                                    <label className="relative inline-flex items-center cursor-pointer">
+                                                        <input type="checkbox" checked={settings.buzonEnabled} onChange={(e) => updateSettings({ buzonEnabled: e.target.checked })} className="sr-only peer" />
+                                                        <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+                                                    </label>
+                                                </div>
+                                                <div className="space-y-4 transition-opacity" style={{ opacity: settings.buzonEnabled ? 1 : 0.4 }}>
+                                                    <div className="flex flex-col md:flex-row gap-4">
+                                                        <div className="flex-1">
+                                                            <label className="block text-[10px] text-white/50 font-bold mb-1 uppercase tracking-widest">Título del Botón</label>
+                                                            <input type="text" value={settings.buzonTitle} onChange={(e) => updateSettings({ buzonTitle: e.target.value })} disabled={!settings.buzonEnabled} className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-blue-500 outline-none" />
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <label className="block text-[10px] text-white/50 font-bold mb-1 uppercase tracking-widest">WhatsApp Prensa (Para recibir fotos/videos)</label>
+                                                            <input type="text" value={settings.buzonWa} onChange={(e) => updateSettings({ buzonWa: e.target.value })} disabled={!settings.buzonEnabled} className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-blue-500 outline-none" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Bandeja de Entrada */}
+                                            <div>
+                                                <h4 className="text-white font-bold mb-4 flex items-center gap-2">Últimos Reportes Recibidos</h4>
+                                                {buzonReports.length === 0 ? (
+                                                    <div className="text-center p-8 bg-white/5 border border-white/5 rounded-2xl">
+                                                        <i className="fa-regular fa-envelope-open text-white/20 text-3xl mb-3"></i>
+                                                        <p className="text-white/40 font-bold text-sm">Bandeja vacía. Aún no hay exclusivas.</p>
+                                                    </div>
+                                                ) : (
+                                                    <div className="space-y-3">
+                                                        {buzonReports.map(report => (
+                                                            <div key={report.id} className="bg-black/60 p-5 rounded-2xl border border-white/10 relative group">
+                                                                <button onClick={() => deleteReport(report.id)} className="absolute top-4 right-4 text-white/20 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"><i className="fa-solid fa-trash-can"></i></button>
+                                                                <div className="flex items-center gap-3 mb-2">
+                                                                    <span className={`px-2 py-1 rounded-md text-[10px] font-black uppercase ${report.type === 'alerta' ? 'bg-red-500/20 text-red-400' : report.type === 'evento' ? 'bg-purple-500/20 text-purple-400' : 'bg-blue-500/20 text-blue-400'}`}>
+                                                                        {report.type}
+                                                                    </span>
+                                                                    <span className="text-white font-bold">{report.name}</span>
+                                                                    <span className="text-white/30 text-xs">{new Date(report.timestamp).toLocaleDateString()}</span>
+                                                                </div>
+                                                                <p className="text-white/70 text-sm leading-relaxed">{report.message}</p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     )}
@@ -676,6 +751,72 @@
                             })}
                         </div>
                     </main>
+
+                    {/* POPUP DE BUZÓN (IZQUIERDA) */}
+                    {settings.buzonEnabled && !isAdmin && (
+                        <div className="fixed bottom-6 left-6 z-40 animate-fade-in d-200">
+                            <button onClick={() => setShowBuzon(true)} className="flex items-center gap-3 bg-black/80 backdrop-blur-xl p-3 pl-4 rounded-full border border-white/10 hover:border-blue-500/50 hover:bg-black transition-all shadow-2xl group">
+                                <span className="text-white text-[11px] font-bold uppercase tracking-widest hidden md:block group-hover:text-blue-400 transition-colors">{settings.buzonTitle}</span>
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white shadow-lg">
+                                    <i className="fa-solid fa-bullhorn text-sm"></i>
+                                </div>
+                            </button>
+                        </div>
+                    )}
+
+                    {/* MODAL DEL BUZÓN (FRONTEND) */}
+                    {showBuzon && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 bg-black/90 backdrop-blur-md anim-scale">
+                            <div className="bg-[#050505] border border-white/10 p-8 rounded-[2rem] w-full max-w-md relative shadow-[0_0_50px_rgba(59,130,246,0.15)]">
+                                <button onClick={() => setShowBuzon(false)} className="absolute top-6 right-6 text-white/30 hover:text-white transition-colors">
+                                    <i className="fa-solid fa-xmark text-xl"></i>
+                                </button>
+                                
+                                <div className="mb-8">
+                                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30 flex items-center justify-center mb-4">
+                                        <i className="fa-solid fa-microphone-lines text-blue-400 text-xl"></i>
+                                    </div>
+                                    <h2 className="text-2xl font-black text-white tracking-tight">Envía tu Exclusiva</h2>
+                                    <p className="text-white/50 text-xs mt-2 font-medium leading-relaxed">Tu aporte es vital. Escribe los detalles aquí, la información llegará directo al equipo de edición.</p>
+                                </div>
+
+                                {buzonStatus === 'success' ? (
+                                    <div className="bg-green-500/10 border border-green-500/30 p-6 rounded-2xl text-center anim-scale">
+                                        <i className="fa-solid fa-circle-check text-green-400 text-4xl mb-3"></i>
+                                        <h3 className="text-green-400 font-bold text-lg mb-1">¡Recibido con éxito!</h3>
+                                        <p className="text-green-400/70 text-sm">Nuestro equipo está revisando la información.</p>
+                                    </div>
+                                ) : (
+                                    <form onSubmit={submitBuzon} className="space-y-4">
+                                        <input type="text" placeholder="Tu Nombre o Alias" value={buzonForm.name} onChange={(e) => setBuzonForm({...buzonForm, name: e.target.value})} className="w-full bg-white/5 border border-white/5 rounded-xl px-5 py-3.5 text-white focus:outline-none focus:border-blue-500/50 transition-all font-medium text-sm" required disabled={buzonStatus === 'sending'} />
+                                        
+                                        <div className="grid grid-cols-3 gap-2">
+                                            {['noticia', 'evento', 'alerta'].map(type => (
+                                                <button type="button" key={type} onClick={() => setBuzonForm({...buzonForm, type})} className={`py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all border ${buzonForm.type === type ? 'border-blue-500 bg-blue-500/20 text-blue-400' : 'border-white/5 bg-white/5 text-white/40 hover:bg-white/10'}`} disabled={buzonStatus === 'sending'}>
+                                                    {type}
+                                                </button>
+                                            ))}
+                                        </div>
+
+                                        <textarea placeholder="Detalla lo sucedido, fechas, lugares..." value={buzonForm.message} onChange={(e) => setBuzonForm({...buzonForm, message: e.target.value})} rows="4" className="w-full bg-white/5 border border-white/5 rounded-xl px-5 py-3.5 text-white focus:outline-none focus:border-blue-500/50 transition-all font-medium text-sm resize-none" required disabled={buzonStatus === 'sending'}></textarea>
+
+                                        {/* Puente para fotos/videos usando WhatsApp */}
+                                        <a href={generateBuzonWaLink()} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between bg-green-500/10 border border-green-500/20 p-3 rounded-xl hover:bg-green-500/20 transition-colors mt-2">
+                                            <div className="flex items-center gap-3">
+                                                <i className="fa-solid fa-image text-green-400"></i>
+                                                <span className="text-green-400 text-[10px] font-bold uppercase tracking-widest">¿Tienes fotos o videos?</span>
+                                            </div>
+                                            <i className="fa-brands fa-whatsapp text-green-400 text-lg"></i>
+                                        </a>
+
+                                        <button type="submit" disabled={buzonStatus === 'sending'} className="w-full bg-blue-500 hover:bg-blue-400 text-white font-black py-4 rounded-xl mt-4 transition-transform active:scale-95 uppercase tracking-wider text-sm flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(59,130,246,0.3)]">
+                                            {buzonStatus === 'sending' ? <i className="fa-solid fa-spinner animate-spin"></i> : <><i className="fa-solid fa-paper-plane"></i> Enviar Exclusiva</>}
+                                        </button>
+                                    </form>
+                                )}
+                            </div>
+                        </div>
+                    )}
 
                     {/* POPUP DE VENTAS / CTA */}
                     {settings.ctaEnabled && !isAdmin && (
