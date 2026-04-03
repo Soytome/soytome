@@ -4,117 +4,62 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Soy Tomé Hub | Ecosistema Premium</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- React & Babel -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- FontAwesome 6.4.0 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     
     <style>
-        /* CORE BLACK LABEL DESIGN SYSTEM */
-        :root {
-            --primary-rgb: 217, 70, 239; 
-            --bg-color: #010101; 
-        }
-
+        :root { --primary-rgb: 217, 70, 239; --bg-color: #010101; }
         body { 
             background-color: var(--bg-color); 
             color: #e2e8f0; 
-            font-family: 'Inter', system-ui, -apple-system, sans-serif; 
+            font-family: 'Inter', sans-serif; 
             -webkit-font-smoothing: antialiased;
             overflow-x: hidden;
         }
-
-        /* Deep Glassmorphism (Bento Box VIP) */
         .glass-panel { 
             background: rgba(18, 18, 20, 0.75); 
             backdrop-filter: blur(32px); 
             -webkit-backdrop-filter: blur(32px);
             border: 1px solid rgba(255, 255, 255, 0.05); 
-            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05), 0 20px 40px rgba(0, 0, 0, 0.8);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
             border-radius: 32px;
         }
-        
-        .glass-panel:hover {
-            border: 1px solid rgba(var(--primary-rgb), 0.3);
-            box-shadow: 0 25px 60px -10px rgba(var(--primary-rgb), 0.15);
-            transform: translateY(-2px);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
         .anim-fade { animation: fadeUp 0.8s cubic-bezier(0.19, 1, 0.22, 1) forwards; opacity: 0; }
         @keyframes fadeUp { 0% { opacity: 0; transform: translateY(30px); } 100% { opacity: 1; transform: translateY(0); } }
-        
         .theme-text { color: rgb(var(--primary-rgb)); }
         .theme-bg { background-color: rgb(var(--primary-rgb)); }
-        .theme-border { border-color: rgba(var(--primary-rgb), 0.4); }
-
         @keyframes pulseGlow {
-            0% { box-shadow: 0 0 0 0 rgba(var(--primary-rgb), 0.4); }
-            70% { box-shadow: 0 0 0 18px rgba(var(--primary-rgb), 0); }
-            100% { box-shadow: 0 0 0 0 rgba(var(--primary-rgb), 0); }
+            0%, 100% { box-shadow: 0 0 0 0 rgba(var(--primary-rgb), 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(var(--primary-rgb), 0); }
         }
         .cta-pulse { animation: pulseGlow 2.5s infinite; }
-        
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-
         @media (max-width: 640px) {
-            .action-hub {
-                position: fixed;
-                bottom: 24px;
-                left: 16px;
-                right: 16px;
-                display: flex;
-                flex-direction: column-reverse;
-                gap: 12px;
-                z-index: 100;
-            }
+            .action-hub { position: fixed; bottom: 24px; left: 16px; right: 16px; display: flex; flex-direction: column-reverse; gap: 12px; z-index: 100; }
             .full-btn { width: 100% !important; justify-content: center !important; }
         }
-
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel" data-type="module">
-        const { useState, useEffect, useRef, useMemo } = window.React;
-        
+        const { useState, useEffect, useMemo } = window.React;
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc, getDoc, addDoc, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-        // =========================================================================
-        // CONFIGURACIÓN FIREBASE
-        // =========================================================================
+        // Inicialización de entorno
         const firebaseConfig = JSON.parse(__firebase_config);
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'soy-tome';
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-        // =========================================================================
-        // RUTAS OBLIGATORIAS (REGLA 1)
-        // =========================================================================
-        const CATEGORIES_COL = collection(db, 'artifacts', appId, 'public', 'data', 'categories');
-        const CONFIG_DOC = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'global');
-        const BUZON_COL = collection(db, 'artifacts', appId, 'public', 'data', 'buzon');
-
-        const THEMES = {
-            magenta: { name: 'Magenta Cyber', rgb: '217, 70, 239' },
-            coral: { name: 'Coral Sunset', rgb: '251, 113, 133' },
-            cyan: { name: 'Cyan Matrix', rgb: '6, 182, 212' },
-            gold: { name: 'Oro Premium', rgb: '234, 179, 8' }
-        };
-
+        // Definición de Iconos
         const ICONS = [
             { id: 'fa-whatsapp', class: 'fa-brands fa-whatsapp' },
             { id: 'fa-facebook', class: 'fa-brands fa-facebook' },
@@ -123,152 +68,133 @@
             { id: 'fa-youtube', class: 'fa-brands fa-youtube' },
             { id: 'fa-globe', class: 'fa-solid fa-globe' },
             { id: 'fa-bullhorn', class: 'fa-solid fa-bullhorn' },
-            { id: 'fa-umbrella', class: 'fa-solid fa-umbrella' },
             { id: 'fa-house-lock', class: 'fa-solid fa-house-lock' },
-            { id: 'fa-briefcase', class: 'fa-solid fa-briefcase' }
+            { id: 'fa-umbrella', class: 'fa-solid fa-umbrella' }
         ];
 
         function App() {
             const [user, setUser] = useState(null);
             const [categories, setCategories] = useState([]);
             const [settings, setSettings] = useState({
-                theme: 'magenta', ctaText: 'Si no te ven, no existes. Aumenta tu visibilidad.',
+                theme: 'magenta', ctaText: 'Si no te ven, no existes.',
                 ctaPhone: '56933527264', buzonWa: '56933527264', buzonTitle: 'Buzón de Exclusivas',
-                ceoName: 'Ian', ceoRole: 'CEO Soy Tomé', ceoBio: 'Líder en marketing y comunicación digital estratégica.',
+                ceoName: 'Ian', ceoRole: 'CEO Soy Tomé', ceoBio: 'Líder en marketing digital.',
                 showCeo: true
             });
             const [isLoading, setIsLoading] = useState(true);
+            const [error, setError] = useState(null);
             const [isAdmin, setIsAdmin] = useState(false);
             const [showLogin, setShowLogin] = useState(false);
             const [showBuzon, setShowBuzon] = useState(false);
             const [searchQuery, setSearchQuery] = useState('');
             const [adminTab, setAdminTab] = useState('links');
             const [reports, setReports] = useState([]);
-
             const [buzonForm, setBuzonForm] = useState({ name: '', type: 'noticia', message: '' });
             const [selectedFile, setSelectedFile] = useState(null);
-            const [buzonStatus, setBuzonStatus] = useState('idle');
             const [authForm, setAuthForm] = useState({ user: '', pass: '' });
             const [newCat, setNewCat] = useState({ title: '', iconId: 'fa-globe', type: 'comunidades' });
 
-            // 1. INICIALIZACIÓN AUTH (REGLA 3)
+            // 1. Efecto de Autenticación (REGLA 3)
             useEffect(() => {
-                const initAuth = async () => {
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } else {
-                        await signInAnonymously(auth);
+                const startAuth = async () => {
+                    try {
+                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                            await signInWithCustomToken(auth, __initial_auth_token);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                    } catch (e) {
+                        console.error("Auth failed:", e);
                     }
                 };
-                initAuth();
+                startAuth();
                 const unsubscribe = onAuthStateChanged(auth, setUser);
-                return () => unsubscribe();
+                
+                // Fail-safe: Si en 5 segundos no hay respuesta, soltar el loading para evitar pantalla negra
+                const timer = setTimeout(() => { if (isLoading) setIsLoading(false); }, 5000);
+                return () => { unsubscribe(); clearTimeout(timer); };
             }, []);
 
-            // 2. FETCH DATA (SOLO DESPUÉS DE AUTH)
+            // 2. Efecto de Datos (Solo tras Auth exitosa)
             useEffect(() => {
                 if (!user) return;
 
-                const unsubCats = onSnapshot(CATEGORIES_COL, (snap) => {
-                    const list = [];
-                    snap.forEach(d => list.push({ id: d.id, ...d.data() }));
-                    setCategories(list.sort((a,b) => (a.order || 0) - (b.order || 0)));
-                }, (error) => console.error("Error categories:", error));
+                const colCats = collection(db, 'artifacts', appId, 'public', 'data', 'categories');
+                const docConf = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'global');
+                const colBuzon = collection(db, 'artifacts', appId, 'public', 'data', 'buzon');
 
-                const unsubConf = onSnapshot(CONFIG_DOC, (d) => {
-                    if (d.exists()) setSettings(prev => ({...prev, ...d.data()}));
-                    else setDoc(CONFIG_DOC, settings);
-                    setIsLoading(false);
-                }, (error) => console.error("Error config:", error));
+                const unsubCats = onSnapshot(colCats, 
+                    (snap) => {
+                        const list = [];
+                        snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+                        setCategories(list.sort((a,b) => (a.order || 0) - (b.order || 0)));
+                    }, 
+                    (err) => { console.error("Permission error cats:", err); setError("Acceso restringido a la base de datos."); }
+                );
 
-                const unsubInbox = onSnapshot(BUZON_COL, (snap) => {
-                    const list = [];
-                    snap.forEach(d => list.push({ id: d.id, ...d.data() }));
-                    setReports(list.sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0)));
-                }, (error) => console.error("Error buzon:", error));
+                const unsubConf = onSnapshot(docConf, 
+                    (d) => {
+                        if (d.exists()) setSettings(prev => ({...prev, ...d.data()}));
+                        setIsLoading(false);
+                    },
+                    (err) => { console.error("Permission error config:", err); setIsLoading(false); }
+                );
+
+                const unsubInbox = onSnapshot(colBuzon, 
+                    (snap) => {
+                        const list = [];
+                        snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+                        setReports(list.sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0)));
+                    }
+                );
 
                 return () => { unsubCats(); unsubConf(); unsubInbox(); };
             }, [user]);
 
             useEffect(() => {
-                if (THEMES[settings.theme]) {
-                    document.documentElement.style.setProperty('--primary-rgb', THEMES[settings.theme].rgb);
-                }
+                const themes = { magenta: '217, 70, 239', coral: '251, 113, 133', cyan: '6, 182, 212', gold: '234, 179, 8' };
+                document.documentElement.style.setProperty('--primary-rgb', themes[settings.theme] || themes.magenta);
             }, [settings.theme]);
 
             const filteredCategories = useMemo(() => {
-                const queryStr = searchQuery.toLowerCase();
-                if (!queryStr) return categories;
-                return categories.filter(cat => 
-                    cat.title.toLowerCase().includes(queryStr) ||
-                    cat.links?.some(l => l.title.toLowerCase().includes(queryStr))
-                );
+                const q = searchQuery.toLowerCase();
+                return categories.filter(c => c.title.toLowerCase().includes(q) || c.links?.some(l => l.title.toLowerCase().includes(q)));
             }, [categories, searchQuery]);
 
-            // ACCIONES
             const handleBuzonSend = async (e) => {
                 e.preventDefault();
-                setBuzonStatus('sending');
                 try {
-                    await addDoc(BUZON_COL, { 
-                        ...buzonForm, 
-                        fileName: selectedFile ? selectedFile.name : 'N/A',
-                        timestamp: Date.now() 
-                    });
-                    const text = `🚨 *REPORTE CIUDADANO* 🚨\n\n*De:* ${buzonForm.name}\n*Tipo:* ${buzonForm.type.toUpperCase()}\n*Mensaje:* ${buzonForm.message}\n*Adjunto:* ${selectedFile ? selectedFile.name : 'Vía Chat'}\n\n_Enviado desde Soy Tomé Hub_`;
-                    setBuzonStatus('success');
-                    setTimeout(() => {
-                        window.open(`https://wa.me/${settings.buzonWa.replace(/\D/g, '')}?text=${encodeURIComponent(text)}`, '_blank');
-                        setShowBuzon(false); setBuzonStatus('idle');
-                        setBuzonForm({ name: '', type: 'noticia', message: '' }); setSelectedFile(null);
-                    }, 1200);
-                } catch (err) { setBuzonStatus('error'); }
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'buzon'), { ...buzonForm, fileName: selectedFile?.name || 'N/A', timestamp: Date.now() });
+                    const text = `🚨 *REPORTE* 🚨\n\n*De:* ${buzonForm.name}\n*Tipo:* ${buzonForm.type}\n*Mensaje:* ${buzonForm.message}`;
+                    window.open(`https://wa.me/${settings.buzonWa.replace(/\D/g, '')}?text=${encodeURIComponent(text)}`, '_blank');
+                    setShowBuzon(false);
+                    setBuzonForm({ name: '', type: 'noticia', message: '' });
+                } catch (err) { console.error(err); }
             };
 
             const addCategory = async () => {
                 if (!newCat.title.trim()) return;
                 const id = `cat-${Date.now()}`;
-                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', id), { 
-                    ...newCat,
-                    order: categories.length, 
-                    links: [] 
-                });
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', id), { ...newCat, order: categories.length, links: [] });
                 setNewCat({ title: '', iconId: 'fa-globe', type: 'comunidades' });
             };
 
-            const updateSettings = async (newData) => {
-                const updated = { ...settings, ...newData };
-                setSettings(updated);
-                await setDoc(CONFIG_DOC, updated);
-            };
-
-            if (isLoading) return <div className="min-h-screen bg-black flex flex-col items-center justify-center p-10"><div className="w-12 h-12 border-t-purple-500 border-2 rounded-full animate-spin mb-6"></div><p className="text-white/20 text-[9px] font-black uppercase tracking-[1em]">Black Label Engine</p></div>;
+            if (isLoading) return <div className="min-h-screen bg-black flex flex-col items-center justify-center p-10 text-center"><div className="w-10 h-10 border-t-purple-500 border-2 rounded-full animate-spin mb-6"></div><p className="text-white/20 text-[8px] font-black uppercase tracking-[1em]">Iniciando Ecosistema...</p></div>;
 
             return (
                 <div className="min-h-screen relative pb-40">
                     <div className="fixed inset-0 pointer-events-none z-0 opacity-40">
-                        <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full blur-[160px] mix-blend-screen theme-bg opacity-30"></div>
-                        <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full blur-[160px] mix-blend-screen theme-bg opacity-20"></div>
+                        <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full blur-[150px] mix-blend-screen theme-bg opacity-30"></div>
+                        <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full blur-[150px] mix-blend-screen theme-bg opacity-20"></div>
                     </div>
 
-                    {/* TOP NAVIGATION & SEARCH */}
                     <div className="relative z-50 p-6 flex flex-col items-center max-w-5xl mx-auto gap-8">
                         <div className="w-full flex justify-end">
-                            {isAdmin ? 
-                                <button onClick={()=>setIsAdmin(false)} className="bg-red-500/20 text-red-400 px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border border-red-500/30 shadow-lg">Cerrar Bóveda</button> :
-                                <button onClick={()=>setShowLogin(true)} className="text-white/10 hover:text-white transition-colors"><i className="fa-solid fa-fingerprint text-2xl"></i></button>
-                            }
+                            {isAdmin ? <button onClick={()=>setIsAdmin(false)} className="bg-red-500/20 text-red-400 px-6 py-2 rounded-full text-[10px] font-black uppercase border border-red-500/30 shadow-lg">Cerrar CEO</button> : <button onClick={()=>setShowLogin(true)} className="text-white/10 hover:text-white transition-colors"><i className="fa-solid fa-fingerprint text-2xl"></i></button>}
                         </div>
-
                         <div className="w-full max-w-2xl relative group">
-                            <i className="fa-solid fa-magnifying-glass absolute left-6 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:theme-text transition-colors"></i>
-                            <input 
-                                type="text" 
-                                placeholder="Explorar el Ecosistema Soy Tomé..." 
-                                className="w-full bg-white/5 border border-white/10 rounded-[2.5rem] py-6 pl-16 pr-6 text-white font-medium focus:border-white/30 focus:bg-white/10 outline-none transition-all shadow-2xl backdrop-blur-2xl"
-                                value={searchQuery}
-                                onChange={(e)=>setSearchQuery(e.target.value)}
-                            />
+                            <i className="fa-solid fa-magnifying-glass absolute left-6 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:theme-text"></i>
+                            <input type="text" placeholder="Buscar en Tomé..." className="w-full bg-white/5 border border-white/10 rounded-[2.5rem] py-5 pl-14 pr-6 text-white font-medium focus:border-white/30 outline-none transition-all shadow-2xl backdrop-blur-2xl" value={searchQuery} onChange={(e)=>setSearchQuery(e.target.value)} />
                         </div>
                     </div>
 
@@ -276,58 +202,43 @@
                         <div className="mb-20 anim-fade">
                             <h1 className="text-9xl font-black text-white tracking-tighter mb-12 drop-shadow-[0_25px_50px_rgba(255,255,255,0.1)] select-none">ST</h1>
                             {settings.showCeo && (
-                                <div className="glass-panel p-10 max-w-lg mx-auto relative group">
-                                    <div className="absolute inset-0 bg-gradient-to-br theme-bg opacity-0 group-hover:opacity-5 transition-opacity duration-700 pointer-events-none"></div>
-                                    {settings.ceoPhoto && <img src={settings.ceoPhoto} className="w-32 h-32 rounded-full mx-auto mb-8 border-2 theme-border object-cover shadow-[0_0_50px_rgba(var(--primary-rgb),0.3)] group-hover:scale-105 transition-transform duration-500" />}
-                                    <h2 className="text-4xl font-black text-white mb-2 tracking-tight">{settings.ceoName}</h2>
+                                <div className="glass-panel p-10 max-w-lg mx-auto relative overflow-hidden group">
+                                    {settings.ceoPhoto && <img src={settings.ceoPhoto} className="w-32 h-32 rounded-full mx-auto mb-8 border-2 theme-border object-cover shadow-2xl" />}
+                                    <h2 className="text-4xl font-black text-white mb-2">{settings.ceoName}</h2>
                                     <p className="theme-text text-xs font-black uppercase tracking-[0.4em] mb-6">{settings.ceoRole}</p>
-                                    <p className="text-white/50 text-sm font-medium leading-relaxed italic border-t border-white/5 pt-6">"{settings.ceoBio}"</p>
+                                    <p className="text-white/50 text-sm italic">"{settings.ceoBio}"</p>
                                 </div>
                             )}
                         </div>
 
                         {isAdmin && (
-                            <div className="mb-24 glass-panel overflow-hidden text-left bg-zinc-950/90 border-white/10 shadow-[0_40px_80px_rgba(0,0,0,0.8)]">
+                            <div className="mb-24 glass-panel overflow-hidden text-left bg-zinc-950 border-white/10 shadow-2xl">
                                 <div className="flex border-b border-white/5 bg-black/50 overflow-x-auto no-scrollbar">
                                     {['links', 'design', 'inbox'].map(t => (
-                                        <button key={t} onClick={()=>setAdminTab(t)} className={`flex-1 min-w-[120px] py-6 text-[10px] font-black uppercase tracking-widest transition-all ${adminTab===t ? 'text-white border-b-2 theme-border bg-white/5' : 'text-white/30'}`}>{t}</button>
+                                        <button key={t} onClick={()=>setAdminTab(t)} className={`flex-1 min-w-[120px] py-6 text-[10px] font-black uppercase tracking-widest ${adminTab===t ? 'text-white border-b-2 theme-border bg-white/5' : 'text-white/30'}`}>{t}</button>
                                     ))}
                                 </div>
                                 <div className="p-10">
                                     {adminTab==='links' && (
                                         <div className="space-y-8">
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                                <input placeholder="Nombre de Sección" className="bg-white/5 border border-white/10 rounded-2xl px-6 py-5 text-white text-sm focus:border-white/30 outline-none" value={newCat.title} onChange={e=>setNewCat({...newCat, title: e.target.value})} />
-                                                <select className="bg-white/5 border border-white/10 rounded-2xl px-6 py-5 text-white text-sm outline-none" value={newCat.type} onChange={e=>setNewCat({...newCat, type: e.target.value})}>
-                                                    <option value="medios">A. Red de Medios (Gancho)</option>
-                                                    <option value="servicios">B. Ecosistema Servicios (Valor)</option>
-                                                    <option value="proyectos">C. Proyectos & Branding (Posicion)</option>
-                                                    <option value="comunidades">D. Conectividad (Conversión)</option>
+                                                <input placeholder="Título" className="bg-white/5 border border-white/10 rounded-2xl px-6 py-5 text-white" value={newCat.title} onChange={e=>setNewCat({...newCat, title: e.target.value})} />
+                                                <select className="bg-white/5 border border-white/10 rounded-2xl px-6 py-5 text-white outline-none" value={newCat.type} onChange={e=>setNewCat({...newCat, type: e.target.value})}>
+                                                    <option value="medios">Red de Medios</option>
+                                                    <option value="servicios">Servicios Locales</option>
+                                                    <option value="proyectos">Proyectos Umbra</option>
+                                                    <option value="comunidades">Comunidades WhatsApp/FB</option>
                                                 </select>
                                             </div>
-                                            <div className="flex flex-wrap gap-3">
-                                                {ICONS.map(i => (
-                                                    <button key={i.id} onClick={()=>setNewCat({...newCat, iconId: i.id})} className={`w-14 h-14 rounded-2xl border transition-all ${newCat.iconId===i.id ? 'theme-bg text-white shadow-lg scale-110' : 'bg-white/5 border-white/10 text-white/30 hover:border-white/20'}`}>
-                                                        <i className={i.class + " text-lg"}></i>
-                                                    </button>
-                                                ))}
-                                            </div>
-                                            <button onClick={addCategory} className="theme-bg text-white w-full py-5 rounded-2xl font-black text-xs uppercase shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all">INYECTAR NUEVA SECCIÓN</button>
+                                            <button onClick={addCategory} className="theme-bg text-white w-full py-5 rounded-2xl font-black text-xs uppercase shadow-xl">Crear Sección</button>
                                         </div>
                                     )}
                                     {adminTab==='inbox' && (
-                                        <div className="space-y-5">
+                                        <div className="space-y-4">
                                             {reports.map(r => (
-                                                <div key={r.id} className="bg-white/5 p-8 rounded-[2rem] border border-white/5 flex justify-between items-start group hover:border-white/20 transition-all shadow-xl">
-                                                    <div>
-                                                        <div className="flex items-center gap-4 mb-3">
-                                                            <span className="text-[10px] font-black theme-bg text-white px-3 py-1 rounded-lg uppercase shadow-lg">{r.type}</span>
-                                                            <span className="text-white font-black text-lg">{r.name}</span>
-                                                        </div>
-                                                        <p className="text-white/60 text-sm leading-relaxed mb-4">{r.message}</p>
-                                                        {r.fileName && <div className="inline-flex items-center gap-2 bg-blue-500/10 text-blue-400 px-4 py-2 rounded-xl text-xs font-bold border border-blue-500/20"><i className="fa-solid fa-file-export"></i> {r.fileName}</div>}
-                                                    </div>
-                                                    <button onClick={async ()=>{if(confirm('¿Borrar?')) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'buzon', r.id))}} className="text-red-500/20 hover:text-red-500 p-3 transition-colors bg-red-500/5 rounded-xl"><i className="fa-solid fa-trash-can text-lg"></i></button>
+                                                <div key={r.id} className="bg-white/5 p-6 rounded-[1.5rem] border border-white/5 flex justify-between">
+                                                    <div><span className="text-[9px] font-black theme-bg text-white px-2 py-0.5 rounded uppercase">{r.type}</span><p className="text-white font-black mt-2">{r.name}</p><p className="text-white/60 text-sm">{r.message}</p></div>
+                                                    <button onClick={async ()=>await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'buzon', r.id))} className="text-red-500/30 hover:text-red-500 p-2"><i className="fa-solid fa-trash-can"></i></button>
                                                 </div>
                                             ))}
                                         </div>
@@ -337,49 +248,35 @@
                         )}
 
                         <div className="space-y-32 text-left pb-20">
-                            {[
-                                { key: 'medios', label: 'RED DE MEDIOS & NOTICIAS' },
-                                { key: 'servicios', label: 'ECOSISTEMA DE SERVICIOS' },
-                                { key: 'proyectos', label: 'PROYECTOS & BRANDING' },
-                                { key: 'comunidades', label: 'DIRECTORIO DE CONECTIVIDAD' }
-                            ].map(section => {
-                                const sectionCats = filteredCategories.filter(c => c.type === section.key);
+                            {['medios', 'servicios', 'proyectos', 'comunidades'].map(section => {
+                                const sectionCats = filteredCategories.filter(c => (c.type || 'comunidades') === section);
                                 if (sectionCats.length === 0) return null;
                                 return (
-                                    <div key={section.key} className="anim-fade">
+                                    <div key={section} className="anim-fade">
                                         <div className="flex items-center gap-6 mb-12">
-                                            <h2 className="text-xs font-black uppercase tracking-[0.6em] text-white/40 whitespace-nowrap">{section.label}</h2>
-                                            <div className="h-px w-full bg-gradient-to-r from-white/10 to-transparent"></div>
+                                            <h2 className="text-xs font-black uppercase tracking-[0.6em] text-white/40">{section}</h2>
+                                            <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent"></div>
                                         </div>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                                             {sectionCats.map(cat => (
-                                                <div key={cat.id} className="glass-panel p-10 group relative overflow-hidden flex flex-col">
+                                                <div key={cat.id} className="glass-panel p-10 group relative overflow-hidden">
                                                     <div className="flex items-center justify-between mb-10">
                                                         <div className="flex items-center gap-6">
-                                                            <div className="w-20 h-20 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center text-5xl text-white shadow-inner group-hover:theme-text transition-all duration-500">
+                                                            <div className="w-16 h-16 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center text-4xl text-white shadow-inner">
                                                                 <i className={ICONS.find(i=>i.id===cat.iconId)?.class || 'fa-solid fa-globe'}></i>
                                                             </div>
-                                                            <h3 className="text-3xl font-black text-white tracking-tight leading-none group-hover:scale-105 transition-transform duration-500 origin-left">{cat.title}</h3>
+                                                            <h3 className="text-2xl font-black text-white group-hover:theme-text transition-colors">{cat.title}</h3>
                                                         </div>
-                                                        {isAdmin && <button onClick={()=>deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', cat.id))} className="text-red-500/20 hover:text-red-500 transition-colors p-3 bg-red-500/5 rounded-2xl"><i className="fa-solid fa-xmark text-2xl"></i></button>}
+                                                        {isAdmin && <button onClick={()=>deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', cat.id))} className="text-red-500/20 hover:text-red-500"><i className="fa-solid fa-xmark text-2xl"></i></button>}
                                                     </div>
-                                                    <div className="space-y-4 mt-auto">
+                                                    <div className="space-y-4">
                                                         {cat.links?.map(l => (
-                                                            <a key={l.id} href={l.url} target="_blank" className="flex justify-between items-center p-6 rounded-[1.5rem] bg-white/5 border border-white/5 hover:border-white/20 hover:bg-white/10 hover:translate-x-2 transition-all group/link shadow-xl">
+                                                            <a key={l.id} href={l.url} target="_blank" className="flex justify-between items-center p-6 rounded-[1.5rem] bg-white/5 border border-white/5 hover:border-white/20 hover:translate-x-2 transition-all shadow-xl group/link">
                                                                 <span className="font-bold text-white/80 group-hover/link:text-white text-lg">{l.title}</span>
-                                                                <i className="fa-solid fa-arrow-right text-[14px] text-white/20 -rotate-45 group-hover/link:text-white group-hover/link:rotate-0 transition-all duration-300"></i>
+                                                                <i className="fa-solid fa-arrow-right text-[14px] text-white/20 -rotate-45 group-hover/link:text-white group-hover/link:rotate-0 transition-all"></i>
                                                             </a>
                                                         ))}
-                                                        {isAdmin && (
-                                                            <button onClick={async ()=>{
-                                                                const title = prompt('Nombre del link:');
-                                                                const url = prompt('URL:');
-                                                                if(title && url) {
-                                                                    const updated = [...(cat.links || []), { id: `l-${Date.now()}`, title, url }];
-                                                                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', cat.id), { ...cat, links: updated });
-                                                                }
-                                                            }} className="w-full py-5 border border-dashed border-white/10 rounded-3xl text-xs font-black uppercase tracking-widest text-white/20 hover:text-white hover:border-white/40 transition-all bg-white/5 mt-4">+ Inyectar Enlace</button>
-                                                        )}
+                                                        {isAdmin && <button onClick={async ()=>{ const t = prompt('Link:'); const u = prompt('URL:'); if(t && u) { const updated = [...(cat.links || []), { id: `l-${Date.now()}`, title: t, url: u }]; await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'categories', cat.id), { ...cat, links: updated }); } }} className="w-full py-4 border border-dashed border-white/10 rounded-3xl text-xs font-black uppercase text-white/20 hover:text-white">+ Añadir Enlace</button>}
                                                     </div>
                                                 </div>
                                             ))}
@@ -393,77 +290,43 @@
                     <div className="action-hub">
                         {settings.ctaEnabled && !isAdmin && (
                             <a href={`https://wa.me/${settings.ctaPhone.replace(/\D/g, '')}?text=${encodeURIComponent(settings.ctaMessage)}`} target="_blank" className="full-btn p-1.5 rounded-full theme-bg cta-pulse flex items-center shadow-2xl transition-transform hover:scale-105 active:scale-95">
-                                <div className="bg-[#050505] p-2.5 pr-8 rounded-full flex items-center gap-5 w-full">
+                                <div className="bg-[#050505] p-2 pr-8 rounded-full flex items-center gap-5 w-full">
                                     <div className="w-12 h-12 rounded-full theme-bg flex items-center justify-center text-white text-2xl shadow-inner"><i className="fa-brands fa-whatsapp"></i></div>
                                     <p className="text-white text-xs font-black leading-tight max-w-[200px] tracking-tight">{settings.ctaText}</p>
                                 </div>
                             </a>
                         )}
                         {!isAdmin && (
-                            <button onClick={()=>setShowBuzon(true)} className="full-btn flex items-center gap-5 bg-zinc-900/95 backdrop-blur-3xl p-3 pl-8 rounded-full border border-white/10 hover:border-blue-500 shadow-2xl transition-all group self-end md:self-start">
+                            <button onClick={()=>setShowBuzon(true)} className="full-btn flex items-center gap-5 bg-zinc-900/95 backdrop-blur-3xl p-3 pl-8 rounded-full border border-white/10 hover:border-blue-500 shadow-2xl transition-all group self-end">
                                 <span className="text-white text-[11px] font-black uppercase tracking-[0.3em] group-hover:text-blue-400">{settings.buzonTitle}</span>
-                                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center text-white shadow-xl group-hover:scale-110 transition-transform"><i className="fa-solid fa-bullhorn text-lg"></i></div>
+                                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center text-white shadow-xl"><i className="fa-solid fa-bullhorn text-lg"></i></div>
                             </button>
                         )}
                     </div>
 
                     {showBuzon && (
                         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/95 backdrop-blur-2xl p-4 anim-fade">
-                            <div className="bg-[#0a0a0c] border border-white/10 p-10 sm:p-12 rounded-[3.5rem] w-full max-w-xl relative shadow-2xl overflow-y-auto max-h-[98vh] no-scrollbar">
-                                <button onClick={()=>setShowBuzon(false)} className="absolute top-10 right-10 text-white/20 hover:text-white transition-colors"><i className="fa-solid fa-xmark text-3xl"></i></button>
-                                <div className="mb-12 text-left">
-                                    <h2 className="text-4xl font-black text-white tracking-tighter leading-none mb-4">Enviar Exclusiva</h2>
-                                    <p className="text-white/40 text-[11px] font-black uppercase tracking-[0.4em] border-l-2 theme-border pl-4">Centro de Medios Soy Tomé</p>
-                                </div>
-
-                                {buzonStatus==='success' ? (
-                                    <div className="text-center py-16">
-                                        <i className="fa-solid fa-paper-plane text-blue-400 text-7xl animate-bounce mb-8"></i>
-                                        <h3 className="text-3xl font-black text-white mb-3 tracking-tight">¡Reporte Enviado!</h3>
-                                        <p className="text-white/40 text-sm">Abriendo WhatsApp para recibir tu material adjunto.</p>
-                                    </div>
-                                ) : (
-                                    <form onSubmit={handleBuzonSend} className="space-y-8">
-                                        <input placeholder="Nombre / Alias" className="w-full bg-white/5 border border-white/10 rounded-2xl px-8 py-6 text-white font-bold focus:border-blue-500 outline-none" value={buzonForm.name} onChange={e=>setBuzonForm({...buzonForm, name: e.target.value})} required />
-                                        <textarea placeholder="Explica los hechos..." className="w-full bg-white/5 border border-white/10 rounded-3xl px-8 py-6 text-white resize-none h-44 focus:border-blue-500 outline-none font-medium leading-relaxed" value={buzonForm.message} onChange={e=>setBuzonForm({...buzonForm, message: e.target.value})} required></textarea>
-                                        
-                                        <div className="relative group">
-                                            <input type="file" id="file-picker" className="hidden" onChange={e => setSelectedFile(e.target.files[0])} />
-                                            <label htmlFor="file-picker" className={`border-2 border-dashed p-8 rounded-[2.5rem] flex items-center justify-between cursor-pointer transition-all ${selectedFile ? 'border-blue-500 bg-blue-500/10' : 'border-white/10 hover:border-white/40 bg-black/40'}`}>
-                                                <div className="flex items-center gap-6 text-left">
-                                                    <i className={`fa-solid ${selectedFile ? 'fa-check text-blue-400' : 'fa-camera-retro text-white/20'} text-3xl`}></i>
-                                                    <div>
-                                                        <p className="text-[11px] font-black uppercase text-white/40 mb-1">{selectedFile ? 'Multimedia Lista' : 'Fotos / Videos'}</p>
-                                                        <p className="text-white text-sm font-bold truncate max-w-[240px]">{selectedFile ? selectedFile.name : 'Click para adjuntar'}</p>
-                                                    </div>
-                                                </div>
-                                                <i className="fa-brands fa-whatsapp text-green-500 text-3xl"></i>
-                                            </label>
-                                        </div>
-
-                                        <button type="submit" disabled={buzonStatus==='sending'} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-8 rounded-[2.5rem] mt-4 transition-transform active:scale-95 uppercase tracking-widest text-[12px]">
-                                            {buzonStatus==='sending' ? 'PROCESANDO...' : 'ENVIAR REPORTE AHORA'}
-                                        </button>
-                                    </form>
-                                )}
+                            <div className="bg-[#0a0a0c] border border-white/10 p-10 rounded-[3.5rem] w-full max-w-md relative shadow-2xl overflow-y-auto max-h-[90vh] no-scrollbar">
+                                <button onClick={()=>setShowBuzon(false)} className="absolute top-8 right-8 text-white/20"><i className="fa-solid fa-xmark text-2xl"></i></button>
+                                <h2 className="text-3xl font-black text-white mb-8 tracking-tighter">Enviar Exclusiva</h2>
+                                <form onSubmit={handleBuzonSend} className="space-y-6">
+                                    <input placeholder="Nombre / Alias" className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-5 text-white font-bold focus:border-blue-500 outline-none" value={buzonForm.name} onChange={e=>setBuzonForm({...buzonForm, name: e.target.value})} required />
+                                    <textarea placeholder="Explica los hechos..." className="w-full bg-white/5 border border-white/10 rounded-3xl px-6 py-5 text-white h-40 focus:border-blue-500 outline-none resize-none" value={buzonForm.message} onChange={e=>setBuzonForm({...buzonForm, message: e.target.value})} required></textarea>
+                                    <button type="submit" className="w-full theme-bg text-white font-black py-6 rounded-[2.5rem] shadow-xl uppercase tracking-widest text-[10px]">Enviar Reporte</button>
+                                </form>
                             </div>
                         </div>
                     )}
 
                     {showLogin && (
                         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/98 backdrop-blur-3xl anim-fade">
-                            <div className="bg-[#050505] border border-white/10 p-12 sm:p-16 rounded-[4rem] w-full max-w-md relative shadow-2xl">
-                                <button onClick={()=>setShowLogin(false)} className="absolute top-12 right-12 text-white/20 hover:text-white transition-colors"><i className="fa-solid fa-xmark text-3xl"></i></button>
-                                <div className="text-center mb-16">
-                                    <div className="w-24 h-24 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-8 shadow-inner">
-                                        <i className="fa-solid fa-crown theme-text text-4xl"></i>
-                                    </div>
-                                    <h2 className="text-4xl font-black text-white tracking-tighter uppercase leading-none mb-4">Bóveda CEO</h2>
-                                </div>
+                            <div className="bg-[#050505] border border-white/10 p-12 rounded-[4rem] w-full max-w-sm relative shadow-2xl">
+                                <button onClick={()=>setShowLogin(false)} className="absolute top-12 right-12 text-white/30"><i className="fa-solid fa-xmark text-3xl"></i></button>
+                                <div className="text-center mb-16"><h2 className="text-4xl font-black text-white uppercase mb-4 tracking-tighter">CEO ACCESS</h2></div>
                                 <form onSubmit={(e)=>{ e.preventDefault(); if(authForm.user==='ian' && authForm.pass==='ian123'){ setIsAdmin(true); setShowLogin(false); } else { alert('Denegado'); } }} className="space-y-6">
-                                    <input placeholder="USUARIO" className="w-full bg-white/5 border border-white/10 rounded-3xl px-8 py-6 text-white text-center font-black tracking-[0.3em] text-sm focus:border-white/30 outline-none" onChange={e=>setAuthForm({...authForm, user: e.target.value})} required />
-                                    <input type="password" placeholder="CLAVE" className="w-full bg-white/5 border border-white/10 rounded-3xl px-8 py-6 text-white text-center font-black tracking-[0.5em] text-sm focus:border-white/30 outline-none" onChange={e=>setAuthForm({...authForm, pass: e.target.value})} required />
-                                    <button type="submit" className="w-full bg-white text-black font-black py-7 rounded-[2.5rem] mt-10 uppercase tracking-[0.3em] text-[10px] transition-transform active:scale-95 shadow-[0_0_40px_rgba(255,255,255,0.15)]">DESBLOQUEAR</button>
+                                    <input placeholder="USUARIO" className="w-full bg-white/5 border border-white/10 rounded-3xl px-8 py-6 text-white text-center font-black" onChange={e=>setAuthForm({...authForm, user: e.target.value})} required />
+                                    <input type="password" placeholder="CLAVE" className="w-full bg-white/5 border border-white/10 rounded-3xl px-8 py-6 text-white text-center font-black" onChange={e=>setAuthForm({...authForm, pass: e.target.value})} required />
+                                    <button type="submit" className="w-full bg-white text-black font-black py-7 rounded-[2.5rem] mt-10 uppercase tracking-widest text-[10px] transition-transform active:scale-95">Desbloquear</button>
                                 </form>
                             </div>
                         </div>
