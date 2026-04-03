@@ -16,9 +16,8 @@
     <style>
         /* CORE BLACK LABEL DESIGN SYSTEM */
         :root {
-            /* Variables dinámicas para el tema premium */
-            --primary-rgb: 168, 85, 247; /* Default Purple */
-            --bg-color: #050505; /* Obsidian Black */
+            --primary-rgb: 168, 85, 247; 
+            --bg-color: #030303; 
         }
 
         body { 
@@ -30,16 +29,16 @@
 
         /* Glassmorphism Ultra-Premium */
         .glass-panel { 
-            background: rgba(20, 20, 20, 0.4); 
+            background: rgba(15, 15, 15, 0.6); 
             backdrop-filter: blur(24px); 
             -webkit-backdrop-filter: blur(24px);
             border: 1px solid rgba(255, 255, 255, 0.04); 
-            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.8);
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.9);
         }
         
         .glass-panel:hover {
-            border: 1px solid rgba(var(--primary-rgb), 0.2);
-            box-shadow: 0 30px 60px -15px rgba(var(--primary-rgb), 0.1);
+            border: 1px solid rgba(var(--primary-rgb), 0.25);
+            box-shadow: 0 20px 50px -10px rgba(var(--primary-rgb), 0.15);
         }
 
         /* Animaciones dinámicas de interfaz */
@@ -55,13 +54,12 @@
         .d-100 { animation-delay: 100ms; } .d-200 { animation-delay: 200ms; } .d-300 { animation-delay: 300ms; }
 
         /* Efectos Temáticos Dinámicos */
-        .theme-glow { box-shadow: 0 0 40px rgba(var(--primary-rgb), 0.25); }
+        .theme-glow { box-shadow: 0 0 40px rgba(var(--primary-rgb), 0.3); }
         .theme-text { color: rgb(var(--primary-rgb)); }
         .theme-bg { background-color: rgb(var(--primary-rgb)); }
         .theme-border { border-color: rgba(var(--primary-rgb), 0.5); }
         .theme-hover:hover { background-color: rgba(var(--primary-rgb), 0.1); color: rgb(var(--primary-rgb)); }
 
-        /* Floating CTA Animation */
         @keyframes pulseGlow {
             0% { box-shadow: 0 0 0 0 rgba(var(--primary-rgb), 0.4); }
             70% { box-shadow: 0 0 0 15px rgba(var(--primary-rgb), 0); }
@@ -69,7 +67,6 @@
         }
         .cta-pulse { animation: pulseGlow 2s infinite; }
         
-        /* Scrollbar Premium */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #000; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
@@ -106,23 +103,28 @@
         const auth = getAuth(app);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'soytome-prod';
 
-        // Rutas de Base de datos
         const getCatsPath = () => isCanvas ? `artifacts/${appId}/public/data/categorias` : 'hub_categorias';
         const getSettingsPath = () => isCanvas ? `artifacts/${appId}/public/data/config` : 'hub_settings';
 
-        // Opciones del Motor de Diseño
+        // NUEVAS OPCIONES PREMIUM (Diseño y Plantillas)
         const THEMES = {
+            magenta: { name: 'Magenta Cyber', rgb: '217, 70, 239' },
+            coral: { name: 'Coral Sunset', rgb: '251, 113, 133' },
+            cyan: { name: 'Cyan Matrix', rgb: '6, 182, 212' },
             purple: { name: 'Púrpura Neón', rgb: '168, 85, 247' },
-            emerald: { name: 'Esmeralda Épico', rgb: '16, 185, 129' },
-            blue: { name: 'Azul Corporativo', rgb: '59, 130, 246' },
-            gold: { name: 'Oro Premium', rgb: '234, 179, 8' },
-            crimson: { name: 'Rojo Sangre', rgb: '225, 29, 72' }
+            emerald: { name: 'Esmeralda', rgb: '16, 185, 129' },
+            gold: { name: 'Oro Premium', rgb: '234, 179, 8' }
+        };
+
+        const LAYOUTS = {
+            grid: { name: 'Grid Dinámico', icon: 'fa-border-all' },
+            list: { name: 'Lista Minimalista', icon: 'fa-list' }
         };
 
         const ANIMATIONS = {
-            fade: { name: 'Cascada Suave', class: 'anim-fade' },
-            scale: { name: 'Zoom Impactante', class: 'anim-scale' },
-            slide: { name: 'Deslizamiento Lateral', class: 'anim-slide' }
+            fade: { name: 'Cascada', class: 'anim-fade' },
+            scale: { name: 'Zoom In', class: 'anim-scale' },
+            slide: { name: 'Slide Lateral', class: 'anim-slide' }
         };
 
         const ICONS = [
@@ -135,17 +137,19 @@
             { id: 'fa-globe', class: 'fa-solid fa-globe' },
             { id: 'fa-users', class: 'fa-solid fa-users' },
             { id: 'fa-bullhorn', class: 'fa-solid fa-bullhorn' },
-            { id: 'fa-bolt', class: 'fa-solid fa-bolt' }
+            { id: 'fa-podcast', class: 'fa-solid fa-podcast' },
+            { id: 'fa-store', class: 'fa-solid fa-store' },
+            { id: 'fa-newspaper', class: 'fa-regular fa-newspaper' }
         ];
 
-        // Configuración Inicial por Defecto
         const DEFAULT_SETTINGS = {
-            theme: 'purple',
+            theme: 'magenta',
+            layout: 'grid',
             animation: 'fade',
-            logoUrl: '', // Si está vacío usa el ST text
+            logoUrl: '',
             ceoPhoto: '',
             ceoName: 'Ian',
-            ceoRole: 'CEO & Founder Soy Tomé',
+            ceoRole: 'CEO & Founder',
             showCeo: true,
             ctaEnabled: true,
             ctaText: 'Si no te ven, no existes. Aumenta tu visibilidad ahora.',
@@ -154,77 +158,79 @@
         };
 
         function App() {
-            // Estados Globales
+            const [user, setUser] = useState(null);
             const [categories, setCategories] = useState([]);
             const [settings, setSettings] = useState(DEFAULT_SETTINGS);
             const [isLoading, setIsLoading] = useState(true);
             const [isAdmin, setIsAdmin] = useState(false);
             const [showLogin, setShowLogin] = useState(false);
-            const [adminTab, setAdminTab] = useState('links'); // links, design, marketing
+            const [adminTab, setAdminTab] = useState('links'); 
 
-            // Formulario Login
+            // Auth Local State
             const [username, setUsername] = useState('');
             const [password, setPassword] = useState('');
             const [loginError, setLoginError] = useState('');
 
-            // Formularios CRUD
+            // Edición de Categorías
             const [newCatTitle, setNewCatTitle] = useState('');
             const [newCatIcon, setNewCatIcon] = useState('fa-globe');
-            const [editingLink, setEditingLink] = useState(null);
+            const [editingCategory, setEditingCategory] = useState(null);
+            const [editCatTitle, setEditCatTitle] = useState('');
+
+            // Edición de Enlaces
+            const [addingLinkTo, setAddingLinkTo] = useState(null);
             const [newLinkData, setNewLinkData] = useState({ title: '', url: '' });
+            const [editingLinkObj, setEditingLinkObj] = useState(null); // { catId, linkId }
+            const [editLinkData, setEditLinkData] = useState({ title: '', url: '' });
 
-            // Sincronización con Firestore (Tiempo Real)
+            // 1. AUTENTICACIÓN FIREBASE SEGURA
             useEffect(() => {
-                let unsubCats = () => {};
-                let unsubSettings = () => {};
-
-                const initDB = async () => {
+                const initAuth = async () => {
                     try {
-                        // Auth
                         if (isCanvas && typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                             await signInWithCustomToken(auth, __initial_auth_token);
                         } else {
                             await signInAnonymously(auth);
                         }
-
-                        // Escuchar Categorías
-                        unsubCats = onSnapshot(collection(db, getCatsPath()), (snapshot) => {
-                            const loaded = [];
-                            snapshot.forEach(doc => loaded.push({ id: doc.id, ...doc.data() }));
-                            // Ordenamos usando un truco simple: por timestamp incluido en el ID
-                            loaded.sort((a, b) => a.id.localeCompare(b.id));
-                            setCategories(loaded);
-                        });
-
-                        // Escuchar Configuración Global
-                        unsubSettings = onSnapshot(doc(db, getSettingsPath(), 'global'), (docSnap) => {
-                            if (docSnap.exists()) {
-                                setSettings({ ...DEFAULT_SETTINGS, ...docSnap.data() });
-                            } else {
-                                // Si no existe, la creamos
-                                setDoc(doc(db, getSettingsPath(), 'global'), DEFAULT_SETTINGS);
-                            }
-                            setIsLoading(false);
-                        });
-
-                    } catch (error) {
-                        console.error("Error crítico BD:", error);
-                        setIsLoading(false);
+                    } catch (e) {
+                        console.error("Auth error", e);
                     }
                 };
-
-                initDB();
-                return () => { unsubCats(); unsubSettings(); };
+                initAuth();
+                const unsubAuth = onAuthStateChanged(auth, setUser);
+                return () => unsubAuth();
             }, []);
 
-            // Actualizar Variables CSS cuando cambia el tema
+            // 2. SINCRONIZACIÓN DE DATOS (Solo si hay usuario autenticado)
+            useEffect(() => {
+                if (!user) return;
+                
+                const unsubCats = onSnapshot(collection(db, getCatsPath()), (snapshot) => {
+                    const loaded = [];
+                    snapshot.forEach(doc => loaded.push({ id: doc.id, ...doc.data() }));
+                    // Ordenamos por la propiedad "order". Si no existe, por fecha de creación (ID)
+                    loaded.sort((a, b) => (a.order || 0) - (b.order || 0) || a.id.localeCompare(b.id));
+                    setCategories(loaded);
+                });
+
+                const unsubSettings = onSnapshot(doc(db, getSettingsPath(), 'global'), (docSnap) => {
+                    if (docSnap.exists()) {
+                        setSettings({ ...DEFAULT_SETTINGS, ...docSnap.data() });
+                    } else {
+                        setDoc(doc(db, getSettingsPath(), 'global'), DEFAULT_SETTINGS);
+                    }
+                    setIsLoading(false);
+                });
+
+                return () => { unsubCats(); unsubSettings(); };
+            }, [user]);
+
             useEffect(() => {
                 if (THEMES[settings.theme]) {
                     document.documentElement.style.setProperty('--primary-rgb', THEMES[settings.theme].rgb);
                 }
             }, [settings.theme]);
 
-            // ================= OPERACIONES DE CEO =================
             const handleLogin = (e) => {
                 e.preventDefault();
                 if (username === 'ian' && password === 'ian123') {
@@ -236,23 +242,54 @@
 
             const updateSettings = async (newConfig) => {
                 const updated = { ...settings, ...newConfig };
-                setSettings(updated); // Optimizacion UI instantánea
+                setSettings(updated); 
                 await setDoc(doc(db, getSettingsPath(), 'global'), updated);
             };
 
+            // ================= CRUD CATEGORÍAS =================
             const addCategory = async () => {
                 if (!newCatTitle.trim()) return;
                 const newId = `cat-${Date.now()}`;
-                await setDoc(doc(db, getCatsPath(), newId), { title: newCatTitle, iconId: newCatIcon, links: [] });
+                const newOrder = categories.length > 0 ? Math.max(...categories.map(c => c.order || 0)) + 1 : 0;
+                await setDoc(doc(db, getCatsPath(), newId), { 
+                    title: newCatTitle, 
+                    iconId: newCatIcon, 
+                    order: newOrder,
+                    links: [] 
+                });
                 setNewCatTitle('');
             };
 
+            const saveCategoryEdit = async (catId) => {
+                if (!editCatTitle.trim()) { setEditingCategory(null); return; }
+                const cat = categories.find(c => c.id === catId);
+                if (cat) {
+                    await setDoc(doc(db, getCatsPath(), catId), { ...cat, title: editCatTitle });
+                }
+                setEditingCategory(null);
+            };
+
             const deleteCategory = async (catId) => {
-                if (confirm('⚠️ ¿Aniquilar esta categoría y sus enlaces? Esta acción no se deshace.')) {
+                if (confirm('⚠️ ¿Eliminar esta categoría y todos sus enlaces?')) {
                     await deleteDoc(doc(db, getCatsPath(), catId));
                 }
             };
 
+            // Reordenar Categorías (Flechas)
+            const moveCategory = async (index, direction) => {
+                if (index + direction < 0 || index + direction >= categories.length) return;
+                const catA = categories[index];
+                const catB = categories[index + direction];
+                
+                // Intercambiamos el 'order'
+                const orderA = catA.order !== undefined ? catA.order : index;
+                const orderB = catB.order !== undefined ? catB.order : index + direction;
+                
+                await setDoc(doc(db, getCatsPath(), catA.id), { ...catA, order: orderB });
+                await setDoc(doc(db, getCatsPath(), catB.id), { ...catB, order: orderA });
+            };
+
+            // ================= CRUD ENLACES =================
             const addLink = async (catId) => {
                 if (!newLinkData.title.trim() || !newLinkData.url.trim()) return;
                 const cat = categories.find(c => c.id === catId);
@@ -262,8 +299,19 @@
                         links: [...cat.links, { id: `link-${Date.now()}`, ...newLinkData }] 
                     });
                     setNewLinkData({ title: '', url: '' });
-                    setEditingLink(null);
+                    setAddingLinkTo(null);
                 }
+            };
+
+            const saveLinkEdit = async () => {
+                if (!editingLinkObj) return;
+                const { catId, linkId } = editingLinkObj;
+                const cat = categories.find(c => c.id === catId);
+                if (cat) {
+                    const updatedLinks = cat.links.map(l => l.id === linkId ? { ...l, ...editLinkData } : l);
+                    await setDoc(doc(db, getCatsPath(), catId), { ...cat, links: updatedLinks });
+                }
+                setEditingLinkObj(null);
             };
 
             const deleteLink = async (catId, linkId) => {
@@ -276,6 +324,20 @@
                 }
             };
 
+            const moveLink = async (catId, linkIndex, direction) => {
+                const cat = categories.find(c => c.id === catId);
+                if (!cat) return;
+                if (linkIndex + direction < 0 || linkIndex + direction >= cat.links.length) return;
+                
+                const newLinks = [...cat.links];
+                // Swap array elements
+                const temp = newLinks[linkIndex];
+                newLinks[linkIndex] = newLinks[linkIndex + direction];
+                newLinks[linkIndex + direction] = temp;
+
+                await setDoc(doc(db, getCatsPath(), catId), { ...cat, links: newLinks });
+            };
+
             // Helpers
             const getAnimClass = () => ANIMATIONS[settings.animation]?.class || 'anim-fade';
             const generateWaLink = () => {
@@ -284,54 +346,50 @@
                 return `https://wa.me/${phone}?text=${text}`;
             };
 
-            // Loading Screen Premium
-            if (isLoading) {
+            if (isLoading || !user) {
                 return (
-                    <div className="min-h-screen flex flex-col items-center justify-center bg-[#050505]">
-                        <div className="w-20 h-20 border-2 border-white/10 border-t-purple-500 rounded-full animate-spin mb-6"></div>
-                        <p className="text-white/50 text-xs font-bold tracking-[0.3em] animate-pulse">CARGANDO ECOSISTEMA BLACK LABEL</p>
+                    <div className="min-h-screen flex flex-col items-center justify-center bg-[#030303]">
+                        <div className="w-16 h-16 border-2 border-white/5 border-t-purple-500 rounded-full animate-spin mb-6"></div>
+                        <p className="text-white/30 text-[10px] font-bold tracking-[0.4em] animate-pulse">INICIALIZANDO MOTOR</p>
                     </div>
                 );
             }
 
             return (
                 <div className="min-h-screen relative overflow-hidden pb-32">
-                    {/* Background Mesh Dinámico */}
-                    <div className="fixed inset-0 pointer-events-none z-0 opacity-40">
+                    {/* Fondo Ambient Dynamics */}
+                    <div className="fixed inset-0 pointer-events-none z-0 opacity-50">
                         <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full blur-[150px] mix-blend-screen theme-bg opacity-30"></div>
                         <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full blur-[150px] mix-blend-screen theme-bg opacity-20"></div>
                         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDMiLz4KPC9zdmc+')] opacity-50 mix-blend-overlay"></div>
                     </div>
 
                     {/* TOP BAR / CEO PROFILE */}
-                    <header className="relative z-40 max-w-5xl mx-auto px-4 pt-8 pb-4 flex items-start justify-between">
-                        {/* Ceo Widget */}
+                    <header className="relative z-40 max-w-5xl mx-auto px-4 pt-6 pb-4 flex items-start justify-between">
                         {settings.showCeo && (
-                            <div className={`${getAnimClass()} flex items-center gap-4 bg-white/5 pr-6 pl-2 py-2 rounded-full border border-white/5 backdrop-blur-md hover:border-white/10 transition-colors`}>
+                            <div className={`${getAnimClass()} flex items-center gap-4 bg-black/40 pr-6 pl-2 py-2 rounded-full border border-white/5 backdrop-blur-xl`}>
                                 {settings.ceoPhoto ? (
-                                    <img src={settings.ceoPhoto} alt="CEO" className="w-12 h-12 rounded-full object-cover border-2 theme-border" />
+                                    <img src={settings.ceoPhoto} alt="CEO" className="w-12 h-12 rounded-full object-cover border-2 theme-border shadow-lg" />
                                 ) : (
                                     <div className="w-12 h-12 rounded-full theme-bg bg-opacity-20 flex items-center justify-center border-2 theme-border text-white font-bold">
                                         <i className="fa-solid fa-user-tie"></i>
                                     </div>
                                 )}
                                 <div>
-                                    <h2 className="text-white font-bold text-sm leading-tight">{settings.ceoName}</h2>
-                                    <p className="theme-text text-[10px] font-bold tracking-widest uppercase">{settings.ceoRole}</p>
+                                    <h2 className="text-white font-black text-sm tracking-wide">{settings.ceoName}</h2>
+                                    <p className="theme-text text-[9px] font-bold tracking-widest uppercase">{settings.ceoRole}</p>
                                 </div>
                             </div>
                         )}
+                        {!settings.showCeo && <div></div>}
 
-                        {!settings.showCeo && <div></div>} {/* Spacer */}
-
-                        {/* Admin Trigger */}
                         <div className={`${getAnimClass()} d-100`}>
                             {isAdmin ? (
                                 <button onClick={() => setIsAdmin(false)} className="px-5 py-2.5 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 text-xs font-bold tracking-wider uppercase transition-all backdrop-blur-md">
                                     Cerrar Bóveda
                                 </button>
                             ) : (
-                                <button onClick={() => setShowLogin(true)} className="w-12 h-12 flex items-center justify-center rounded-full bg-white/5 border border-white/5 hover:bg-white/10 text-white/40 hover:text-white transition-all backdrop-blur-md">
+                                <button onClick={() => setShowLogin(true)} className="w-12 h-12 flex items-center justify-center rounded-full bg-white/5 border border-white/5 hover:bg-white/10 text-white/30 hover:text-white transition-all backdrop-blur-md">
                                     <i className="fa-solid fa-fingerprint"></i>
                                 </button>
                             )}
@@ -339,57 +397,56 @@
                     </header>
 
                     {/* MAIN CONTENT AREA */}
-                    <main className="relative z-30 max-w-3xl mx-auto px-4 pt-4 pb-12">
+                    <main className="relative z-30 max-w-4xl mx-auto px-4 pt-2 pb-12">
                         
-                        {/* Logo Central Minimalista */}
+                        {/* Logo Central */}
                         <div className={`${getAnimClass()} d-200 flex justify-center mb-16`}>
                             {settings.logoUrl ? (
-                                <img src={settings.logoUrl} alt="Logo" className="h-24 object-contain theme-glow rounded-xl" />
+                                <img src={settings.logoUrl} alt="Logo" className="h-28 object-contain theme-glow rounded-xl" />
                             ) : (
-                                <div className="w-24 h-24 rounded-3xl theme-bg bg-opacity-10 border border-white/10 flex items-center justify-center theme-glow backdrop-blur-xl">
-                                    <span className="text-4xl font-black text-white tracking-tighter">ST</span>
+                                <div className="w-28 h-28 rounded-[2rem] theme-bg bg-opacity-10 border border-white/10 flex items-center justify-center theme-glow backdrop-blur-xl">
+                                    <span className="text-5xl font-black text-white tracking-tighter">ST</span>
                                 </div>
                             )}
                         </div>
 
                         {/* ================= PANEL DE CONTROL CEO (TABS) ================= */}
                         {isAdmin && (
-                            <div className="mb-16 rounded-[2rem] bg-[#0a0a0a]/80 backdrop-blur-3xl border border-white/10 overflow-hidden shadow-2xl">
-                                {/* Header del Panel */}
+                            <div className="mb-16 rounded-[2rem] bg-[#0a0a0a]/90 backdrop-blur-3xl border border-white/10 overflow-hidden shadow-2xl">
                                 <div className="bg-white/5 p-6 border-b border-white/5 flex items-center gap-4">
                                     <div className="w-12 h-12 rounded-2xl theme-bg flex items-center justify-center text-white text-xl shadow-lg">
-                                        <i className="fa-solid fa-crown"></i>
+                                        <i className="fa-solid fa-sliders"></i>
                                     </div>
                                     <div>
-                                        <h3 className="text-xl font-black text-white">Centro de Mando</h3>
-                                        <p className="theme-text text-xs font-bold tracking-widest uppercase">Nivel: Black Label</p>
+                                        <h3 className="text-xl font-black text-white">Bóveda de Configuración</h3>
+                                        <p className="theme-text text-xs font-bold tracking-widest uppercase">Modo Edición Total</p>
                                     </div>
                                 </div>
 
-                                {/* Pestañas de Navegación */}
-                                <div className="flex border-b border-white/5">
-                                    <button onClick={() => setAdminTab('links')} className={`flex-1 py-4 text-sm font-bold transition-colors ${adminTab === 'links' ? 'text-white border-b-2 theme-border' : 'text-white/40 hover:text-white/70'}`}>Estructura & Links</button>
-                                    <button onClick={() => setAdminTab('design')} className={`flex-1 py-4 text-sm font-bold transition-colors ${adminTab === 'design' ? 'text-white border-b-2 theme-border' : 'text-white/40 hover:text-white/70'}`}>Diseño & Marca</button>
-                                    <button onClick={() => setAdminTab('marketing')} className={`flex-1 py-4 text-sm font-bold transition-colors ${adminTab === 'marketing' ? 'text-white border-b-2 theme-border' : 'text-white/40 hover:text-white/70'}`}>Marketing (Popups)</button>
+                                <div className="flex border-b border-white/5 overflow-x-auto no-scrollbar">
+                                    <button onClick={() => setAdminTab('links')} className={`flex-1 min-w-[120px] py-4 text-xs uppercase tracking-widest font-bold transition-colors ${adminTab === 'links' ? 'text-white border-b-2 theme-border bg-white/5' : 'text-white/40 hover:text-white/70'}`}>Estructura</button>
+                                    <button onClick={() => setAdminTab('design')} className={`flex-1 min-w-[120px] py-4 text-xs uppercase tracking-widest font-bold transition-colors ${adminTab === 'design' ? 'text-white border-b-2 theme-border bg-white/5' : 'text-white/40 hover:text-white/70'}`}>Apariencia</button>
+                                    <button onClick={() => setAdminTab('profile')} className={`flex-1 min-w-[120px] py-4 text-xs uppercase tracking-widest font-bold transition-colors ${adminTab === 'profile' ? 'text-white border-b-2 theme-border bg-white/5' : 'text-white/40 hover:text-white/70'}`}>Identidad</button>
+                                    <button onClick={() => setAdminTab('marketing')} className={`flex-1 min-w-[120px] py-4 text-xs uppercase tracking-widest font-bold transition-colors ${adminTab === 'marketing' ? 'text-white border-b-2 theme-border bg-white/5' : 'text-white/40 hover:text-white/70'}`}>Marketing</button>
                                 </div>
 
-                                {/* Contenido de Pestañas */}
                                 <div className="p-6">
-                                    
-                                    {/* TAB 1: LINKS */}
+                                    {/* TAB: ESTRUCTURA */}
                                     {adminTab === 'links' && (
                                         <div className="space-y-6 animate-fade-in">
                                             <div className="bg-black/50 p-5 rounded-2xl border border-white/5">
-                                                <h4 className="text-white font-bold mb-4">Nueva Categoría Maestra</h4>
+                                                <h4 className="text-white font-bold mb-4">Añadir Nueva Categoría</h4>
                                                 <div className="flex flex-col md:flex-row gap-3">
-                                                    <input type="text" placeholder="Ej: Red de Medios..." className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white/30" value={newCatTitle} onChange={(e) => setNewCatTitle(e.target.value)} />
-                                                    <button onClick={addCategory} className="theme-bg text-white px-8 py-3 rounded-xl font-bold hover:opacity-90 transition-opacity">Crear</button>
+                                                    <input type="text" placeholder="Ej: Mis Redes Sociales..." className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-white/30" value={newCatTitle} onChange={(e) => setNewCatTitle(e.target.value)} />
+                                                    <button onClick={addCategory} className="theme-bg text-white px-8 py-3 rounded-xl font-bold hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+                                                        <i className="fa-solid fa-plus"></i> Crear
+                                                    </button>
                                                 </div>
                                                 <div className="mt-4">
-                                                    <p className="text-xs text-white/40 font-bold uppercase tracking-wider mb-2">Ícono Principal</p>
+                                                    <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest mb-3">Selector de Ícono</p>
                                                     <div className="flex flex-wrap gap-2">
                                                         {ICONS.map(i => (
-                                                            <button key={i.id} onClick={() => setNewCatIcon(i.id)} className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg transition-all ${newCatIcon === i.id ? 'theme-bg text-white shadow-lg' : 'bg-white/5 text-white/40 hover:bg-white/10 hover:text-white'}`}>
+                                                            <button key={i.id} onClick={() => setNewCatIcon(i.id)} className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg transition-all ${newCatIcon === i.id ? 'theme-bg text-white shadow-lg scale-110' : 'bg-white/5 border border-white/5 text-white/40 hover:bg-white/10 hover:text-white'}`}>
                                                                 <i className={i.class}></i>
                                                             </button>
                                                         ))}
@@ -399,46 +456,39 @@
                                         </div>
                                     )}
 
-                                    {/* TAB 2: DISEÑO */}
+                                    {/* TAB: DISEÑO / APARIENCIA */}
                                     {adminTab === 'design' && (
-                                        <div className="space-y-6 animate-fade-in">
-                                            {/* Selector de Tema */}
+                                        <div className="space-y-8 animate-fade-in">
                                             <div>
-                                                <h4 className="text-white font-bold mb-3">Color Base Premium</h4>
-                                                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                                                <h4 className="text-white font-bold mb-3 flex items-center gap-2"><i className="fa-solid fa-palette theme-text"></i> Color Base Premium</h4>
+                                                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                                                     {Object.entries(THEMES).map(([key, theme]) => (
-                                                        <button key={key} onClick={() => updateSettings({ theme: key })} className={`p-3 rounded-xl border text-left transition-all ${settings.theme === key ? 'border-white bg-white/10' : 'border-white/5 bg-black/50 hover:border-white/20'}`}>
-                                                            <div className="w-full h-8 rounded-lg mb-2" style={{ backgroundColor: `rgb(${theme.rgb})` }}></div>
-                                                            <p className="text-[10px] text-white font-bold uppercase truncate">{theme.name}</p>
+                                                        <button key={key} onClick={() => updateSettings({ theme: key })} className={`p-4 rounded-xl border text-left transition-all ${settings.theme === key ? 'border-white bg-white/10 shadow-[0_0_20px_rgba(255,255,255,0.1)]' : 'border-white/5 bg-black/50 hover:border-white/20'}`}>
+                                                            <div className="w-full h-6 rounded-lg mb-3 shadow-inner" style={{ backgroundColor: `rgb(${theme.rgb})` }}></div>
+                                                            <p className="text-[11px] text-white font-bold uppercase tracking-wider">{theme.name}</p>
                                                         </button>
                                                     ))}
                                                 </div>
                                             </div>
                                             
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                {/* Logo y CEO */}
-                                                <div className="space-y-4">
-                                                    <div>
-                                                        <label className="block text-xs text-white/50 font-bold mb-1 uppercase">URL Logo Custom (Opcional)</label>
-                                                        <input type="text" placeholder="https://..." value={settings.logoUrl} onChange={(e) => updateSettings({ logoUrl: e.target.value })} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:border-white/30 outline-none" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-xs text-white/50 font-bold mb-1 uppercase">URL Foto CEO</label>
-                                                        <input type="text" placeholder="https://..." value={settings.ceoPhoto} onChange={(e) => updateSettings({ ceoPhoto: e.target.value })} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:border-white/30 outline-none" />
-                                                    </div>
-                                                    <div className="flex items-center gap-3 bg-white/5 p-3 rounded-xl border border-white/5">
-                                                        <input type="checkbox" id="showCeo" checked={settings.showCeo} onChange={(e) => updateSettings({ showCeo: e.target.checked })} className="w-4 h-4 accent-purple-500" />
-                                                        <label htmlFor="showCeo" className="text-sm text-white font-bold cursor-pointer">Mostrar Perfil CEO superior</label>
+                                                <div>
+                                                    <h4 className="text-white font-bold mb-3 flex items-center gap-2"><i className="fa-solid fa-layer-group theme-text"></i> Disposición (Layout)</h4>
+                                                    <div className="space-y-3">
+                                                        {Object.entries(LAYOUTS).map(([key, layout]) => (
+                                                            <button key={key} onClick={() => updateSettings({ layout: key })} className={`w-full p-4 rounded-xl border flex items-center gap-3 transition-all ${settings.layout === key ? 'border-white bg-white/10 text-white' : 'border-white/5 bg-black/50 text-white/40 hover:text-white hover:bg-white/5'}`}>
+                                                                <i className={`fa-solid ${layout.icon} text-lg`}></i>
+                                                                <span className="font-bold text-sm">{layout.name}</span>
+                                                            </button>
+                                                        ))}
                                                     </div>
                                                 </div>
-
-                                                {/* Animaciones */}
                                                 <div>
-                                                    <label className="block text-xs text-white/50 font-bold mb-3 uppercase">Estilo de Animación Entrada</label>
-                                                    <div className="space-y-2">
+                                                    <h4 className="text-white font-bold mb-3 flex items-center gap-2"><i className="fa-solid fa-wand-magic-sparkles theme-text"></i> Animación de Entrada</h4>
+                                                    <div className="space-y-3">
                                                         {Object.entries(ANIMATIONS).map(([key, anim]) => (
-                                                            <button key={key} onClick={() => updateSettings({ animation: key })} className={`w-full p-3 rounded-xl border text-left transition-all ${settings.animation === key ? 'border-white bg-white/10 text-white' : 'border-white/5 bg-black/50 text-white/50 hover:bg-white/5'}`}>
-                                                                <p className="font-bold text-sm">{anim.name}</p>
+                                                            <button key={key} onClick={() => updateSettings({ animation: key })} className={`w-full p-4 rounded-xl border text-left transition-all ${settings.animation === key ? 'border-white bg-white/10 text-white' : 'border-white/5 bg-black/50 text-white/40 hover:text-white hover:bg-white/5'}`}>
+                                                                <span className="font-bold text-sm">{anim.name}</span>
                                                             </button>
                                                         ))}
                                                     </div>
@@ -447,31 +497,68 @@
                                         </div>
                                     )}
 
-                                    {/* TAB 3: MARKETING */}
+                                    {/* TAB: IDENTIDAD (Logos y CEO) */}
+                                    {adminTab === 'profile' && (
+                                        <div className="space-y-6 animate-fade-in grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-4 bg-black/40 p-5 rounded-2xl border border-white/5">
+                                                <h4 className="text-white font-bold flex items-center gap-2 mb-4"><i className="fa-solid fa-image theme-text"></i> Marca y Logo</h4>
+                                                <div>
+                                                    <label className="block text-[10px] text-white/50 font-bold mb-1 uppercase tracking-widest">URL Logo Central (Opcional)</label>
+                                                    <input type="text" placeholder="https://ejemplo.com/logo.png" value={settings.logoUrl} onChange={(e) => updateSettings({ logoUrl: e.target.value })} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-white/30 outline-none" />
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-4 bg-black/40 p-5 rounded-2xl border border-white/5">
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <h4 className="text-white font-bold flex items-center gap-2"><i className="fa-solid fa-id-badge theme-text"></i> Perfil CEO</h4>
+                                                    <label className="relative inline-flex items-center cursor-pointer">
+                                                        <input type="checkbox" checked={settings.showCeo} onChange={(e) => updateSettings({ showCeo: e.target.checked })} className="sr-only peer" />
+                                                        <div className="w-9 h-5 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all theme-peer-checked"></div>
+                                                    </label>
+                                                </div>
+                                                <div className="space-y-3" style={{ opacity: settings.showCeo ? 1 : 0.4 }}>
+                                                    <div>
+                                                        <label className="block text-[10px] text-white/50 font-bold mb-1 uppercase tracking-widest">Nombre Público</label>
+                                                        <input type="text" disabled={!settings.showCeo} value={settings.ceoName} onChange={(e) => updateSettings({ ceoName: e.target.value })} className="w-full bg-black border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:border-white/30 outline-none" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-[10px] text-white/50 font-bold mb-1 uppercase tracking-widest">Cargo / Título</label>
+                                                        <input type="text" disabled={!settings.showCeo} value={settings.ceoRole} onChange={(e) => updateSettings({ ceoRole: e.target.value })} className="w-full bg-black border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:border-white/30 outline-none" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-[10px] text-white/50 font-bold mb-1 uppercase tracking-widest">URL Foto Perfil</label>
+                                                        <input type="text" disabled={!settings.showCeo} value={settings.ceoPhoto} onChange={(e) => updateSettings({ ceoPhoto: e.target.value })} className="w-full bg-black border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:border-white/30 outline-none" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* TAB: MARKETING */}
                                     {adminTab === 'marketing' && (
                                         <div className="space-y-5 animate-fade-in">
                                             <div className="bg-black/50 p-6 rounded-2xl border border-white/5 relative overflow-hidden">
                                                 <div className="absolute top-0 left-0 w-1 h-full theme-bg"></div>
                                                 <div className="flex items-center justify-between mb-4">
-                                                    <h4 className="text-white font-bold text-lg">Aviso Flotante (Botón de Ventas)</h4>
+                                                    <h4 className="text-white font-bold text-lg flex items-center gap-2"><i className="fa-solid fa-bullseye theme-text"></i> Aviso Flotante (Botón de Ventas)</h4>
                                                     <label className="relative inline-flex items-center cursor-pointer">
                                                         <input type="checkbox" checked={settings.ctaEnabled} onChange={(e) => updateSettings({ ctaEnabled: e.target.checked })} className="sr-only peer" />
                                                         <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all theme-peer-checked"></div>
                                                     </label>
                                                 </div>
-                                                <div className="space-y-4 opacity-100 transition-opacity" style={{ opacity: settings.ctaEnabled ? 1 : 0.5 }}>
+                                                <div className="space-y-4 transition-opacity" style={{ opacity: settings.ctaEnabled ? 1 : 0.4 }}>
                                                     <div>
-                                                        <label className="block text-xs text-white/50 font-bold mb-1 uppercase">Texto del Aviso (Sesgo Negativo)</label>
+                                                        <label className="block text-[10px] text-white/50 font-bold mb-1 uppercase tracking-widest">Texto del Aviso (Gancho)</label>
                                                         <textarea value={settings.ctaText} onChange={(e) => updateSettings({ ctaText: e.target.value })} disabled={!settings.ctaEnabled} rows="2" className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-white/30 outline-none resize-none"></textarea>
                                                     </div>
-                                                    <div className="flex gap-4">
-                                                        <div className="flex-1">
-                                                            <label className="block text-xs text-white/50 font-bold mb-1 uppercase">WhatsApp (Ej: 56912345678)</label>
-                                                            <input type="text" value={settings.ctaPhone} onChange={(e) => updateSettings({ ctaPhone: e.target.value })} disabled={!settings.ctaEnabled} className="w-full bg-black border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:border-white/30 outline-none" />
+                                                    <div className="flex flex-col md:flex-row gap-4">
+                                                        <div className="flex-[1]">
+                                                            <label className="block text-[10px] text-white/50 font-bold mb-1 uppercase tracking-widest">WhatsApp Receptor</label>
+                                                            <input type="text" value={settings.ctaPhone} onChange={(e) => updateSettings({ ctaPhone: e.target.value })} disabled={!settings.ctaEnabled} className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-white/30 outline-none" />
                                                         </div>
                                                         <div className="flex-[2]">
-                                                            <label className="block text-xs text-white/50 font-bold mb-1 uppercase">Mensaje Predefinido de Cliente</label>
-                                                            <input type="text" value={settings.ctaMessage} onChange={(e) => updateSettings({ ctaMessage: e.target.value })} disabled={!settings.ctaEnabled} className="w-full bg-black border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:border-white/30 outline-none" />
+                                                            <label className="block text-[10px] text-white/50 font-bold mb-1 uppercase tracking-widest">Mensaje Pre-escrito de Cliente</label>
+                                                            <input type="text" value={settings.ctaMessage} onChange={(e) => updateSettings({ ctaMessage: e.target.value })} disabled={!settings.ctaEnabled} className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-white/30 outline-none" />
                                                         </div>
                                                     </div>
                                                 </div>
@@ -482,65 +569,101 @@
                             </div>
                         )}
 
-                        {/* ================= RENDERIZADO DE ESTRUCTURA Y LINKS ================= */}
-                        <div className="space-y-8">
+                        {/* ================= RENDERIZADO DE ECOSISTEMA (GRID/LIST) ================= */}
+                        <div className={settings.layout === 'grid' ? "grid grid-cols-1 md:grid-cols-2 gap-6" : "flex flex-col space-y-6 max-w-2xl mx-auto"}>
                             {categories.length === 0 && !isAdmin && (
-                                <div className="text-center py-20 text-white/40 font-bold">Sin ecosistema configurado.</div>
+                                <div className="text-center py-20 text-white/30 font-bold tracking-widest uppercase col-span-2">Ecosistema en Formación...</div>
                             )}
 
                             {categories.map((category, index) => {
                                 const delay = `d-${(index % 3 + 1) * 100}`;
                                 return (
-                                    <div key={category.id} className={`${getAnimClass()} ${delay} glass-panel rounded-[2rem] p-2 relative group`}>
-                                        <div className="bg-[#0a0a0a]/90 rounded-[1.5rem] p-6 h-full">
+                                    <div key={category.id} className={`${getAnimClass()} ${delay} glass-panel rounded-[2rem] p-1.5 relative group`}>
+                                        <div className="bg-[#0a0a0a]/90 rounded-[1.7rem] p-6 h-full flex flex-col">
                                             
                                             {/* Header Categoría */}
-                                            <div className="flex items-center justify-between mb-6">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-xl text-white shadow-inner">
-                                                        <i className={category.iconId}></i>
+                                            <div className="flex items-start justify-between mb-6 gap-2">
+                                                {editingCategory === category.id ? (
+                                                    <div className="flex-1 flex gap-2">
+                                                        <input type="text" autoFocus className="flex-1 bg-black border border-white/20 rounded-lg px-3 py-2 text-white font-bold focus:border-purple-500 outline-none" value={editCatTitle} onChange={(e)=>setEditCatTitle(e.target.value)} />
+                                                        <button onClick={() => saveCategoryEdit(category.id)} className="theme-bg text-white px-4 rounded-lg font-bold"><i className="fa-solid fa-check"></i></button>
+                                                        <button onClick={() => setEditingCategory(null)} className="bg-white/10 text-white/50 hover:text-white px-3 rounded-lg"><i className="fa-solid fa-xmark"></i></button>
                                                     </div>
-                                                    <h3 className="text-xl font-bold text-white tracking-tight">{category.title}</h3>
-                                                </div>
-                                                {isAdmin && (
-                                                    <button onClick={() => deleteCategory(category.id)} className="w-10 h-10 rounded-xl flex items-center justify-center text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-all">
-                                                        <i className="fa-solid fa-trash-can"></i>
-                                                    </button>
+                                                ) : (
+                                                    <div className="flex items-center gap-4 flex-1">
+                                                        <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-xl text-white shadow-inner flex-shrink-0">
+                                                            <i className={category.iconId}></i>
+                                                        </div>
+                                                        <h3 className="text-xl font-black text-white tracking-tight leading-tight">{category.title}</h3>
+                                                    </div>
+                                                )}
+
+                                                {/* Controles Admin Categoría */}
+                                                {isAdmin && !editingCategory && (
+                                                    <div className="flex items-center gap-1 bg-black/50 p-1.5 rounded-xl border border-white/5">
+                                                        <div className="flex flex-col border-r border-white/10 pr-1">
+                                                            <button onClick={() => moveCategory(index, -1)} disabled={index === 0} className="text-white/30 hover:text-white disabled:opacity-30 disabled:hover:text-white/30 px-2 py-0.5"><i className="fa-solid fa-chevron-up text-[10px]"></i></button>
+                                                            <button onClick={() => moveCategory(index, 1)} disabled={index === categories.length - 1} className="text-white/30 hover:text-white disabled:opacity-30 disabled:hover:text-white/30 px-2 py-0.5"><i className="fa-solid fa-chevron-down text-[10px]"></i></button>
+                                                        </div>
+                                                        <button onClick={() => { setEditCatTitle(category.title); setEditingCategory(category.id); }} className="w-8 h-8 flex items-center justify-center text-white/40 hover:text-blue-400 transition-colors"><i className="fa-solid fa-pen text-xs"></i></button>
+                                                        <button onClick={() => deleteCategory(category.id)} className="w-8 h-8 flex items-center justify-center text-white/40 hover:text-red-400 transition-colors"><i className="fa-solid fa-trash-can text-xs"></i></button>
+                                                    </div>
                                                 )}
                                             </div>
 
-                                            {/* Links */}
-                                            <div className="space-y-3">
-                                                {category.links.map(link => (
-                                                    <div key={link.id} className="flex items-center gap-2 group/link">
-                                                        <a href={link.url} target="_blank" rel="noopener noreferrer" className="flex-1 flex justify-between items-center p-4 rounded-xl bg-black/60 border border-white/5 hover:border-white/20 theme-hover transition-all duration-300">
-                                                            <span className="font-bold text-white/80 group-hover/link:text-white transition-colors">{link.title}</span>
-                                                            <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover/link:bg-white/10 transition-all">
-                                                                <i className="fa-solid fa-arrow-right text-white/50 text-sm -rotate-45 group-hover/link:text-white transition-all group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5"></i>
+                                            {/* Lista de Enlaces */}
+                                            <div className="space-y-3 flex-1">
+                                                {category.links.map((link, lIndex) => (
+                                                    <div key={link.id} className="group/link relative">
+                                                        {editingLinkObj?.linkId === link.id ? (
+                                                            <div className="bg-black/80 p-3 rounded-xl border border-white/20 space-y-2">
+                                                                <input type="text" className="w-full bg-transparent border-b border-white/10 px-2 py-1 text-white text-sm font-bold focus:border-purple-500 outline-none" value={editLinkData.title} onChange={(e)=>setEditLinkData({...editLinkData, title: e.target.value})} />
+                                                                <input type="url" className="w-full bg-transparent border-b border-white/10 px-2 py-1 text-white text-xs focus:border-purple-500 outline-none" value={editLinkData.url} onChange={(e)=>setEditLinkData({...editLinkData, url: e.target.value})} />
+                                                                <div className="flex gap-2 pt-2">
+                                                                    <button onClick={saveLinkEdit} className="flex-1 theme-bg text-white py-1.5 rounded-lg text-xs font-bold">Guardar</button>
+                                                                    <button onClick={() => setEditingLinkObj(null)} className="px-3 bg-white/10 text-white/50 hover:text-white rounded-lg"><i className="fa-solid fa-xmark"></i></button>
+                                                                </div>
                                                             </div>
-                                                        </a>
-                                                        {isAdmin && (
-                                                            <button onClick={() => deleteLink(category.id, link.id)} className="w-12 h-[56px] rounded-xl bg-red-500/5 border border-red-500/10 text-red-400/50 hover:bg-red-500/20 hover:text-red-400 transition-colors flex items-center justify-center">
-                                                                <i className="fa-solid fa-xmark"></i>
-                                                            </button>
+                                                        ) : (
+                                                            <div className="flex items-stretch gap-2">
+                                                                <a href={link.url} target="_blank" rel="noopener noreferrer" className="flex-1 flex justify-between items-center p-4 rounded-xl bg-black/60 border border-white/5 hover:border-white/20 theme-hover transition-all duration-300">
+                                                                    <span className="font-bold text-white/80 group-hover/link:text-white transition-colors text-sm">{link.title}</span>
+                                                                    <div className="w-7 h-7 rounded-full bg-white/5 flex items-center justify-center group-hover/link:bg-white/10 transition-all">
+                                                                        <i className="fa-solid fa-arrow-right text-white/50 text-xs -rotate-45 group-hover/link:text-white transition-all group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5"></i>
+                                                                    </div>
+                                                                </a>
+                                                                
+                                                                {isAdmin && (
+                                                                    <div className="flex flex-col gap-1 w-10">
+                                                                        <div className="flex-1 bg-black/50 rounded-lg flex flex-col items-center justify-center border border-white/5">
+                                                                            <button onClick={() => moveLink(category.id, lIndex, -1)} disabled={lIndex===0} className="flex-1 w-full text-white/30 hover:text-white disabled:opacity-20"><i className="fa-solid fa-caret-up text-[10px]"></i></button>
+                                                                            <button onClick={() => moveLink(category.id, lIndex, 1)} disabled={lIndex===category.links.length-1} className="flex-1 w-full text-white/30 hover:text-white disabled:opacity-20"><i className="fa-solid fa-caret-down text-[10px]"></i></button>
+                                                                        </div>
+                                                                        <div className="flex h-8 gap-1">
+                                                                            <button onClick={() => { setEditLinkData({title: link.title, url: link.url}); setEditingLinkObj({catId: category.id, linkId: link.id}); }} className="flex-1 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 rounded-lg flex items-center justify-center"><i className="fa-solid fa-pen text-[10px]"></i></button>
+                                                                            <button onClick={() => deleteLink(category.id, link.id)} className="flex-1 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-lg flex items-center justify-center"><i className="fa-solid fa-xmark text-[10px]"></i></button>
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+                                                            </div>
                                                         )}
                                                     </div>
                                                 ))}
 
-                                                {/* Admin: Añadir Link */}
+                                                {/* Botón Admin: Añadir Link a esta categoría */}
                                                 {isAdmin && (
-                                                    <div className="pt-2 mt-2">
-                                                        {editingLink === category.id ? (
+                                                    <div className="pt-2">
+                                                        {addingLinkTo === category.id ? (
                                                             <div className="bg-black/80 p-4 rounded-xl border border-white/10 space-y-3">
                                                                 <input type="text" placeholder="Nombre del Botón..." className="w-full bg-transparent border-b border-white/10 px-2 py-2 text-white focus:outline-none focus:border-white/50 text-sm font-bold" value={newLinkData.title} onChange={(e) => setNewLinkData({...newLinkData, title: e.target.value})} />
                                                                 <input type="url" placeholder="https://..." className="w-full bg-transparent border-b border-white/10 px-2 py-2 text-white focus:outline-none focus:border-white/50 text-sm" value={newLinkData.url} onChange={(e) => setNewLinkData({...newLinkData, url: e.target.value})} />
                                                                 <div className="flex gap-2 pt-2">
-                                                                    <button onClick={() => addLink(category.id)} className="flex-1 theme-bg text-white py-2.5 rounded-lg text-sm font-bold">Guardar</button>
-                                                                    <button onClick={() => setEditingLink(null)} className="px-4 bg-white/5 text-white/50 hover:text-white rounded-lg"><i className="fa-solid fa-times"></i></button>
+                                                                    <button onClick={() => addLink(category.id)} className="flex-1 theme-bg text-white py-2.5 rounded-lg text-sm font-bold">Inyectar</button>
+                                                                    <button onClick={() => setAddingLinkTo(null)} className="px-4 bg-white/5 text-white/50 hover:text-white rounded-lg"><i className="fa-solid fa-times"></i></button>
                                                                 </div>
                                                             </div>
                                                         ) : (
-                                                            <button onClick={() => setEditingLink(category.id)} className="w-full py-4 rounded-xl border border-dashed border-white/10 text-white/30 hover:text-white hover:border-white/30 hover:bg-white/5 text-sm font-bold transition-all flex items-center justify-center gap-2">
+                                                            <button onClick={() => setAddingLinkTo(category.id)} className="w-full py-3 rounded-xl border border-dashed border-white/10 text-white/30 hover:text-white hover:border-white/30 hover:bg-white/5 text-xs font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2">
                                                                 <i className="fa-solid fa-plus"></i> Inyectar Link
                                                             </button>
                                                         )}
@@ -554,23 +677,23 @@
                         </div>
                     </main>
 
-                    {/* ================= POPUP DE VENTAS / CTA ================= */}
+                    {/* POPUP DE VENTAS / CTA */}
                     {settings.ctaEnabled && !isAdmin && (
-                        <div className="fixed bottom-6 right-6 z-50 animate-fade-in d-300 max-w-xs w-[calc(100%-3rem)] md:w-auto">
+                        <div className="fixed bottom-6 right-6 z-50 animate-fade-in d-300 max-w-[280px] w-[calc(100%-3rem)] md:w-auto">
                             <a href={generateWaLink()} target="_blank" rel="noopener noreferrer" className="block p-1 rounded-2xl theme-bg cta-pulse transition-transform hover:scale-105 active:scale-95">
-                                <div className="bg-[#050505] p-4 rounded-[14px] flex items-center gap-4">
-                                    <div className="w-10 h-10 rounded-full theme-bg flex items-center justify-center text-white text-xl flex-shrink-0">
+                                <div className="bg-[#050505] p-3.5 rounded-[14px] flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full theme-bg flex items-center justify-center text-white text-xl flex-shrink-0 shadow-inner">
                                         <i className="fa-brands fa-whatsapp"></i>
                                     </div>
                                     <div>
-                                        <p className="text-white text-xs font-bold leading-tight">{settings.ctaText}</p>
+                                        <p className="text-white text-[11px] font-bold leading-tight">{settings.ctaText}</p>
                                     </div>
                                 </div>
                             </a>
                         </div>
                     )}
 
-                    {/* ================= MODAL LOGIN BÓVEDA ================= */}
+                    {/* MODAL LOGIN */}
                     {showLogin && (
                         <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 bg-black/95 backdrop-blur-2xl anim-scale">
                             <div className="bg-[#0a0a0a] border border-white/10 p-10 rounded-[2rem] w-full max-w-sm relative shadow-2xl">
@@ -582,7 +705,7 @@
                                         <i className="fa-solid fa-lock text-white/50 text-2xl"></i>
                                     </div>
                                     <h2 className="text-2xl font-black text-white tracking-tight">Acceso CEO</h2>
-                                    <p className="text-white/40 text-xs mt-2 font-bold uppercase tracking-widest">Nivel 5 Requerido</p>
+                                    <p className="text-white/40 text-[10px] mt-2 font-bold uppercase tracking-widest">Nivel de Bóveda Requerido</p>
                                 </div>
                                 <form onSubmit={handleLogin} className="space-y-4">
                                     <input type="text" placeholder="Usuario" value={username} onChange={(e) => setUsername(e.target.value)} className="w-full bg-white/5 border border-white/5 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-white/20 transition-all font-bold text-center" required />
@@ -599,11 +722,8 @@
             );
         }
 
-        // Estilo especial para el toggle switch del marketing
         const style = document.createElement('style');
-        style.innerHTML = `
-            .theme-peer-checked:checked ~ div { background-color: rgb(var(--primary-rgb)); }
-        `;
+        style.innerHTML = `.theme-peer-checked:checked ~ div { background-color: rgb(var(--primary-rgb)); }`;
         document.head.appendChild(style);
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
