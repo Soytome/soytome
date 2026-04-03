@@ -4,22 +4,54 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Soy Tomé Hub</title>
-    <!-- Tailwind para el diseño de lujo -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- React, ReactDOM y Babel cargados directamente para no requerir instalación -->
+    <!-- React & Babel -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- Iconos de FontAwesome -->
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        body { background-color: #020617; color: #e2e8f0; font-family: system-ui, -apple-system, sans-serif; }
+        body { 
+            background-color: #030712; /* Slate 950 ultra oscuro */
+            color: #e2e8f0; 
+            font-family: system-ui, -apple-system, sans-serif; 
+        }
+        
+        /* Animaciones Épicas */
+        @keyframes fadeInUp {
+            0% { opacity: 0; transform: translateY(30px) scale(0.95); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        
+        @keyframes glowPulse {
+            0% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.2); }
+            50% { box-shadow: 0 0 40px rgba(168, 85, 247, 0.5); }
+            100% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.2); }
+        }
+
+        .animate-fade-in {
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+        
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+
+        /* Efecto Glassmorphism Premium */
         .glass-panel { 
-            background: rgba(255, 255, 255, 0.03); 
-            backdrop-filter: blur(12px); 
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08); 
+            background: rgba(15, 23, 42, 0.4); /* Slate 900 con transparencia */
+            backdrop-filter: blur(16px); 
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05); 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        
+        .logo-glow {
+            animation: glowPulse 3s infinite ease-in-out;
         }
     </style>
 </head>
@@ -29,23 +61,33 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
+        // Base de datos de iconos disponibles
+        const ICON_OPTIONS = [
+            { id: 'fa-whatsapp', class: 'fa-brands fa-whatsapp', color: 'text-green-400', bg: 'bg-green-400/10' },
+            { id: 'fa-facebook', class: 'fa-brands fa-facebook', color: 'text-blue-500', bg: 'bg-blue-500/10' },
+            { id: 'fa-instagram', class: 'fa-brands fa-instagram', color: 'text-pink-500', bg: 'bg-pink-500/10' },
+            { id: 'fa-tiktok', class: 'fa-brands fa-tiktok', color: 'text-white', bg: 'bg-white/10' },
+            { id: 'fa-globe', class: 'fa-solid fa-globe', color: 'text-cyan-400', bg: 'bg-cyan-400/10' },
+            { id: 'fa-users', class: 'fa-solid fa-users', color: 'text-purple-400', bg: 'bg-purple-400/10' }
+        ];
+
         const INITIAL_DATA = [
             {
                 id: 'cat-1',
                 title: 'Grupos de WhatsApp',
-                icon: 'fa-whatsapp',
+                iconId: 'fa-whatsapp',
                 links: [
                     { id: 'link-1', title: 'Avisos Tomé Oficial', url: 'https://chat.whatsapp.com/ejemplo1' },
-                    { id: 'link-2', title: 'Feria de las Pulgas', url: 'https://chat.whatsapp.com/ejemplo2' }
+                    { id: 'link-2', title: 'Feria de las Pulgas Tomé', url: 'https://chat.whatsapp.com/ejemplo2' }
                 ]
             },
             {
                 id: 'cat-2',
-                title: 'Comunidades RRSS',
-                icon: 'fa-instagram',
+                title: 'Nuestras Redes',
+                iconId: 'fa-instagram',
                 links: [
                     { id: 'link-3', title: 'Instagram Soy Tomé', url: 'https://instagram.com/soytome' },
-                    { id: 'link-4', title: 'Facebook Page', url: 'https://facebook.com/soytome' }
+                    { id: 'link-4', title: 'Facebook Page Oficial', url: 'https://facebook.com/soytome' }
                 ]
             }
         ];
@@ -60,6 +102,8 @@
             const [loginError, setLoginError] = useState('');
 
             const [newCatTitle, setNewCatTitle] = useState('');
+            const [newCatIcon, setNewCatIcon] = useState('fa-whatsapp'); // Icono por defecto
+            
             const [editingLink, setEditingLink] = useState(null);
             const [newLinkData, setNewLinkData] = useState({ title: '', url: '' });
 
@@ -72,18 +116,23 @@
                     setUsername('');
                     setPassword('');
                 } else {
-                    setLoginError('Credenciales incorrectas. Acceso denegado.');
+                    setLoginError('Acceso denegado. Intento registrado.');
                 }
             };
 
             const addCategory = () => {
                 if (!newCatTitle.trim()) return;
-                setCategories([...categories, { id: `cat-${Date.now()}`, title: newCatTitle, icon: 'fa-layer-group', links: [] }]);
+                setCategories([...categories, { 
+                    id: `cat-${Date.now()}`, 
+                    title: newCatTitle, 
+                    iconId: newCatIcon, 
+                    links: [] 
+                }]);
                 setNewCatTitle('');
             };
 
             const deleteCategory = (catId) => {
-                if (confirm('¿Estás seguro de eliminar esta categoría completa?')) {
+                if (confirm('⚠️ PELIGRO: ¿Estás seguro de eliminar esta categoría y TODOS sus enlaces?')) {
                     setCategories(categories.filter(c => c.id !== catId));
                 }
             };
@@ -99,156 +148,206 @@
                 setCategories(categories.map(cat => cat.id === catId ? { ...cat, links: cat.links.filter(l => l.id !== linkId) } : cat));
             };
 
-            return (
-                <div className="min-h-screen relative overflow-hidden pb-20 selection:bg-purple-500/30">
-                    {/* Efectos de fondo premium */}
-                    <div className="fixed top-[-10%] left-[-10%] w-[50%] h-[50%] bg-purple-700/20 rounded-full blur-[120px] pointer-events-none"></div>
-                    <div className="fixed bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-700/20 rounded-full blur-[120px] pointer-events-none"></div>
+            // Función para obtener los estilos del icono basado en su ID
+            const getIconConfig = (id) => {
+                return ICON_OPTIONS.find(icon => icon.id === id) || ICON_OPTIONS[4]; // Globe por defecto
+            };
 
-                    {/* Header */}
-                    <header className="sticky top-0 z-50 glass-panel border-b border-x-0 border-t-0 rounded-none bg-slate-950/40">
-                        <div className="max-w-6xl mx-auto px-4 h-20 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center font-bold text-xl text-white shadow-lg shadow-purple-500/20">ST</div>
-                                <h1 className="text-2xl font-black tracking-tight text-white">Soy<span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">Tomé</span></h1>
+            return (
+                <div className="min-h-screen relative overflow-hidden pb-24 selection:bg-purple-500/30">
+                    {/* Background Premium Ambient */}
+                    <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+                        <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-purple-900/20 rounded-full blur-[150px] mix-blend-screen"></div>
+                        <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-blue-900/20 rounded-full blur-[150px] mix-blend-screen"></div>
+                        <div className="absolute top-[40%] left-[50%] translate-x-[-50%] w-[40%] h-[40%] bg-emerald-900/10 rounded-full blur-[120px] mix-blend-screen"></div>
+                        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+')] opacity-20 mix-blend-overlay"></div>
+                    </div>
+
+                    {/* Header Minimalista / Premium */}
+                    <header className="relative z-50 pt-8 pb-4">
+                        <div className="max-w-6xl mx-auto px-4 flex items-center justify-between">
+                            <div className="flex-1"></div> {/* Espaciador */}
+                            
+                            {/* Logo ST Centralizado */}
+                            <div className="animate-fade-in flex flex-col items-center justify-center">
+                                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-600 flex items-center justify-center font-black text-3xl text-white border border-white/20 logo-glow tracking-tighter shadow-2xl">
+                                    ST
+                                </div>
                             </div>
-                            {isAdmin ? (
-                                <button onClick={() => setIsAdmin(false)} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all text-sm font-medium">
-                                    <i className="fa-solid fa-right-from-bracket"></i> Salir CEO
-                                </button>
-                            ) : (
-                                <button onClick={() => setShowLogin(true)} className="p-2 rounded-lg hover:bg-white/5 text-slate-500 hover:text-slate-300 transition-colors">
-                                    <i className="fa-solid fa-lock"></i>
-                                </button>
-                            )}
+                            
+                            {/* Control CEO */}
+                            <div className="flex-1 flex justify-end animate-fade-in">
+                                {isAdmin ? (
+                                    <button onClick={() => setIsAdmin(false)} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-all text-sm font-bold backdrop-blur-sm">
+                                        <i className="fa-solid fa-power-off"></i> Salir
+                                    </button>
+                                ) : (
+                                    <button onClick={() => setShowLogin(true)} className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 text-slate-400 hover:text-white transition-all backdrop-blur-sm">
+                                        <i className="fa-solid fa-fingerprint"></i>
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </header>
 
-                    <main className="relative z-10 max-w-6xl mx-auto px-4 py-12">
-                        {/* Hero Section */}
-                        <div className="text-center mb-16">
-                            <h2 className="text-4xl md:text-6xl font-black text-white mb-6 tracking-tight leading-tight">
-                                Conecta con tu <br className="hidden md:block"/>
-                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-blue-400 to-purple-400">Comunidad</span>
-                            </h2>
-                            <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto font-light">
-                                El directorio definitivo de enlaces, grupos y redes sociales de Tomé. Encuentra lo que buscas sin rodeos.
-                            </p>
-                        </div>
-
-                        {/* Panel Admin */}
+                    <main className="relative z-10 max-w-4xl mx-auto px-4 py-8">
+                        {/* Panel Admin CEO */}
                         {isAdmin && (
-                            <div className="mb-12 p-6 rounded-2xl glass-panel border-purple-500/30">
-                                <div className="flex items-center gap-3 mb-6 border-b border-white/10 pb-4">
-                                    <i className="fa-solid fa-shield-halved text-purple-400 text-xl"></i>
-                                    <h3 className="text-xl font-bold text-white">Panel de Control CEO</h3>
+                            <div className="mb-12 p-6 rounded-3xl glass-panel border-purple-500/40 animate-fade-in shadow-[0_0_40px_rgba(168,85,247,0.1)]">
+                                <div className="flex items-center gap-3 mb-6 pb-4 border-b border-white/5">
+                                    <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center border border-purple-500/30">
+                                        <i className="fa-solid fa-bolt text-purple-400"></i>
+                                    </div>
+                                    <h3 className="text-xl font-bold text-white tracking-wide">Centro de Mando CEO</h3>
                                 </div>
-                                <div className="flex gap-3">
-                                    <input 
-                                        type="text" 
-                                        placeholder="Nombre nueva categoría (Ej: Trámites)" 
-                                        className="flex-1 bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 transition-colors" 
-                                        value={newCatTitle} 
-                                        onChange={(e) => setNewCatTitle(e.target.value)} 
-                                    />
-                                    <button 
-                                        onClick={addCategory} 
-                                        className="bg-purple-600 hover:bg-purple-500 text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2 transition-all"
-                                    >
-                                        <i className="fa-solid fa-plus"></i> Agregar
-                                    </button>
+                                
+                                <div className="space-y-4">
+                                    <div className="flex flex-col md:flex-row gap-4">
+                                        <input 
+                                            type="text" 
+                                            placeholder="Nombre de la nueva sección..." 
+                                            className="flex-1 bg-black/40 border border-white/10 rounded-2xl px-5 py-4 text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all" 
+                                            value={newCatTitle} 
+                                            onChange={(e) => setNewCatTitle(e.target.value)} 
+                                        />
+                                        <button 
+                                            onClick={addCategory} 
+                                            className="bg-white text-black hover:bg-slate-200 px-8 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all transform active:scale-95"
+                                        >
+                                            <i className="fa-solid fa-plus"></i> Crear
+                                        </button>
+                                    </div>
+                                    
+                                    {/* Selector de Iconos para nueva categoría */}
+                                    <div className="bg-black/20 rounded-2xl p-4 border border-white/5">
+                                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Selecciona el ícono principal</p>
+                                        <div className="flex flex-wrap gap-2">
+                                            {ICON_OPTIONS.map(icon => (
+                                                <button 
+                                                    key={icon.id}
+                                                    onClick={() => setNewCatIcon(icon.id)}
+                                                    className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl transition-all border ${
+                                                        newCatIcon === icon.id 
+                                                        ? `border-white/50 shadow-lg ${icon.bg}` 
+                                                        : 'border-white/5 bg-white/5 hover:bg-white/10 opacity-60 hover:opacity-100'
+                                                    }`}
+                                                >
+                                                    <i className={`${icon.class} ${icon.color}`}></i>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         )}
 
                         {/* Grilla de Categorías */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {categories.map((category) => (
-                                <div key={category.id} className="rounded-2xl glass-panel p-6 hover:border-white/20 transition-all duration-300">
-                                    <div className="flex items-center justify-between mb-6">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-xl shadow-inner shadow-white/5">
-                                                <i className={`fa-brands ${category.icon} text-emerald-400`}></i>
-                                            </div>
-                                            <h3 className="text-xl font-bold text-white">{category.title}</h3>
-                                        </div>
-                                        {isAdmin && (
-                                            <button onClick={() => deleteCategory(category.id)} className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors">
-                                                <i className="fa-solid fa-trash text-sm"></i>
-                                            </button>
-                                        )}
-                                    </div>
-
-                                    <div className="space-y-3">
-                                        {category.links.map((link) => (
-                                            <div key={link.id} className="flex gap-2 items-center">
-                                                <a 
-                                                    href={link.url} 
-                                                    target="_blank" 
-                                                    rel="noopener noreferrer"
-                                                    className="flex-1 flex justify-between items-center p-4 rounded-xl bg-black/40 border border-white/5 hover:border-blue-500/40 hover:bg-white/5 transition-all group"
-                                                >
-                                                    <span className="font-medium text-slate-300 group-hover:text-white transition-colors">{link.title}</span>
-                                                    <i className="fa-solid fa-arrow-up-right-from-square text-slate-500 group-hover:text-blue-400 text-sm transition-colors"></i>
-                                                </a>
-                                                {isAdmin && (
-                                                    <button onClick={() => deleteLink(category.id, link.id)} className="p-4 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors">
-                                                        <i className="fa-solid fa-trash"></i>
-                                                    </button>
-                                                )}
-                                            </div>
-                                        ))}
-
-                                        {isAdmin && (
-                                            <div className="pt-4 border-t border-white/5 mt-4">
-                                                {editingLink === category.id ? (
-                                                    <div className="space-y-3 p-4 rounded-xl bg-black/30 border border-purple-500/30 shadow-inner">
-                                                        <input type="text" placeholder="Título del enlace" className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500 transition-colors" value={newLinkData.title} onChange={(e) => setNewLinkData({...newLinkData, title: e.target.value})} />
-                                                        <input type="url" placeholder="https://ejemplo.com" className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500 transition-colors" value={newLinkData.url} onChange={(e) => setNewLinkData({...newLinkData, url: e.target.value})} />
-                                                        <div className="flex gap-2">
-                                                            <button onClick={() => addLink(category.id)} className="flex-1 bg-purple-600 hover:bg-purple-500 text-white py-2.5 rounded-lg text-sm font-medium transition-colors">Guardar Link</button>
-                                                            <button onClick={() => setEditingLink(null)} className="px-4 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors"><i className="fa-solid fa-xmark"></i></button>
-                                                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {categories.map((category, index) => {
+                                const iconConfig = getIconConfig(category.iconId);
+                                const animationDelay = `delay-${(index % 3 + 1) * 100}`;
+                                
+                                return (
+                                    <div key={category.id} className={`rounded-3xl glass-panel p-1 border-white/5 hover:border-white/10 transition-all duration-500 animate-fade-in ${animationDelay} group`}>
+                                        <div className="p-6 bg-slate-950/50 rounded-[22px] h-full">
+                                            {/* Cabecera de Categoría */}
+                                            <div className="flex items-center justify-between mb-6">
+                                                <div className="flex items-center gap-4">
+                                                    <div className={`w-12 h-12 rounded-2xl ${iconConfig.bg} flex items-center justify-center text-2xl border border-white/5 shadow-inner`}>
+                                                        <i className={`${iconConfig.class} ${iconConfig.color}`}></i>
                                                     </div>
-                                                ) : (
-                                                    <button onClick={() => setEditingLink(category.id)} className="w-full py-3 rounded-xl border border-dashed border-white/20 text-slate-400 hover:text-white hover:border-purple-500/50 hover:bg-purple-500/5 text-sm font-medium transition-all">
-                                                        <i className="fa-solid fa-plus mr-2"></i> Añadir Enlace
+                                                    <h3 className="text-xl font-bold text-white tracking-tight">{category.title}</h3>
+                                                </div>
+                                                {isAdmin && (
+                                                    <button onClick={() => deleteCategory(category.id)} className="w-10 h-10 rounded-xl flex items-center justify-center text-slate-500 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all">
+                                                        <i className="fa-solid fa-trash-can"></i>
                                                     </button>
                                                 )}
                                             </div>
-                                        )}
+
+                                            {/* Lista de Enlaces */}
+                                            <div className="space-y-3">
+                                                {category.links.map((link) => (
+                                                    <div key={link.id} className="flex gap-2 items-center group/item">
+                                                        <a 
+                                                            href={link.url} 
+                                                            target="_blank" 
+                                                            rel="noopener noreferrer"
+                                                            className="flex-1 flex justify-between items-center p-4 rounded-2xl bg-black/40 border border-white/5 hover:border-white/20 hover:bg-white/5 transition-all duration-300"
+                                                        >
+                                                            <span className="font-semibold text-slate-300 group-hover/item:text-white transition-colors">{link.title}</span>
+                                                            <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover/item:bg-white/10 transition-all">
+                                                                <i className="fa-solid fa-arrow-right text-slate-500 group-hover/item:text-white text-sm -rotate-45 transition-transform group-hover/item:translate-x-0.5 group-hover/item:-translate-y-0.5"></i>
+                                                            </div>
+                                                        </a>
+                                                        {isAdmin && (
+                                                            <button onClick={() => deleteLink(category.id, link.id)} className="w-14 h-[60px] rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors flex items-center justify-center">
+                                                                <i className="fa-solid fa-xmark text-lg"></i>
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                ))}
+
+                                                {/* Controles de Admin: Añadir Link */}
+                                                {isAdmin && (
+                                                    <div className="pt-3 mt-3">
+                                                        {editingLink === category.id ? (
+                                                            <div className="space-y-3 p-5 rounded-2xl bg-black/60 border border-purple-500/30 shadow-inner">
+                                                                <input type="text" placeholder="Título del botón (Ej: Ver Ofertas)" className="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500 transition-colors" value={newLinkData.title} onChange={(e) => setNewLinkData({...newLinkData, title: e.target.value})} />
+                                                                <input type="url" placeholder="https://..." className="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500 transition-colors" value={newLinkData.url} onChange={(e) => setNewLinkData({...newLinkData, url: e.target.value})} />
+                                                                <div className="flex gap-2 pt-2">
+                                                                    <button onClick={() => addLink(category.id)} className="flex-1 bg-white text-black hover:bg-slate-200 py-3 rounded-xl text-sm font-bold transition-all">Confirmar Enlace</button>
+                                                                    <button onClick={() => setEditingLink(null)} className="px-5 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl transition-all"><i className="fa-solid fa-times"></i></button>
+                                                                </div>
+                                                            </div>
+                                                        ) : (
+                                                            <button onClick={() => setEditingLink(category.id)} className="w-full py-4 rounded-2xl border border-dashed border-white/10 text-slate-500 hover:text-white hover:border-white/30 hover:bg-white/5 text-sm font-bold transition-all flex items-center justify-center gap-2">
+                                                                <i className="fa-solid fa-link"></i> Añadir Enlace
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </main>
 
-                    {/* Modal de Login */}
+                    {/* Modal de Login Elegante */}
                     {showLogin && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/80 backdrop-blur-md">
-                            <div className="bg-slate-900 border border-white/10 p-8 rounded-2xl w-full max-w-md relative shadow-2xl shadow-purple-500/20">
-                                <button onClick={() => setShowLogin(false)} className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-white hover:bg-white/10 transition-colors">
+                        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/90 backdrop-blur-xl animate-fade-in">
+                            <div className="bg-slate-950 border border-white/10 p-10 rounded-[2rem] w-full max-w-md relative shadow-[0_0_100px_rgba(168,85,247,0.15)]">
+                                <button onClick={() => setShowLogin(false)} className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 transition-colors">
                                     <i className="fa-solid fa-xmark"></i>
                                 </button>
-                                <div className="text-center mb-8">
-                                    <div className="w-14 h-14 bg-gradient-to-br from-purple-500/20 to-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-purple-500/20">
-                                        <i className="fa-solid fa-shield-halved text-purple-400 text-2xl"></i>
+                                
+                                <div className="text-center mb-10">
+                                    <div className="w-20 h-20 bg-gradient-to-br from-purple-500/10 to-blue-500/10 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-white/5 shadow-inner">
+                                        <i className="fa-solid fa-fingerprint text-white text-3xl opacity-80"></i>
                                     </div>
-                                    <h2 className="text-2xl font-bold text-white">Acceso CEO</h2>
-                                    <p className="text-slate-400 text-sm mt-1">Panel de Control Soy Tomé</p>
+                                    <h2 className="text-3xl font-black text-white tracking-tight">Acceso Restringido</h2>
+                                    <p className="text-slate-500 text-sm mt-2 font-medium">Validación de identidad requerida</p>
                                 </div>
-                                <form onSubmit={handleLogin} className="space-y-4">
+
+                                <form onSubmit={handleLogin} className="space-y-5">
                                     <div>
-                                        <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">Usuario</label>
-                                        <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 transition-colors" required />
+                                        <input type="text" placeholder="Identificador" value={username} onChange={(e) => setUsername(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-white/30 focus:bg-white/10 transition-all font-medium placeholder-slate-600" required />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">Contraseña</label>
-                                        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 transition-colors" required />
+                                        <input type="password" placeholder="Código de acceso" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-white/30 focus:bg-white/10 transition-all font-medium placeholder-slate-600" required />
                                     </div>
-                                    {loginError && <p className="text-red-400 text-sm bg-red-400/10 p-3 rounded-lg border border-red-400/20 flex items-center gap-2"><i className="fa-solid fa-circle-exclamation"></i> {loginError}</p>}
-                                    <button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold py-3.5 px-4 rounded-xl mt-6 transition-all transform active:scale-[0.98] shadow-lg shadow-purple-500/25">
-                                        Ingresar al Sistema
+                                    
+                                    {loginError && (
+                                        <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm p-4 rounded-xl flex items-center gap-3 font-medium">
+                                            <i className="fa-solid fa-triangle-exclamation"></i>
+                                            {loginError}
+                                        </div>
+                                    )}
+                                    
+                                    <button type="submit" className="w-full bg-white hover:bg-slate-200 text-black font-black py-4 px-4 rounded-2xl mt-8 transition-all transform active:scale-[0.98] shadow-[0_0_30px_rgba(255,255,255,0.1)] text-lg">
+                                        Desbloquear Panel
                                     </button>
                                 </form>
                             </div>
