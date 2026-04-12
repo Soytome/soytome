@@ -2,960 +2,510 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Soy Tomé Hub | Ecosistema Premium</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- React & Babel -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beneficios de Cumpleaños - Concepción</title>
     
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Swiper JS (Slider Engine) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
     <style>
-        /* CORE BLACK LABEL DESIGN SYSTEM - BENTO UI */
-        :root {
-            --primary-rgb: 168, 85, 247; 
-            --bg-color: #020202; 
+        /* CSS Reset & Variables */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Urbanist', sans-serif; }
+        
+        body {
+            background-color: #020617; /* Very dark slate */
+            color: #f8fafc;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(34, 211, 238, 0.05), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(251, 191, 36, 0.05), transparent 25%);
         }
 
-        body { 
-            background-color: var(--bg-color); 
-            color: #e2e8f0; 
-            font-family: 'Inter', system-ui, -apple-system, sans-serif; 
-            -webkit-font-smoothing: antialiased;
-            overflow-x: hidden;
+        /* Swiper Container Setup */
+        .swiper {
+            width: 100%;
+            max-width: 1200px;
+            height: 90vh; /* Takes most of the screen height */
+            max-height: 800px;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+            background-color: #0f172a;
+            border: 1px solid #1e293b;
         }
 
-        /* Deep Glassmorphism (Estilo Apple / Silicon Valley) */
-        .glass-panel { 
-            background: rgba(20, 20, 22, 0.4); 
-            backdrop-filter: blur(32px); 
-            -webkit-backdrop-filter: blur(32px);
-            border: 1px solid rgba(255, 255, 255, 0.05); 
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 20px 40px -10px rgba(0, 0, 0, 0.8);
-            border-radius: 24px;
+        .swiper-slide {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 60px;
+            box-sizing: border-box;
+            opacity: 0; /* For custom fade-in effect via Swiper */
+            transition: opacity 0.3s ease;
+        }
+
+        .swiper-slide-active {
+            opacity: 1;
+        }
+
+        /* Decorative Elements */
+        .decoration-line {
+            background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.5), transparent);
+            height: 2px;
+            width: 80%;
+            position: absolute;
+            bottom: 60px;
+            left: 10%;
+            pointer-events: none;
+        }
+
+        /* Typography */
+        h1, h2, h3 { font-weight: 800; }
+        .text-gold { color: #fbbf24; }
+        .text-cyan { color: #22d3ee; }
+        .text-muted { color: #94a3b8; }
+
+        h1 { font-size: 4.5rem; line-height: 1.1; text-align: center; margin-bottom: 20px;}
+        h2.slide-title { font-size: 3.5rem; margin-bottom: 30px; width: 100%; text-align: left;}
+        
+        .subtitle {
+            font-size: 1.5rem;
+            line-height: 1.5;
+            text-align: center;
+            max-width: 800px;
+            color: #cbd5e1;
+            font-weight: 500;
+        }
+
+        /* Layout Helpers */
+        .w-full { width: 100%; }
+        .flex-center { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; width: 100%; text-align: center;}
+
+        /* Section Dividers */
+        .section-divider hr {
+            background-color: #22d3ee;
+            border: none;
+            height: 5px;
+            width: 100px;
+            margin: 0 auto 30px auto;
+            border-radius: 5px;
+        }
+        .section-divider h2 { font-size: 5rem; margin-bottom: 15px; }
+        .section-divider p { font-size: 1.8rem; color: #fbbf24; }
+
+        /* Tables (Cards UI) */
+        .glass-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid #334155;
+        }
+        .glass-table th {
+            background: rgba(15, 23, 42, 0.8);
+            color: #fbbf24;
+            padding: 20px;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: left;
+        }
+        .glass-table td {
+            padding: 20px;
+            border-bottom: 1px solid #334155;
+            font-size: 1.2rem;
+            color: #f1f5f9;
+        }
+        .glass-table tr:last-child td { border-bottom: none; }
+        .glass-table td strong { color: #22d3ee; font-size: 1.3rem; display: block; margin-bottom: 5px;}
+
+        /* Image Tiles */
+        .tiles-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            width: 100%;
+        }
+        .tile {
+            background: #1e293b;
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid #334155;
+            transition: transform 0.3s ease;
+        }
+        .tile:hover { transform: translateY(-5px); border-color: #fbbf24; }
+        .tile-img-wrapper {
+            height: 200px;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .tile-img-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+        .tile h3 { font-size: 1.8rem; margin-bottom: 10px; color: #fbbf24;}
+        .tile p { font-size: 1.1rem; color: #cbd5e1; line-height: 1.5; }
+
+        /* Icon Grid */
+        .icon-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            width: 100%;
+        }
+        .icon-card {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid #334155;
+            border-radius: 20px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .icon-card-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .icon-card .title { font-size: 1.8rem; font-weight: 800; color: #fbbf24; }
+        .icon-card .tag { color: #22d3ee; font-weight: 700; text-transform: uppercase; font-size: 1rem; margin-top: 5px;}
+        .icon-circle {
+            width: 50px; height: 50px; border-radius: 50%; background: #0f172a;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; color: #22d3ee; border: 1px solid #334155;
+        }
+        .icon-card p { font-size: 1.15rem; color: #cbd5e1; line-height: 1.5;}
+
+        /* Bleed Layout */
+        .split-layout {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            width: 100%;
+            height: 100%;
+            gap: 50px;
+            align-items: center;
+        }
+        .split-text h2 { font-size: 4rem; margin-bottom: 20px; }
+        .split-text p { font-size: 1.3rem; color: #cbd5e1; line-height: 1.6; margin-bottom: 20px;}
+        .alert-box {
+            background: rgba(34, 211, 238, 0.1);
+            border-left: 4px solid #22d3ee;
+            padding: 20px;
+            border-radius: 0 8px 8px 0;
+            margin-top: 20px;
+        }
+        .alert-box p { margin: 0; color: #f8fafc; font-size: 1.2rem; font-weight: 500;}
+        .split-img {
+            width: 100%;
+            height: 90%;
+            border-radius: 20px;
+            object-fit: cover;
+            border: 1px solid #334155;
+        }
+
+        /* End Screen */
+        .end-screen i { font-size: 6rem; color: #fbbf24; margin-bottom: 30px; animation: bounce 2s infinite; }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-20px);}
+            60% {transform: translateY(-10px);}
+        }
+
+        /* Swiper Controls Customization */
+        .swiper-button-next, .swiper-button-prev { color: #fbbf24 !important; }
+        .swiper-pagination-bullet { background: #cbd5e1 !important; opacity: 0.5; width: 10px; height: 10px; }
+        .swiper-pagination-bullet-active { background: #fbbf24 !important; opacity: 1; transform: scale(1.2); }
+
+        /* Responsive Adjustments */
+        @media (max-width: 1024px) {
+            h1 { font-size: 3.5rem; }
+            h2.slide-title { font-size: 2.5rem; }
+            .section-divider h2 { font-size: 3.5rem; }
+            .tiles-container { grid-template-columns: 1fr; gap: 15px;}
+            .tile { display: flex; align-items: center; gap: 20px; padding: 15px; }
+            .tile-img-wrapper { height: 100px; width: 100px; flex-shrink: 0; margin-bottom: 0;}
+            .icon-grid { grid-template-columns: 1fr; gap: 15px;}
+            .split-layout { grid-template-columns: 1fr; text-align: center; }
+            .split-img { display: none; } /* Hide image on small screens to save space */
+            .glass-table th, .glass-table td { padding: 12px; font-size: 1rem; }
+            .swiper-slide { padding: 30px 40px; }
         }
         
-        .glass-panel:hover {
-            border: 1px solid rgba(var(--primary-rgb), 0.3);
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 20px 50px -10px rgba(var(--primary-rgb), 0.15);
-            transform: translateY(-2px);
+        @media (max-width: 600px) {
+            .swiper-slide { padding: 20px; }
+            h1 { font-size: 2.5rem; }
+            .subtitle { font-size: 1.1rem; }
+            .glass-table { display: block; overflow-x: auto; white-space: nowrap; }
+            .swiper-button-next, .swiper-button-prev { display: none; } /* Hide arrows on mobile, force swipe */
         }
-
-        .glass-inner {
-            background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0) 100%);
-        }
-
-        /* Animaciones dinámicas de interfaz */
-        @keyframes fadeUp { 0% { opacity: 0; transform: translateY(30px); } 100% { opacity: 1; transform: translateY(0); } }
-        @keyframes scaleIn { 0% { opacity: 0; transform: scale(0.92); } 100% { opacity: 1; transform: scale(1); } }
-        @keyframes slideRight { 0% { opacity: 0; transform: translateX(-30px); } 100% { opacity: 1; transform: translateX(0); } }
-        
-        .anim-fade { animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
-        .anim-scale { animation: scaleIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
-        .anim-slide { animation: slideRight 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
-        
-        /* Delays */
-        .d-100 { animation-delay: 100ms; } .d-200 { animation-delay: 200ms; } .d-300 { animation-delay: 300ms; }
-
-        /* Efectos Temáticos Dinámicos */
-        .theme-glow { box-shadow: 0 0 50px rgba(var(--primary-rgb), 0.25); }
-        .theme-text { color: rgb(var(--primary-rgb)); }
-        .theme-bg { background-color: rgb(var(--primary-rgb)); }
-        .theme-border { border-color: rgba(var(--primary-rgb), 0.5); }
-        .theme-hover:hover { background-color: rgba(var(--primary-rgb), 0.15); color: rgb(var(--primary-rgb)); }
-
-        @keyframes pulseGlow {
-            0% { box-shadow: 0 0 0 0 rgba(var(--primary-rgb), 0.4); }
-            70% { box-shadow: 0 0 0 15px rgba(var(--primary-rgb), 0); }
-            100% { box-shadow: 0 0 0 0 rgba(var(--primary-rgb), 0); }
-        }
-        .cta-pulse { animation: pulseGlow 2.5s infinite; }
-        
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgb(var(--primary-rgb)); }
     </style>
 </head>
 <body>
-    <div id="root"></div>
 
-    <script type="text/babel" data-type="module">
-        const { useState, useEffect, useRef } = window.React;
-        
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc, getDoc, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-
-        // =========================================================================
-        // 🚨 CONFIGURACIÓN FIREBASE (Tus llaves intactas) 🚨
-        // =========================================================================
-        const myFirebaseConfig = {
-            apiKey: "AIzaSyCYQHwLpWxQxYj8Lk7GLAQT3c2_YaFs8Ew",
-            authDomain: "soy-tome.firebaseapp.com",
-            projectId: "soy-tome",
-            storageBucket: "soy-tome.firebasestorage.app",
-            messagingSenderId: "381653906684",
-            appId: "1:381653906684:web:1c0a213ab4364fbed81379"
-        };
-        
-        const isCanvas = typeof __firebase_config !== 'undefined';
-        const firebaseConfig = isCanvas ? JSON.parse(__firebase_config) : myFirebaseConfig;
-        
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'soytome-prod';
-
-        const getCatsPath = () => isCanvas ? `artifacts/${appId}/public/data/categorias` : 'hub_categorias';
-        const getSettingsPath = () => isCanvas ? `artifacts/${appId}/public/data/config` : 'hub_settings';
-        const getBuzonPath = () => isCanvas ? `artifacts/${appId}/public/data/buzon` : 'hub_buzon';
-
-        // NUEVAS OPCIONES PREMIUM (Diseño y Plantillas)
-        const THEMES = {
-            magenta: { name: 'Magenta Cyber', rgb: '217, 70, 239' },
-            coral: { name: 'Coral Sunset', rgb: '251, 113, 133' },
-            cyan: { name: 'Cyan Matrix', rgb: '6, 182, 212' },
-            purple: { name: 'Púrpura Neón', rgb: '168, 85, 247' },
-            emerald: { name: 'Esmeralda', rgb: '16, 185, 129' },
-            gold: { name: 'Oro Premium', rgb: '234, 179, 8' }
-        };
-
-        const LAYOUTS = {
-            grid: { name: 'Bento Grid', icon: 'fa-border-all' },
-            list: { name: 'Directorio VIP', icon: 'fa-list-ul' }
-        };
-
-        const ANIMATIONS = {
-            fade: { name: 'Elevación Premium', class: 'anim-fade' },
-            scale: { name: 'Impacto Frontal', class: 'anim-scale' },
-            slide: { name: 'Flujo Lateral', class: 'anim-slide' }
-        };
-
-        const ICONS = [
-            { id: 'fa-whatsapp', class: 'fa-brands fa-whatsapp' },
-            { id: 'fa-facebook', class: 'fa-brands fa-facebook' },
-            { id: 'fa-instagram', class: 'fa-brands fa-instagram' },
-            { id: 'fa-tiktok', class: 'fa-brands fa-tiktok' },
-            { id: 'fa-youtube', class: 'fa-brands fa-youtube' },
-            { id: 'fa-threads', class: 'fa-brands fa-threads' },
-            { id: 'fa-globe', class: 'fa-solid fa-globe' },
-            { id: 'fa-users', class: 'fa-solid fa-users' },
-            { id: 'fa-bullhorn', class: 'fa-solid fa-bullhorn' },
-            { id: 'fa-podcast', class: 'fa-solid fa-podcast' },
-            { id: 'fa-store', class: 'fa-solid fa-store' },
-            { id: 'fa-newspaper', class: 'fa-regular fa-newspaper' },
-            { id: 'fa-link', class: 'fa-solid fa-link' },
-            { id: 'fa-bolt', class: 'fa-solid fa-bolt' }
-        ];
-
-        const DEFAULT_SETTINGS = {
-            theme: 'magenta',
-            layout: 'grid',
-            animation: 'fade',
-            logoUrl: '',
-            ceoPhoto: '',
-            ceoName: 'Ian',
-            ceoRole: 'CEO & Founder Soy Tomé',
-            ceoBio: 'Líder en comunicación digital y marketing de alto impacto.', // NUEVO CAMPO
-            showCeo: true,
-            ctaEnabled: true,
-            ctaText: 'Si no te ven, no existes. Aumenta tu visibilidad.',
-            ctaPhone: '56900000000',
-            ctaMessage: 'Hola Ian, quiero publicidad Black Label en Soy Tomé.',
-            buzonEnabled: true,
-            buzonTitle: 'Buzón de Exclusivas',
-            buzonWa: '56900000000'
-        };
-
-        function App() {
-            const [user, setUser] = useState(null);
-            const [categories, setCategories] = useState([]);
-            const [settings, setSettings] = useState(DEFAULT_SETTINGS);
-            const [isLoading, setIsLoading] = useState(true);
-            const [isAdmin, setIsAdmin] = useState(false);
-            const [showLogin, setShowLogin] = useState(false);
-            const [adminTab, setAdminTab] = useState('links'); 
-
-            // Estado del Buzón Público
-            const [showBuzon, setShowBuzon] = useState(false);
-            const [buzonForm, setBuzonForm] = useState({ name: '', type: 'noticia', message: '' });
-            const [buzonStatus, setBuzonStatus] = useState('idle'); 
-            const [buzonReports, setBuzonReports] = useState([]); 
-
-            // Auth Local State
-            const [username, setUsername] = useState('');
-            const [password, setPassword] = useState('');
-            const [loginError, setLoginError] = useState('');
-
-            // Edición de Categorías
-            const [newCatTitle, setNewCatTitle] = useState('');
-            const [newCatIcon, setNewCatIcon] = useState('fa-globe');
-            const [editingCategory, setEditingCategory] = useState(null);
-            const [editCatTitle, setEditCatTitle] = useState('');
-
-            // Edición de Enlaces
-            const [addingLinkTo, setAddingLinkTo] = useState(null);
-            const [newLinkData, setNewLinkData] = useState({ title: '', url: '' });
-            const [editingLinkObj, setEditingLinkObj] = useState(null); 
-            const [editLinkData, setEditLinkData] = useState({ title: '', url: '' });
-
-            // Radar de Errores del Motor
-            const [systemError, setSystemError] = useState('');
-
-            // 1. AUTENTICACIÓN FIREBASE SEGURA
-            useEffect(() => {
-                const initAuth = async () => {
-                    try {
-                        if (isCanvas && typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                            await signInWithCustomToken(auth, __initial_auth_token);
-                        } else {
-                            await signInAnonymously(auth);
-                        }
-                    } catch (e) {
-                        console.error("Auth bypass: Conectando directo a BD en modo prueba", e);
-                        // Eliminamos el bloqueo candado_auth para no frenar la página
-                    }
-                };
-                initAuth();
-                const unsubAuth = onAuthStateChanged(auth, setUser);
-                return () => unsubAuth();
-            }, []);
-
-            // 2. SINCRONIZACIÓN DE DATOS
-            useEffect(() => {
-                // Eliminamos la barrera de autenticación para forzar la lectura de datos
-                const unsubCats = onSnapshot(collection(db, getCatsPath()), (snapshot) => {
-                    const loaded = [];
-                    snapshot.forEach(doc => loaded.push({ id: doc.id, ...doc.data() }));
-                    loaded.sort((a, b) => (a.order || 0) - (b.order || 0) || a.id.localeCompare(b.id));
-                    setCategories(loaded);
-                }, (error) => {
-                    console.error("Error en DB:", error);
-                    setSystemError("candado_bd");
-                });
-
-                const unsubSettings = onSnapshot(doc(db, getSettingsPath(), 'global'), (docSnap) => {
-                    if (docSnap.exists()) {
-                        setSettings({ ...DEFAULT_SETTINGS, ...docSnap.data() });
-                    } else {
-                        setDoc(doc(db, getSettingsPath(), 'global'), DEFAULT_SETTINGS).catch(e => console.error(e));
-                    }
-                    setIsLoading(false);
-                }, (error) => {
-                    console.error("Error en Settings:", error);
-                    setSystemError("candado_bd");
-                });
-
-                const unsubBuzon = onSnapshot(collection(db, getBuzonPath()), (snapshot) => {
-                    const loaded = [];
-                    snapshot.forEach(doc => loaded.push({ id: doc.id, ...doc.data() }));
-                    loaded.sort((a, b) => b.timestamp - a.timestamp); 
-                    setBuzonReports(loaded);
-                }, (error) => console.error("Error buzon:", error));
-
-                return () => { unsubCats(); unsubSettings(); unsubBuzon(); };
-            }, [user]);
-
-            useEffect(() => {
-                if (THEMES[settings.theme]) {
-                    document.documentElement.style.setProperty('--primary-rgb', THEMES[settings.theme].rgb);
-                }
-            }, [settings.theme]);
-
-            const handleLogin = (e) => {
-                e.preventDefault();
-                if (username === 'ian' && password === 'ian123') {
-                    setIsAdmin(true); setShowLogin(false); setLoginError(''); setUsername(''); setPassword('');
-                } else {
-                    setLoginError('Credenciales erróneas. Intento registrado.');
-                }
-            };
-
-            const updateSettings = async (newConfig) => {
-                const updated = { ...settings, ...newConfig };
-                setSettings(updated); 
-                await setDoc(doc(db, getSettingsPath(), 'global'), updated);
-            };
-
-            // ================= LÓGICA DEL BUZÓN =================
-            const submitBuzon = async (e) => {
-                e.preventDefault();
-                if (!buzonForm.name.trim() || !buzonForm.message.trim()) return;
-                
-                setBuzonStatus('sending');
-                try {
-                    await addDoc(collection(db, getBuzonPath()), {
-                        ...buzonForm,
-                        timestamp: Date.now(),
-                        status: 'unread'
-                    });
-                    setBuzonStatus('success');
-                    setBuzonForm({ name: '', type: 'noticia', message: '' });
-                    setTimeout(() => {
-                        setShowBuzon(false);
-                        setBuzonStatus('idle');
-                    }, 3000);
-                } catch (error) {
-                    console.error("Error enviando reporte:", error);
-                    setBuzonStatus('error');
-                }
-            };
-
-            const deleteReport = async (reportId) => {
-                if(confirm('¿Eliminar este reporte permanentemente?')) {
-                    await deleteDoc(doc(db, getBuzonPath(), reportId));
-                }
-            };
-
-            // ================= CRUD CATEGORÍAS =================
-            const addCategory = async () => {
-                if (!newCatTitle.trim()) return;
-                const newId = `cat-${Date.now()}`;
-                const newOrder = categories.length > 0 ? Math.max(...categories.map(c => c.order || 0)) + 1 : 0;
-                await setDoc(doc(db, getCatsPath(), newId), { 
-                    title: newCatTitle, 
-                    iconId: newCatIcon, 
-                    order: newOrder,
-                    links: [] 
-                });
-                setNewCatTitle('');
-            };
-
-            const saveCategoryEdit = async (catId) => {
-                if (!editCatTitle.trim()) { setEditingCategory(null); return; }
-                const cat = categories.find(c => c.id === catId);
-                if (cat) {
-                    await setDoc(doc(db, getCatsPath(), catId), { ...cat, title: editCatTitle });
-                }
-                setEditingCategory(null);
-            };
-
-            const deleteCategory = async (catId) => {
-                if (confirm('⚠️ ¿Eliminar esta categoría y todos sus enlaces?')) {
-                    await deleteDoc(doc(db, getCatsPath(), catId));
-                }
-            };
-
-            const moveCategory = async (index, direction) => {
-                if (index + direction < 0 || index + direction >= categories.length) return;
-                const catA = categories[index];
-                const catB = categories[index + direction];
-                const orderA = catA.order !== undefined ? catA.order : index;
-                const orderB = catB.order !== undefined ? catB.order : index + direction;
-                await setDoc(doc(db, getCatsPath(), catA.id), { ...catA, order: orderB });
-                await setDoc(doc(db, getCatsPath(), catB.id), { ...catB, order: orderA });
-            };
-
-            // ================= CRUD ENLACES =================
-            const addLink = async (catId) => {
-                if (!newLinkData.title.trim() || !newLinkData.url.trim()) return;
-                const cat = categories.find(c => c.id === catId);
-                if (cat) {
-                    await setDoc(doc(db, getCatsPath(), catId), { 
-                        ...cat, 
-                        links: [...cat.links, { id: `link-${Date.now()}`, ...newLinkData }] 
-                    });
-                    setNewLinkData({ title: '', url: '' });
-                    setAddingLinkTo(null);
-                }
-            };
-
-            const saveLinkEdit = async () => {
-                if (!editingLinkObj) return;
-                const { catId, linkId } = editingLinkObj;
-                const cat = categories.find(c => c.id === catId);
-                if (cat) {
-                    const updatedLinks = cat.links.map(l => l.id === linkId ? { ...l, ...editLinkData } : l);
-                    await setDoc(doc(db, getCatsPath(), catId), { ...cat, links: updatedLinks });
-                }
-                setEditingLinkObj(null);
-            };
-
-            const deleteLink = async (catId, linkId) => {
-                const cat = categories.find(c => c.id === catId);
-                if (cat) {
-                    await setDoc(doc(db, getCatsPath(), catId), { 
-                        ...cat, 
-                        links: cat.links.filter(l => l.id !== linkId) 
-                    });
-                }
-            };
-
-            const moveLink = async (catId, linkIndex, direction) => {
-                const cat = categories.find(c => c.id === catId);
-                if (!cat) return;
-                if (linkIndex + direction < 0 || linkIndex + direction >= cat.links.length) return;
-                const newLinks = [...cat.links];
-                const temp = newLinks[linkIndex];
-                newLinks[linkIndex] = newLinks[linkIndex + direction];
-                newLinks[linkIndex + direction] = temp;
-                await setDoc(doc(db, getCatsPath(), catId), { ...cat, links: newLinks });
-            };
-
-            // Helpers
-            const getAnimClass = () => ANIMATIONS[settings.animation]?.class || 'anim-fade';
-            const generateWaLink = () => {
-                const phone = settings.ctaPhone.replace(/\D/g, '');
-                const text = encodeURIComponent(settings.ctaMessage);
-                return `https://wa.me/${phone}?text=${text}`;
-            };
-            const generateBuzonWaLink = () => {
-                const phone = settings.buzonWa.replace(/\D/g, '');
-                const text = encodeURIComponent("Hola, tengo material audiovisual (fotos/videos) para enviar a Soy Tomé.");
-                return `https://wa.me/${phone}?text=${text}`;
-            };
-
-            // PANTALLAS DE EMERGENCIA Y BLOQUEOS
-            if (systemError === "candado_auth") {
-                return (
-                    <div className="min-h-screen flex flex-col items-center justify-center bg-[#020202] px-6 text-center font-sans">
-                        <i className="fa-solid fa-lock text-red-500 text-6xl mb-6 drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]"></i>
-                        <h2 className="text-3xl font-black text-white mb-3">Candado Firebase Activado</h2>
-                        <p className="text-white/60 mb-8 max-w-md text-sm">El motor de élite está listo, pero Firebase está bloqueando el acceso anónimo. Desbloquéalo en 30 segundos.</p>
-                        <div className="bg-[#111] border border-white/10 p-6 rounded-2xl text-left text-sm text-white/80 space-y-4 font-medium shadow-2xl max-w-md w-full">
-                            <p className="flex gap-3"><span className="text-red-400 font-bold">1.</span> Ve a Firebase Console &gt; Tu proyecto.</p>
-                            <p className="flex gap-3"><span className="text-red-400 font-bold">2.</span> Menú izquierdo: <b>Authentication</b>.</p>
-                            <p className="flex gap-3"><span className="text-red-400 font-bold">3.</span> Pestaña <b>Sign-in method</b>.</p>
-                            <p className="flex gap-3"><span className="text-red-400 font-bold">4.</span> Activa <b>Anónimo</b> y Guarda.</p>
-                        </div>
-                    </div>
-                );
-            }
-
-            if (systemError === "candado_bd") {
-                return (
-                    <div className="min-h-screen flex flex-col items-center justify-center bg-[#020202] px-6 text-center">
-                        <i className="fa-solid fa-database text-red-500 text-6xl mb-6 drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]"></i>
-                        <h2 className="text-3xl font-black text-white mb-3">Reglas de Acceso Estrictas</h2>
-                        <p className="text-white/60 mb-6 max-w-sm text-sm">Firestore está bloqueando la conexión. Ve a Firebase &gt; Firestore Database &gt; Reglas, y asegúrate de que esté en Modo de Prueba.</p>
-                    </div>
-                );
-            }
-
-            // Quitamos el bloqueo del "user" de la pantalla de carga
-            if (isLoading) {
-                return (
-                    <div className="min-h-screen flex flex-col items-center justify-center bg-[#020202]">
-                        <div className="w-16 h-16 border-2 border-white/5 border-t-purple-500 rounded-full animate-spin mb-6"></div>
-                        <p className="text-white/30 text-[10px] font-bold tracking-[0.4em] animate-pulse uppercase">Conectando Ecosistema</p>
-                    </div>
-                );
-            }
-
-            return (
-                <div className="min-h-screen relative overflow-hidden pb-40">
-                    {/* Fondo Ambient Dynamics (Apple-like) */}
-                    <div className="fixed inset-0 pointer-events-none z-0 opacity-40">
-                        <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full blur-[160px] mix-blend-screen theme-bg opacity-30"></div>
-                        <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full blur-[160px] mix-blend-screen theme-bg opacity-20"></div>
-                        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+')] opacity-40 mix-blend-overlay"></div>
-                    </div>
-
-                    {/* TOP BAR & ADMIN TRIGGER */}
-                    <div className="relative z-50 flex justify-end p-4 md:p-6 max-w-5xl mx-auto">
-                        <div className={`${getAnimClass()}`}>
-                            {isAdmin ? (
-                                <button onClick={() => setIsAdmin(false)} className="px-5 py-2.5 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 text-[10px] font-black tracking-widest uppercase transition-all backdrop-blur-md flex items-center gap-2">
-                                    <i className="fa-solid fa-lock"></i> Cerrar Bóveda
-                                </button>
-                            ) : (
-                                <button onClick={() => setShowLogin(true)} className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 border border-white/10 hover:bg-white/10 text-white/30 hover:text-white transition-all backdrop-blur-md">
-                                    <i className="fa-solid fa-fingerprint"></i>
-                                </button>
-                            )}
-                        </div>
-                    </div>
-
-                    <main className="relative z-30 max-w-4xl mx-auto px-4 sm:px-6 pt-2 pb-12">
-                        
-                        {/* HERO SECTION / CEO PROFILE (Bento Style) */}
-                        <div className={`${getAnimClass()} d-100 flex flex-col items-center text-center mb-16`}>
-                            {settings.logoUrl ? (
-                                <img src={settings.logoUrl} alt="Logo" className="h-28 md:h-32 object-contain theme-glow rounded-3xl mb-8 transition-transform hover:scale-105" />
-                            ) : (
-                                <div className="mb-10 flex items-center justify-center select-none">
-                                    <span className="text-7xl md:text-8xl font-black text-white tracking-tighter drop-shadow-[0_10px_20px_rgba(255,255,255,0.15)] leading-none">ST</span>
-                                </div>
-                            )}
-
-                            {settings.showCeo && (
-                                <div className="glass-panel p-6 max-w-md w-full relative overflow-hidden group">
-                                    <div className="absolute inset-0 glass-inner pointer-events-none"></div>
-                                    <div className="relative z-10 flex flex-col items-center">
-                                        {settings.ceoPhoto ? (
-                                            <img src={settings.ceoPhoto} alt="CEO" className="w-20 h-20 rounded-full object-cover border-2 theme-border shadow-[0_0_30px_rgba(var(--primary-rgb),0.3)] mb-4 group-hover:scale-105 transition-transform duration-500" />
-                                        ) : (
-                                            <div className="w-20 h-20 rounded-full theme-bg bg-opacity-20 flex items-center justify-center border-2 theme-border text-white text-2xl mb-4">
-                                                <i className="fa-solid fa-user-tie"></i>
-                                            </div>
-                                        )}
-                                        <h1 className="text-2xl font-black text-white tracking-tight mb-1">{settings.ceoName}</h1>
-                                        <h2 className="theme-text text-[10px] font-black tracking-[0.2em] uppercase mb-4">{settings.ceoRole}</h2>
-                                        {settings.ceoBio && (
-                                            <p className="text-white/60 text-sm font-medium leading-relaxed px-4">{settings.ceoBio}</p>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* ================= PANEL DE CONTROL CEO (TABS) ================= */}
-                        {isAdmin && (
-                            <div className="mb-20 rounded-[2rem] bg-[#0a0a0a]/95 backdrop-blur-3xl border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-hidden">
-                                <div className="bg-white/5 p-6 border-b border-white/5 flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-2xl theme-bg flex items-center justify-center text-white text-xl shadow-lg">
-                                        <i className="fa-solid fa-terminal"></i>
-                                    </div>
-                                    <div>
-                                        <h3 className="text-xl font-black text-white">Bóveda de Configuración</h3>
-                                        <p className="theme-text text-[10px] font-black tracking-widest uppercase">Modo Edición Total</p>
-                                    </div>
-                                </div>
-
-                                <div className="flex border-b border-white/5 overflow-x-auto no-scrollbar bg-black/20">
-                                    <button onClick={() => setAdminTab('links')} className={`flex-1 min-w-[120px] py-4 text-[10px] uppercase tracking-widest font-black transition-all ${adminTab === 'links' ? 'text-white border-b-2 theme-border bg-white/5' : 'text-white/40 hover:text-white/70'}`}>Estructura</button>
-                                    <button onClick={() => setAdminTab('design')} className={`flex-1 min-w-[120px] py-4 text-[10px] uppercase tracking-widest font-black transition-all ${adminTab === 'design' ? 'text-white border-b-2 theme-border bg-white/5' : 'text-white/40 hover:text-white/70'}`}>Apariencia</button>
-                                    <button onClick={() => setAdminTab('profile')} className={`flex-1 min-w-[120px] py-4 text-[10px] uppercase tracking-widest font-black transition-all ${adminTab === 'profile' ? 'text-white border-b-2 theme-border bg-white/5' : 'text-white/40 hover:text-white/70'}`}>Identidad</button>
-                                    <button onClick={() => setAdminTab('marketing')} className={`flex-1 min-w-[120px] py-4 text-[10px] uppercase tracking-widest font-black transition-all ${adminTab === 'marketing' ? 'text-white border-b-2 theme-border bg-white/5' : 'text-white/40 hover:text-white/70'}`}>Marketing</button>
-                                    <button onClick={() => setAdminTab('inbox')} className={`flex-1 min-w-[120px] py-4 text-[10px] uppercase tracking-widest font-black transition-all relative ${adminTab === 'inbox' ? 'text-white border-b-2 theme-border bg-white/5' : 'text-white/40 hover:text-white/70'}`}>
-                                        Buzón
-                                        {buzonReports.length > 0 && <span className="absolute top-3 right-4 w-2 h-2 rounded-full theme-bg shadow-[0_0_10px_rgba(var(--primary-rgb),1)] animate-pulse"></span>}
-                                    </button>
-                                </div>
-
-                                <div className="p-6 md:p-8">
-                                    {/* TAB: ESTRUCTURA */}
-                                    {adminTab === 'links' && (
-                                        <div className="space-y-6 animate-fade-in">
-                                            <div className="bg-black/40 p-6 rounded-[1.5rem] border border-white/5">
-                                                <h4 className="text-white font-bold mb-4 flex items-center gap-2"><i className="fa-solid fa-layer-group theme-text"></i> Añadir Nueva Categoría</h4>
-                                                <div className="flex flex-col md:flex-row gap-4">
-                                                    <input type="text" placeholder="Ej: Red de Medios, Eventos..." className="flex-1 bg-[#111] border border-white/10 rounded-xl px-5 py-4 text-white text-sm font-medium focus:outline-none focus:border-white/30 transition-colors" value={newCatTitle} onChange={(e) => setNewCatTitle(e.target.value)} />
-                                                    <button onClick={addCategory} className="theme-bg text-white px-8 py-4 rounded-xl font-bold hover:opacity-90 transition-opacity flex items-center justify-center gap-2 shadow-lg">
-                                                        <i className="fa-solid fa-plus"></i> Crear
-                                                    </button>
-                                                </div>
-                                                <div className="mt-6">
-                                                    <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest mb-3">Selector de Ícono</p>
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {ICONS.map(i => (
-                                                            <button key={i.id} onClick={() => setNewCatIcon(i.id)} className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl transition-all ${newCatIcon === i.id ? 'theme-bg text-white shadow-[0_0_20px_rgba(var(--primary-rgb),0.4)] scale-105' : 'bg-white/5 border border-white/5 text-white/40 hover:bg-white/10 hover:text-white'}`}>
-                                                                <i className={i.class}></i>
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* TAB: APARIENCIA */}
-                                    {adminTab === 'design' && (
-                                        <div className="space-y-8 animate-fade-in">
-                                            <div>
-                                                <h4 className="text-white font-bold mb-4 flex items-center gap-2"><i className="fa-solid fa-palette theme-text"></i> Paleta Trend 2026</h4>
-                                                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                                    {Object.entries(THEMES).map(([key, theme]) => (
-                                                        <button key={key} onClick={() => updateSettings({ theme: key })} className={`p-4 rounded-2xl border text-left transition-all ${settings.theme === key ? 'border-white bg-white/10 shadow-[0_0_30px_rgba(255,255,255,0.05)]' : 'border-white/5 bg-[#111] hover:border-white/20'}`}>
-                                                            <div className="w-full h-8 rounded-xl mb-3 shadow-inner" style={{ backgroundColor: `rgb(${theme.rgb})` }}></div>
-                                                            <p className="text-[11px] text-white font-black uppercase tracking-wider">{theme.name}</p>
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                            
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                                <div>
-                                                    <h4 className="text-white font-bold mb-4 flex items-center gap-2"><i className="fa-solid fa-border-all theme-text"></i> Disposición (Layout)</h4>
-                                                    <div className="space-y-3">
-                                                        {Object.entries(LAYOUTS).map(([key, layout]) => (
-                                                            <button key={key} onClick={() => updateSettings({ layout: key })} className={`w-full p-5 rounded-2xl border flex items-center gap-4 transition-all ${settings.layout === key ? 'border-white bg-white/10 text-white shadow-lg' : 'border-white/5 bg-[#111] text-white/40 hover:text-white hover:bg-white/5'}`}>
-                                                                <i className={`fa-solid ${layout.icon} text-xl`}></i>
-                                                                <span className="font-bold text-sm">{layout.name}</span>
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <h4 className="text-white font-bold mb-4 flex items-center gap-2"><i className="fa-solid fa-wand-magic-sparkles theme-text"></i> Animación Motor</h4>
-                                                    <div className="space-y-3">
-                                                        {Object.entries(ANIMATIONS).map(([key, anim]) => (
-                                                            <button key={key} onClick={() => updateSettings({ animation: key })} className={`w-full p-5 rounded-2xl border text-left transition-all ${settings.animation === key ? 'border-white bg-white/10 text-white shadow-lg' : 'border-white/5 bg-[#111] text-white/40 hover:text-white hover:bg-white/5'}`}>
-                                                                <span className="font-bold text-sm">{anim.name}</span>
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* TAB: IDENTIDAD (Logos y CEO) */}
-                                    {adminTab === 'profile' && (
-                                        <div className="space-y-6 animate-fade-in grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div className="space-y-5 bg-black/40 p-6 rounded-[1.5rem] border border-white/5">
-                                                <h4 className="text-white font-bold flex items-center gap-2 mb-2"><i className="fa-solid fa-image theme-text"></i> Identidad Visual</h4>
-                                                <div>
-                                                    <label className="block text-[10px] text-white/50 font-bold mb-2 uppercase tracking-widest">URL Logo Central (Opcional)</label>
-                                                    <input type="text" placeholder="https://ejemplo.com/logo.png" value={settings.logoUrl} onChange={(e) => updateSettings({ logoUrl: e.target.value })} className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-3.5 text-white text-sm focus:border-white/30 outline-none" />
-                                                </div>
-                                            </div>
-
-                                            <div className="space-y-5 bg-black/40 p-6 rounded-[1.5rem] border border-white/5">
-                                                <div className="flex items-center justify-between mb-2">
-                                                    <h4 className="text-white font-bold flex items-center gap-2"><i className="fa-solid fa-id-badge theme-text"></i> Perfil Público (CEO)</h4>
-                                                    <label className="relative inline-flex items-center cursor-pointer">
-                                                        <input type="checkbox" checked={settings.showCeo} onChange={(e) => updateSettings({ showCeo: e.target.checked })} className="sr-only peer" />
-                                                        <div className="w-9 h-5 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all theme-peer-checked"></div>
-                                                    </label>
-                                                </div>
-                                                <div className="space-y-4" style={{ opacity: settings.showCeo ? 1 : 0.4 }}>
-                                                    <div>
-                                                        <label className="block text-[10px] text-white/50 font-bold mb-2 uppercase tracking-widest">Nombre Público</label>
-                                                        <input type="text" disabled={!settings.showCeo} value={settings.ceoName} onChange={(e) => updateSettings({ ceoName: e.target.value })} className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-white/30 outline-none" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-[10px] text-white/50 font-bold mb-2 uppercase tracking-widest">Cargo / Título</label>
-                                                        <input type="text" disabled={!settings.showCeo} value={settings.ceoRole} onChange={(e) => updateSettings({ ceoRole: e.target.value })} className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-white/30 outline-none" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-[10px] text-white/50 font-bold mb-2 uppercase tracking-widest">URL Foto Perfil</label>
-                                                        <input type="text" disabled={!settings.showCeo} value={settings.ceoPhoto} onChange={(e) => updateSettings({ ceoPhoto: e.target.value })} className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-white/30 outline-none" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-[10px] text-white/50 font-bold mb-2 uppercase tracking-widest">Biografía / Pitch (Opcional)</label>
-                                                        <textarea disabled={!settings.showCeo} value={settings.ceoBio || ''} onChange={(e) => updateSettings({ ceoBio: e.target.value })} rows="2" className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-white/30 outline-none resize-none"></textarea>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* TAB: MARKETING */}
-                                    {adminTab === 'marketing' && (
-                                        <div className="space-y-6 animate-fade-in">
-                                            <div className="bg-black/40 p-6 md:p-8 rounded-[1.5rem] border border-white/5 relative overflow-hidden">
-                                                <div className="absolute top-0 left-0 w-1 h-full theme-bg"></div>
-                                                <div className="flex items-center justify-between mb-6">
-                                                    <div>
-                                                        <h4 className="text-white font-bold text-lg flex items-center gap-2"><i className="fa-solid fa-bullseye theme-text"></i> Conversión Flotante</h4>
-                                                        <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest mt-1">Pop-up de Ventas / Contacto</p>
-                                                    </div>
-                                                    <label className="relative inline-flex items-center cursor-pointer">
-                                                        <input type="checkbox" checked={settings.ctaEnabled} onChange={(e) => updateSettings({ ctaEnabled: e.target.checked })} className="sr-only peer" />
-                                                        <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all theme-peer-checked"></div>
-                                                    </label>
-                                                </div>
-                                                <div className="space-y-5 transition-opacity" style={{ opacity: settings.ctaEnabled ? 1 : 0.4 }}>
-                                                    <div>
-                                                        <label className="block text-[10px] text-white/50 font-bold mb-2 uppercase tracking-widest">Copywriting del Aviso (Sesgo Negativo)</label>
-                                                        <textarea value={settings.ctaText} onChange={(e) => updateSettings({ ctaText: e.target.value })} disabled={!settings.ctaEnabled} rows="2" className="w-full bg-[#111] border border-white/10 rounded-xl px-5 py-4 text-white text-sm font-medium focus:border-white/30 outline-none resize-none"></textarea>
-                                                    </div>
-                                                    <div className="flex flex-col md:flex-row gap-5">
-                                                        <div className="flex-[1]">
-                                                            <label className="block text-[10px] text-white/50 font-bold mb-2 uppercase tracking-widest">WhatsApp Receptor</label>
-                                                            <input type="text" value={settings.ctaPhone} onChange={(e) => updateSettings({ ctaPhone: e.target.value })} disabled={!settings.ctaEnabled} className="w-full bg-[#111] border border-white/10 rounded-xl px-5 py-4 text-white text-sm focus:border-white/30 outline-none" />
-                                                        </div>
-                                                        <div className="flex-[2]">
-                                                            <label className="block text-[10px] text-white/50 font-bold mb-2 uppercase tracking-widest">Mensaje Pre-escrito de Cliente</label>
-                                                            <input type="text" value={settings.ctaMessage} onChange={(e) => updateSettings({ ctaMessage: e.target.value })} disabled={!settings.ctaEnabled} className="w-full bg-[#111] border border-white/10 rounded-xl px-5 py-4 text-white text-sm focus:border-white/30 outline-none" />
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* TAB: BUZÓN */}
-                                    {adminTab === 'inbox' && (
-                                        <div className="space-y-8 animate-fade-in">
-                                            <div className="bg-black/40 p-6 md:p-8 rounded-[1.5rem] border border-white/5 relative overflow-hidden">
-                                                <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
-                                                <div className="flex items-center justify-between mb-6">
-                                                    <div>
-                                                        <h4 className="text-white font-bold text-lg flex items-center gap-2"><i className="fa-solid fa-bullhorn text-blue-400"></i> Aportes Ciudadanos</h4>
-                                                        <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest mt-1">Recepción de Exclusivas</p>
-                                                    </div>
-                                                    <label className="relative inline-flex items-center cursor-pointer">
-                                                        <input type="checkbox" checked={settings.buzonEnabled} onChange={(e) => updateSettings({ buzonEnabled: e.target.checked })} className="sr-only peer" />
-                                                        <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
-                                                    </label>
-                                                </div>
-                                                <div className="space-y-5 transition-opacity" style={{ opacity: settings.buzonEnabled ? 1 : 0.4 }}>
-                                                    <div className="flex flex-col md:flex-row gap-5">
-                                                        <div className="flex-1">
-                                                            <label className="block text-[10px] text-white/50 font-bold mb-2 uppercase tracking-widest">Título del Botón Público</label>
-                                                            <input type="text" value={settings.buzonTitle} onChange={(e) => updateSettings({ buzonTitle: e.target.value })} disabled={!settings.buzonEnabled} className="w-full bg-[#111] border border-white/10 rounded-xl px-5 py-4 text-white text-sm focus:border-blue-500 outline-none" />
-                                                        </div>
-                                                        <div className="flex-1">
-                                                            <label className="block text-[10px] text-white/50 font-bold mb-2 uppercase tracking-widest">WhatsApp de Prensa (Para multimedia)</label>
-                                                            <input type="text" value={settings.buzonWa} onChange={(e) => updateSettings({ buzonWa: e.target.value })} disabled={!settings.buzonEnabled} className="w-full bg-[#111] border border-white/10 rounded-xl px-5 py-4 text-white text-sm focus:border-blue-500 outline-none" />
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div>
-                                                <h4 className="text-white font-bold mb-4 flex items-center gap-2"><i className="fa-solid fa-inbox theme-text"></i> Últimos Reportes Recibidos</h4>
-                                                {buzonReports.length === 0 ? (
-                                                    <div className="text-center p-10 bg-white/5 border border-white/5 rounded-[1.5rem]">
-                                                        <i className="fa-regular fa-envelope-open text-white/10 text-5xl mb-4"></i>
-                                                        <p className="text-white/40 font-bold text-sm">Bandeja impecable. Aún no hay exclusivas.</p>
-                                                    </div>
-                                                ) : (
-                                                    <div className="space-y-4">
-                                                        {buzonReports.map(report => (
-                                                            <div key={report.id} className="bg-[#111] p-6 rounded-[1.5rem] border border-white/5 relative group hover:border-white/20 transition-colors shadow-lg">
-                                                                <button onClick={() => deleteReport(report.id)} className="absolute top-5 right-5 text-white/20 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"><i className="fa-solid fa-trash-can"></i></button>
-                                                                <div className="flex items-center gap-3 mb-3">
-                                                                    <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${report.type === 'alerta' ? 'bg-red-500/20 text-red-400' : report.type === 'evento' ? 'bg-purple-500/20 text-purple-400' : 'bg-blue-500/20 text-blue-400'}`}>
-                                                                        {report.type}
-                                                                    </span>
-                                                                    <span className="text-white font-black text-sm">{report.name}</span>
-                                                                    <span className="text-white/30 text-xs font-medium">{new Date(report.timestamp).toLocaleDateString()}</span>
-                                                                </div>
-                                                                <p className="text-white/60 text-sm leading-relaxed font-medium">{report.message}</p>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* ================= RENDERIZADO DE ECOSISTEMA (BENTO GRID / VIP LIST) ================= */}
-                        <div className={settings.layout === 'grid' ? "grid grid-cols-1 md:grid-cols-2 gap-6" : "flex flex-col space-y-6 max-w-2xl mx-auto"}>
-                            {categories.length === 0 && !isAdmin && (
-                                <div className="text-center py-20 text-white/30 font-bold tracking-widest uppercase col-span-2">Ecosistema en Formación...</div>
-                            )}
-
-                            {categories.map((category, index) => {
-                                const delay = `d-${(index % 3 + 1) * 100}`;
-                                return (
-                                    <div key={category.id} className={`${getAnimClass()} ${delay} glass-panel relative group overflow-hidden`}>
-                                        <div className="absolute inset-0 glass-inner pointer-events-none"></div>
-                                        <div className="relative z-10 p-6 sm:p-8 h-full flex flex-col">
-                                            
-                                            {/* Header Categoría */}
-                                            <div className="flex items-start justify-between mb-8 gap-2">
-                                                {editingCategory === category.id ? (
-                                                    <div className="flex-1 flex gap-2">
-                                                        <input type="text" autoFocus className="flex-1 bg-black border border-white/20 rounded-xl px-4 py-2 text-white font-bold focus:border-purple-500 outline-none" value={editCatTitle} onChange={(e)=>setEditCatTitle(e.target.value)} />
-                                                        <button onClick={() => saveCategoryEdit(category.id)} className="theme-bg text-white px-5 rounded-xl font-bold shadow-lg"><i className="fa-solid fa-check"></i></button>
-                                                        <button onClick={() => setEditingCategory(null)} className="bg-white/10 text-white/50 hover:text-white px-4 rounded-xl"><i className="fa-solid fa-xmark"></i></button>
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex items-center gap-4 flex-1">
-                                                        <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl text-white shadow-inner flex-shrink-0">
-                                                            <i className={category.iconId}></i>
-                                                        </div>
-                                                        <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-tight">{category.title}</h3>
-                                                    </div>
-                                                )}
-
-                                                {/* Controles Admin Categoría */}
-                                                {isAdmin && !editingCategory && (
-                                                    <div className="flex items-center gap-1 bg-black/60 p-1.5 rounded-xl border border-white/10 backdrop-blur-md">
-                                                        <div className="flex flex-col border-r border-white/10 pr-1">
-                                                            <button onClick={() => moveCategory(index, -1)} disabled={index === 0} className="text-white/30 hover:text-white disabled:opacity-20 px-2 py-1"><i className="fa-solid fa-chevron-up text-[10px]"></i></button>
-                                                            <button onClick={() => moveCategory(index, 1)} disabled={index === categories.length - 1} className="text-white/30 hover:text-white disabled:opacity-20 px-2 py-1"><i className="fa-solid fa-chevron-down text-[10px]"></i></button>
-                                                        </div>
-                                                        <button onClick={() => { setEditCatTitle(category.title); setEditingCategory(category.id); }} className="w-9 h-9 flex items-center justify-center text-white/40 hover:text-blue-400 transition-colors"><i className="fa-solid fa-pen text-xs"></i></button>
-                                                        <button onClick={() => deleteCategory(category.id)} className="w-9 h-9 flex items-center justify-center text-white/40 hover:text-red-400 transition-colors"><i className="fa-solid fa-trash-can text-xs"></i></button>
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            {/* Lista de Enlaces */}
-                                            <div className="space-y-3 flex-1">
-                                                {category.links.map((link, lIndex) => (
-                                                    <div key={link.id} className="group/link relative">
-                                                        {editingLinkObj?.linkId === link.id ? (
-                                                            <div className="bg-[#111] p-4 rounded-xl border border-white/20 space-y-3 shadow-inner">
-                                                                <input type="text" className="w-full bg-transparent border-b border-white/10 px-2 py-1.5 text-white text-sm font-bold focus:border-purple-500 outline-none" value={editLinkData.title} onChange={(e)=>setEditLinkData({...editLinkData, title: e.target.value})} />
-                                                                <input type="url" className="w-full bg-transparent border-b border-white/10 px-2 py-1.5 text-white/70 text-xs focus:border-purple-500 outline-none" value={editLinkData.url} onChange={(e)=>setEditLinkData({...editLinkData, url: e.target.value})} />
-                                                                <div className="flex gap-2 pt-2">
-                                                                    <button onClick={saveLinkEdit} className="flex-1 theme-bg text-white py-2 rounded-lg text-xs font-bold uppercase tracking-wider">Guardar</button>
-                                                                    <button onClick={() => setEditingLinkObj(null)} className="px-4 bg-white/10 text-white/50 hover:text-white rounded-lg"><i className="fa-solid fa-xmark"></i></button>
-                                                                </div>
-                                                            </div>
-                                                        ) : (
-                                                            <div className="flex items-stretch gap-2">
-                                                                <a href={link.url} target="_blank" rel="noopener noreferrer" className="flex-1 flex justify-between items-center p-4 sm:p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-white/20 theme-hover transition-all duration-300">
-                                                                    <span className="font-bold text-white/80 group-hover/link:text-white transition-colors text-sm sm:text-base">{link.title}</span>
-                                                                    <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover/link:bg-white/10 transition-all flex-shrink-0 ml-3">
-                                                                        <i className="fa-solid fa-arrow-right text-white/50 text-xs -rotate-45 group-hover/link:text-white transition-all group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5"></i>
-                                                                    </div>
-                                                                </a>
-                                                                
-                                                                {isAdmin && (
-                                                                    <div className="flex flex-col gap-1 w-12">
-                                                                        <div className="flex-1 bg-black/40 rounded-xl flex flex-col items-center justify-center border border-white/5">
-                                                                            <button onClick={() => moveLink(category.id, lIndex, -1)} disabled={lIndex===0} className="flex-1 w-full text-white/30 hover:text-white disabled:opacity-20"><i className="fa-solid fa-caret-up text-xs"></i></button>
-                                                                            <button onClick={() => moveLink(category.id, lIndex, 1)} disabled={lIndex===category.links.length-1} className="flex-1 w-full text-white/30 hover:text-white disabled:opacity-20"><i className="fa-solid fa-caret-down text-xs"></i></button>
-                                                                        </div>
-                                                                        <div className="flex h-10 gap-1">
-                                                                            <button onClick={() => { setEditLinkData({title: link.title, url: link.url}); setEditingLinkObj({catId: category.id, linkId: link.id}); }} className="flex-1 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 rounded-xl flex items-center justify-center transition-colors"><i className="fa-solid fa-pen text-[10px]"></i></button>
-                                                                            <button onClick={() => deleteLink(category.id, link.id)} className="flex-1 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-xl flex items-center justify-center transition-colors"><i className="fa-solid fa-xmark text-[10px]"></i></button>
-                                                                        </div>
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                ))}
-
-                                                {isAdmin && (
-                                                    <div className="pt-3">
-                                                        {addingLinkTo === category.id ? (
-                                                            <div className="bg-[#111] p-5 rounded-2xl border border-white/10 space-y-4 shadow-inner">
-                                                                <input type="text" placeholder="Nombre del Botón..." className="w-full bg-transparent border-b border-white/10 px-2 py-2 text-white focus:outline-none focus:border-white/50 text-sm font-bold" value={newLinkData.title} onChange={(e) => setNewLinkData({...newLinkData, title: e.target.value})} />
-                                                                <input type="url" placeholder="https://..." className="w-full bg-transparent border-b border-white/10 px-2 py-2 text-white focus:outline-none focus:border-white/50 text-sm" value={newLinkData.url} onChange={(e) => setNewLinkData({...newLinkData, url: e.target.value})} />
-                                                                <div className="flex gap-2 pt-2">
-                                                                    <button onClick={() => addLink(category.id)} className="flex-1 theme-bg text-white py-3 rounded-xl text-sm font-black uppercase tracking-wider shadow-lg">Inyectar</button>
-                                                                    <button onClick={() => setAddingLinkTo(null)} className="px-5 bg-white/5 text-white/50 hover:text-white hover:bg-white/10 rounded-xl transition-colors"><i className="fa-solid fa-times"></i></button>
-                                                                </div>
-                                                            </div>
-                                                        ) : (
-                                                            <button onClick={() => setAddingLinkTo(category.id)} className="w-full py-4 rounded-2xl border border-dashed border-white/10 text-white/30 hover:text-white hover:border-white/30 hover:bg-white/5 text-[11px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2">
-                                                                <i className="fa-solid fa-plus"></i> Inyectar Link
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </main>
-
-                    {/* POPUP DE BUZÓN (IZQUIERDA) */}
-                    {settings.buzonEnabled && !isAdmin && (
-                        <div className="fixed bottom-6 left-4 sm:left-6 z-40 animate-fade-in d-200">
-                            <button onClick={() => setShowBuzon(true)} className="flex items-center gap-3 bg-black/60 backdrop-blur-2xl p-2 sm:p-2.5 sm:pl-5 rounded-full border border-white/10 hover:border-blue-500/50 hover:bg-black transition-all shadow-[0_10px_30px_rgba(0,0,0,0.8)] group">
-                                <span className="text-white text-[10px] sm:text-[11px] font-black uppercase tracking-widest hidden md:block group-hover:text-blue-400 transition-colors">{settings.buzonTitle}</span>
-                                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white shadow-lg">
-                                    <i className="fa-solid fa-bullhorn text-sm"></i>
-                                </div>
-                            </button>
-                        </div>
-                    )}
-
-                    {/* MODAL DEL BUZÓN */}
-                    {showBuzon && (
-                        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:px-4 bg-black/80 backdrop-blur-xl anim-fade sm:anim-scale">
-                            <div className="bg-[#0a0a0c] border border-white/10 p-6 sm:p-8 rounded-t-[2rem] sm:rounded-[2rem] w-full max-w-md relative shadow-[0_0_50px_rgba(59,130,246,0.15)] max-h-[90vh] overflow-y-auto no-scrollbar">
-                                <button onClick={() => setShowBuzon(false)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-white/50 hover:text-white hover:bg-white/10 transition-colors">
-                                    <i className="fa-solid fa-xmark text-sm"></i>
-                                </button>
-                                
-                                <div className="mb-8">
-                                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30 flex items-center justify-center mb-5 shadow-inner">
-                                        <i className="fa-solid fa-microphone-lines text-blue-400 text-xl"></i>
-                                    </div>
-                                    <h2 className="text-2xl font-black text-white tracking-tight">Envía tu Exclusiva</h2>
-                                    <p className="text-white/50 text-xs mt-2 font-medium leading-relaxed">Tu aporte ciudadano es vital. La información llegará directo al equipo de edición en nuestra bóveda.</p>
-                                </div>
-
-                                {buzonStatus === 'success' ? (
-                                    <div className="bg-green-500/10 border border-green-500/20 p-8 rounded-2xl text-center anim-scale">
-                                        <i className="fa-solid fa-circle-check text-green-400 text-5xl mb-4 drop-shadow-[0_0_15px_rgba(74,222,128,0.4)]"></i>
-                                        <h3 className="text-green-400 font-black text-xl mb-2">¡Recibido con éxito!</h3>
-                                        <p className="text-green-400/70 text-sm font-medium">Nuestro equipo ya está revisando la información.</p>
-                                    </div>
-                                ) : (
-                                    <form onSubmit={submitBuzon} className="space-y-4">
-                                        <input type="text" placeholder="Tu Nombre o Alias" value={buzonForm.name} onChange={(e) => setBuzonForm({...buzonForm, name: e.target.value})} className="w-full bg-[#111] border border-white/5 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-blue-500/50 transition-all font-medium text-sm" required disabled={buzonStatus === 'sending'} />
-                                        
-                                        <div className="grid grid-cols-3 gap-2">
-                                            {['noticia', 'evento', 'alerta'].map(type => (
-                                                <button type="button" key={type} onClick={() => setBuzonForm({...buzonForm, type})} className={`py-3 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border ${buzonForm.type === type ? 'border-blue-500 bg-blue-500/20 text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.2)]' : 'border-white/5 bg-[#111] text-white/40 hover:bg-white/5'}`} disabled={buzonStatus === 'sending'}>
-                                                    {type}
-                                                </button>
-                                            ))}
-                                        </div>
-
-                                        <textarea placeholder="Detalla lo sucedido, fechas, lugares..." value={buzonForm.message} onChange={(e) => setBuzonForm({...buzonForm, message: e.target.value})} rows="4" className="w-full bg-[#111] border border-white/5 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-blue-500/50 transition-all font-medium text-sm resize-none" required disabled={buzonStatus === 'sending'}></textarea>
-
-                                        <a href={generateBuzonWaLink()} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between bg-[#111] border border-green-500/30 p-4 rounded-xl hover:bg-green-500/10 transition-colors mt-2 group">
-                                            <div className="flex items-center gap-3">
-                                                <i className="fa-solid fa-image text-green-400 group-hover:scale-110 transition-transform"></i>
-                                                <span className="text-green-400 text-[10px] font-black uppercase tracking-widest">¿Tienes fotos o videos?</span>
-                                            </div>
-                                            <i className="fa-brands fa-whatsapp text-green-400 text-xl group-hover:scale-110 transition-transform"></i>
-                                        </a>
-
-                                        <button type="submit" disabled={buzonStatus === 'sending'} className="w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-black py-4 rounded-xl mt-6 transition-transform active:scale-95 uppercase tracking-wider text-sm flex items-center justify-center gap-2 shadow-[0_10px_20px_rgba(59,130,246,0.3)]">
-                                            {buzonStatus === 'sending' ? <i className="fa-solid fa-spinner animate-spin"></i> : <><i className="fa-solid fa-paper-plane"></i> Enviar Exclusiva</>}
-                                        </button>
-                                    </form>
-                                )}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* POPUP DE VENTAS / CTA (DERECHA) */}
-                    {settings.ctaEnabled && !isAdmin && (
-                        <div className="fixed bottom-6 right-4 sm:right-6 z-40 animate-fade-in d-300 max-w-[260px] sm:max-w-[280px]">
-                            <a href={generateWaLink()} target="_blank" rel="noopener noreferrer" className="block p-1 rounded-full theme-bg cta-pulse transition-transform hover:scale-105 active:scale-95 shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
-                                <div className="bg-[#0a0a0c] p-2 sm:p-2.5 pr-4 sm:pr-5 rounded-full flex items-center gap-3">
-                                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full theme-bg flex items-center justify-center text-white text-xl flex-shrink-0 shadow-inner">
-                                        <i className="fa-brands fa-whatsapp"></i>
-                                    </div>
-                                    <div>
-                                        <p className="text-white text-[10px] sm:text-[11px] font-black leading-tight tracking-wide">{settings.ctaText}</p>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    )}
-
-                    {/* MODAL LOGIN BÓVEDA */}
-                    {showLogin && (
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 bg-black/90 backdrop-blur-2xl anim-scale">
-                            <div className="bg-[#0a0a0c] border border-white/10 p-8 sm:p-10 rounded-[2rem] w-full max-w-sm relative shadow-2xl">
-                                <button onClick={() => setShowLogin(false)} className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-white/30 hover:text-white transition-colors">
-                                    <i className="fa-solid fa-xmark text-sm"></i>
-                                </button>
-                                <div className="mb-10 text-center">
-                                    <div className="w-16 h-16 mx-auto rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6 shadow-inner">
-                                        <i className="fa-solid fa-lock text-white/50 text-2xl"></i>
-                                    </div>
-                                    <h2 className="text-2xl font-black text-white tracking-tight">Acceso CEO</h2>
-                                    <p className="text-white/40 text-[10px] mt-2 font-black uppercase tracking-widest">Nivel de Bóveda Requerido</p>
-                                </div>
-                                <form onSubmit={handleLogin} className="space-y-4">
-                                    <input type="text" placeholder="Usuario" value={username} onChange={(e) => setUsername(e.target.value)} className="w-full bg-[#111] border border-white/5 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-white/20 transition-all font-bold text-center" required />
-                                    <input type="password" placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full bg-[#111] border border-white/5 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-white/20 transition-all font-bold text-center tracking-[0.3em]" required />
-                                    {loginError && <div className="text-red-400 text-xs text-center font-bold mt-2">{loginError}</div>}
-                                    <button type="submit" className="w-full bg-white text-black hover:bg-gray-200 font-black py-4 rounded-xl mt-6 transition-transform active:scale-95 uppercase tracking-wider text-sm shadow-[0_0_20px_rgba(255,255,255,0.2)]">
-                                        Desbloquear
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    )}
+    <!-- Swiper Main Container -->
+    <div class="swiper">
+        <div class="swiper-wrapper">
+            
+            <!-- Slide 1: Intro -->
+            <div class="swiper-slide">
+                <div class="flex-center">
+                    <h1>Los Secretos de <br><span class="text-gold">Cumpleaños</span> en Conce</h1>
+                    <p class="subtitle mt-4">La guía definitiva 2026. Todo lo que las marcas te ofrecen GRATIS o con descuentos brutales en la Región del Biobío, sin letra chica oculta.</p>
                 </div>
-            );
-        }
+                <div class="decoration-line"></div>
+            </div>
 
-        const style = document.createElement('style');
-        style.innerHTML = `.theme-peer-checked:checked ~ div { background-color: rgb(var(--primary-rgb)); }`;
-        document.head.appendChild(style);
+            <!-- Slide 2: Entretención Cover -->
+            <div class="swiper-slide">
+                <div class="flex-center section-divider">
+                    <hr>
+                    <h2>🎬 Entretención</h2>
+                    <p>Panoramas liberados para tu día especial</p>
+                </div>
+            </div>
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+            <!-- Slide 3: Entretención Data -->
+            <div class="swiper-slide">
+                <h2 class="slide-title">Cines y <span class="text-cyan">Parques</span></h2>
+                <table class="glass-table">
+                    <thead>
+                        <tr>
+                            <th>Local</th>
+                            <th>Beneficio Exacto</th>
+                            <th>La Letra Chica</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Trampoline Park</strong><span class="text-muted">Mallplaza Mirador</span></td>
+                            <td>1 hora de salto gratis en camas elásticas.</td>
+                            <td>Día exacto. Presentar Cédula de Identidad física.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Cero Grado</strong><span class="text-muted">Mallplaza Mirador</span></td>
+                            <td>1 hora de patinaje sobre hielo gratis.</td>
+                            <td>Día exacto. Presentar Cédula de Identidad.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Cinemark</strong><span class="text-muted">Trébol y Mirador</span></td>
+                            <td>1 entrada 2D liberada.</td>
+                            <td>Todo el mes. Inscrito en programa Muvi Club.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Cineplanet</strong><span class="text-muted">Mall del Centro</span></td>
+                            <td>1 o 2 entradas 2D (según categoría).</td>
+                            <td>Todo el mes. Socio con 1 compra previa.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Slide 4: Fast Food Cover -->
+            <div class="swiper-slide">
+                <div class="flex-center section-divider">
+                    <hr style="background-color: #fbbf24;">
+                    <h2>🍔 Comida Rápida</h2>
+                    <p>Almuerzo o cena por cuenta de la casa</p>
+                </div>
+            </div>
+
+            <!-- Slide 5: Fast Food Data -->
+            <div class="swiper-slide">
+                <h2 class="slide-title">Ruta del <span class="text-gold">Fast Food</span></h2>
+                <table class="glass-table">
+                    <thead>
+                        <tr>
+                            <th>Marca</th>
+                            <th>El Regalo</th>
+                            <th>Requisito Clave</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Dominó</strong></td>
+                            <td>1 Completo gratis a elección.</td>
+                            <td>Tener App, registro previo y compras anteriores.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>McDonald's</strong></td>
+                            <td>1 Sundae de manjar gratis.</td>
+                            <td>Cupón automático al abrir su App en el mes.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Burger King</strong></td>
+                            <td>1 Hamburguesa Whopper gratis.</td>
+                            <td>Día exacto. Inscripción en "Mi BK".</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Mamut</strong></td>
+                            <td>30% Dcto en boleta + Copa helado.</td>
+                            <td>La semana. Descargar cupón App y carnet.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tommy Beans / Doggis</strong></td>
+                            <td>30% Dcto en el total.</td>
+                            <td>Mes/semana. Mostrar carnet físico.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Slide 6: Cafeterías y Postres -->
+            <div class="swiper-slide">
+                <h2 class="slide-title">Para el <span class="text-cyan">Postre</span></h2>
+                <div class="tiles-container">
+                    <div class="tile">
+                        <div class="tile-img-wrapper">
+                            <!-- Unsplash high-res image -->
+                            <img src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?q=80&w=800&auto=format&fit=crop" alt="Café">
+                        </div>
+                        <div>
+                            <h3>Starbucks</h3>
+                            <p><strong>Bebida (Tall) gratis.</strong><br>Válido todo el mes. Requiere Starbucks Rewards con 5 estrellas acumuladas previas.</p>
+                        </div>
+                    </div>
+                    <div class="tile">
+                        <div class="tile-img-wrapper">
+                            <img src="https://images.unsplash.com/photo-1548907040-4baa42d10919?q=80&w=800&auto=format&fit=crop" alt="Chocolates">
+                        </div>
+                        <div>
+                            <h3>La Fête</h3>
+                            <p><strong>Caja bombones 100g.</strong><br>Hasta 30 días post-cumpleaños. Exclusivo para socios "Le Club" registrados antes.</p>
+                        </div>
+                    </div>
+                    <div class="tile">
+                        <div class="tile-img-wrapper">
+                            <img src="https://images.unsplash.com/photo-1621303837174-89787a7d4729?q=80&w=800&auto=format&fit=crop" alt="Torta">
+                        </div>
+                        <div>
+                            <h3>Versluys / Jumbo</h3>
+                            <p><strong>30% a 50% Dcto en Tortas.</strong><br>Versluys con carnet. Jumbo exige puntos Cencosud activos.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 7: Shopping -->
+            <div class="swiper-slide">
+                <div class="w-full" style="margin-bottom: 20px;">
+                    <h2 class="slide-title" style="margin-bottom: 0;">Shopping & <span class="text-gold">Skin Care</span></h2>
+                    <p class="text-muted" style="font-size: 1.2rem;">En Mallplaza Trébol y Centro.</p>
+                </div>
+                
+                <div class="icon-grid">
+                    <div class="icon-card">
+                        <div class="icon-card-header">
+                            <div>
+                                <div class="title">Blush-Bar</div>
+                                <div class="tag">Mes del Cumple</div>
+                            </div>
+                            <div class="icon-circle"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                        </div>
+                        <p>Sesión de maquillaje gratis de 20 minutos. Exige cliente registrado, compra previa y agendar hora presencialmente.</p>
+                    </div>
+                    <div class="icon-card">
+                        <div class="icon-card-header">
+                            <div>
+                                <div class="title">L'Occitane</div>
+                                <div class="tag">Mes del Cumple</div>
+                            </div>
+                            <div class="icon-circle"><i class="fa-solid fa-leaf"></i></div>
+                        </div>
+                        <p>Obtén un 50% de descuento en la compra de un producto. Debes estar inscrito previamente en el Club Provenzal.</p>
+                    </div>
+                    <div class="icon-card">
+                        <div class="icon-card-header">
+                            <div>
+                                <div class="title">CasaIdeas</div>
+                                <div class="tag">Mes del Cumple</div>
+                            </div>
+                            <div class="icon-circle"><i class="fa-solid fa-house"></i></div>
+                        </div>
+                        <p>15% de descuento en el total de tu boleta. Se requiere presentar carnet o pagar con tarjeta asociada si aplica CMR.</p>
+                    </div>
+                    <div class="icon-card">
+                        <div class="icon-card-header">
+                            <div>
+                                <div class="title">Nike / Adidas</div>
+                                <div class="tag">Día o Mes</div>
+                            </div>
+                            <div class="icon-circle"><i class="fa-solid fa-shoe-prints"></i></div>
+                        </div>
+                        <p>20% de descuento en vestuario o calzado. Presentar carnet de identidad o estar en su app de fidelidad.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 8: The Hack (Letra Chica) -->
+            <div class="swiper-slide">
+                <div class="split-layout">
+                    <div class="split-text">
+                        <h2>El Secreto para <br><span class="text-cyan">Cobrar</span></h2>
+                        <p>Las marcas adoran dar regalos, pero tienen reglas de seguridad. Nunca llegues exigiendo tu premio sin prepararte.</p>
+                        <p><strong>1. El factor tiempo:</strong> Para todas las aplicaciones (Starbucks, Dominó, BK), el registro debe realizarse idealmente un mes antes de la fecha. Si descargas la app el mismo día, no funcionará.</p>
+                        <div class="alert-box">
+                            <p><i class="fa-solid fa-id-card text-cyan" style="margin-right: 10px;"></i> Tu Cédula de Identidad debe estar vigente y ser física. No sirven fotos ni escaneos.</p>
+                        </div>
+                    </div>
+                    <img class="split-img" src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=800&auto=format&fit=crop" alt="Smartphone Neon">
+                </div>
+            </div>
+
+            <!-- Slide 9: Outro -->
+            <div class="swiper-slide">
+                <div class="flex-center end-screen">
+                    <i class="fa-solid fa-gift"></i>
+                    <h2 style="font-size: 5rem;">¡A Disfrutar!</h2>
+                    <p class="subtitle mt-4">Aprovecha al máximo estos beneficios en Concepción y no olvides compartir esta guía con tu próximo amigo cumpleañero.</p>
+                </div>
+            </div>
+
+        </div>
+        
+        <!-- Swiper Controls (Navigation & Pagination) -->
+        <div class="swiper-pagination"></div>
+        <div class="swiper-button-prev"></div>
+        <div class="swiper-button-next"></div>
+    </div>
+
+    <!-- Swiper JS Script -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    
+    <!-- Initialize Swiper -->
+    <script>
+        const swiper = new Swiper('.swiper', {
+            // Setup core functionalities
+            direction: 'horizontal',
+            loop: false,
+            grabCursor: true,
+            effect: 'slide', // We use 'slide' but with custom css transitions
+            speed: 600, // Smooth transition speed
+            
+            // Keyboard control
+            keyboard: {
+                enabled: true,
+                onlyInViewport: true,
+            },
+
+            // Pagination (Dots at the bottom)
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true,
+                dynamicBullets: true,
+            },
+
+            // Navigation arrows
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+        });
     </script>
 </body>
 </html>
