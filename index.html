@@ -212,6 +212,32 @@
             box-shadow: 0 15px 25px rgba(2, 132, 199, 0.6);
         }
 
+        /* --- Swipe Indicator (Mobile Only) --- */
+        .swipe-indicator {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: rgba(34, 211, 238, 0.15);
+            border: 1px solid #22d3ee;
+            color: #22d3ee;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: 800;
+            font-size: 1rem;
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            backdrop-filter: blur(5px);
+            animation: swipe-bounce 1.5s infinite;
+            box-shadow: 0 4px 15px rgba(34, 211, 238, 0.3);
+            transition: opacity 0.3s ease;
+        }
+        @keyframes swipe-bounce {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(-10px); }
+        }
+
         /* --- Modals (Admin Panel) --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -284,16 +310,36 @@
             .swiper-slide { padding: 30px 40px; }
         }
         @media (max-width: 600px) {
-            .swiper-slide { padding: 20px; }
-            h1 { font-size: 2.2rem; }
-            .subtitle { font-size: 1.1rem; }
-            .glass-table { display: block; overflow-x: auto; white-space: nowrap; }
+            /* Full App Feel para Móviles */
+            .swiper { height: 100vh; max-height: none; border-radius: 0; border: none; box-shadow: none; }
+            .swiper-slide { padding: 90px 20px 80px 20px; justify-content: flex-start; overflow-y: auto; align-items: flex-start; }
+            .flex-center { justify-content: flex-start; padding-top: 20px; text-align: left; }
+            
+            h1 { font-size: 2.6rem; text-align: left; }
+            h2.slide-title { font-size: 2.2rem !important; }
+            .subtitle { font-size: 1.1rem; text-align: left; }
+            .section-divider h2 { font-size: 3rem; text-align: left; }
+            .section-divider hr { margin: 0 0 20px 0; }
+            
+            /* Transformación de Tabla a Tarjetas (Cero Fricción Horizontal) */
+            .glass-table thead { display: none; }
+            .glass-table, .glass-table tbody, .glass-table tr, .glass-table td { display: block; width: 100%; text-align: left; }
+            .glass-table tr { margin-bottom: 15px; border-radius: 12px; background: rgba(30, 41, 59, 0.4); border: 1px solid #334155; }
+            .glass-table td { padding: 15px; border-bottom: 1px solid #1e293b; position: relative; }
+            .glass-table td::before { content: attr(data-label); display: block; font-size: 0.8rem; color: #fbbf24; text-transform: uppercase; margin-bottom: 5px; font-weight: 800; letter-spacing: 1px;}
+            
             .swiper-button-next, .swiper-button-prev { display: none; }
-            .share-btn { width: 100%; justify-content: center; }
+            .share-btn { width: 100%; justify-content: center; margin-bottom: 40px;}
+            .swipe-indicator { display: flex; }
         }
     </style>
 </head>
 <body>
+
+    <!-- Indicador Swipe Móvil -->
+    <div class="swipe-indicator" id="swipe-hint">
+        <i class="fa-solid fa-hand-point-up" style="transform: rotate(-90deg);"></i> Desliza
+    </div>
 
     <!-- Contador de Visitas en Vivo -->
     <div class="live-counter">
@@ -376,10 +422,10 @@
                         <tr><th>Local</th><th>Beneficio Exacto</th><th>La Letra Chica</th></tr>
                     </thead>
                     <tbody>
-                        <tr><td><strong>Trampoline Park</strong></td><td>1 hora de salto gratis.</td><td>Día exacto. Cédula física.</td></tr>
-                        <tr><td><strong>Cero Grado</strong></td><td>1 hora de patinaje gratis.</td><td>Día exacto. Cédula física.</td></tr>
-                        <tr><td><strong>Cinemark</strong></td><td>1 entrada 2D liberada.</td><td>Mes completo. Muvi Club.</td></tr>
-                        <tr><td><strong>Cineplanet</strong></td><td>1 o 2 entradas 2D.</td><td>Mes completo. Compra previa.</td></tr>
+                        <tr><td data-label="Local"><strong>Trampoline Park</strong></td><td data-label="Beneficio">1 hora de salto gratis.</td><td data-label="Requisito">Día exacto. Cédula física.</td></tr>
+                        <tr><td data-label="Local"><strong>Cero Grado</strong></td><td data-label="Beneficio">1 hora de patinaje gratis.</td><td data-label="Requisito">Día exacto. Cédula física.</td></tr>
+                        <tr><td data-label="Local"><strong>Cinemark</strong></td><td data-label="Beneficio">1 entrada 2D liberada.</td><td data-label="Requisito">Mes completo. Muvi Club.</td></tr>
+                        <tr><td data-label="Local"><strong>Cineplanet</strong></td><td data-label="Beneficio">1 o 2 entradas 2D.</td><td data-label="Requisito">Mes completo. Compra previa.</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -392,11 +438,11 @@
                         <tr><th>Marca</th><th>El Regalo</th><th>Requisito Clave</th></tr>
                     </thead>
                     <tbody>
-                        <tr><td><strong>Dominó</strong></td><td>1 Completo gratis.</td><td>App, registro y compras.</td></tr>
-                        <tr><td><strong>McDonald's</strong></td><td>1 Sundae gratis.</td><td>Cupón App en el mes.</td></tr>
-                        <tr><td><strong>Burger King</strong></td><td>1 Whopper gratis.</td><td>Día exacto. App "Mi BK".</td></tr>
-                        <tr><td><strong>Mamut</strong></td><td>30% Dcto + Copa helado.</td><td>Semana. Cupón App.</td></tr>
-                        <tr><td><strong>Doggis / Juan Maestro / Tommy Beans</strong></td><td>30% Dcto en total.</td><td>Semana/Mes. Carnet físico.</td></tr>
+                        <tr><td data-label="Marca"><strong>Dominó</strong></td><td data-label="Regalo">1 Completo gratis.</td><td data-label="Requisito">App, registro y compras.</td></tr>
+                        <tr><td data-label="Marca"><strong>McDonald's</strong></td><td data-label="Regalo">1 Sundae gratis.</td><td data-label="Requisito">Cupón App en el mes.</td></tr>
+                        <tr><td data-label="Marca"><strong>Burger King</strong></td><td data-label="Regalo">1 Whopper gratis.</td><td data-label="Requisito">Día exacto. App "Mi BK".</td></tr>
+                        <tr><td data-label="Marca"><strong>Mamut</strong></td><td data-label="Regalo">30% Dcto + Copa helado.</td><td data-label="Requisito">Semana. Cupón App.</td></tr>
+                        <tr><td data-label="Marca"><strong>Doggis / Juan Maestro / Tommy Beans</strong></td><td data-label="Regalo">30% Dcto en total.</td><td data-label="Requisito">Semana/Mes. Carnet físico.</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -553,6 +599,15 @@
             keyboard: { enabled: true, onlyInViewport: true },
             pagination: { el: '.swiper-pagination', clickable: true, dynamicBullets: true },
             navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+        });
+
+        // Ocultar indicador de Swipe al primer movimiento
+        swiper.on('slideChange', function () {
+            const swipeHint = document.getElementById('swipe-hint');
+            if (swipeHint) {
+                swipeHint.style.opacity = '0';
+                setTimeout(() => { swipeHint.style.display = 'none'; }, 300);
+            }
         });
 
         // Lógica del Contador de Visitas Psicológico
