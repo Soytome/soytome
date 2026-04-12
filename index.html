@@ -145,6 +145,22 @@
         .icon-card .tag { color: #22d3ee; font-weight: 700; text-transform: uppercase; font-size: 1rem; margin-top: 5px;}
         .icon-circle { width: 50px; height: 50px; border-radius: 50%; background: #0f172a; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #22d3ee; border: 1px solid #334155;}
         
+        /* Bleed Layout (El Hack) */
+        .split-layout { display: grid; grid-template-columns: 1.2fr 1fr; width: 100%; height: 100%; gap: 50px; align-items: center; }
+        .split-text { text-align: left; }
+        .split-text h2 { font-size: 3.5rem; margin-bottom: 20px; }
+        .split-text p { font-size: 1.2rem; color: #cbd5e1; line-height: 1.6; margin-bottom: 20px;}
+        .alert-box { background: rgba(34, 211, 238, 0.1); border-left: 4px solid #22d3ee; padding: 20px; border-radius: 0 8px 8px 0; margin-top: 20px; }
+        .alert-box p { margin: 0; color: #f8fafc; font-size: 1.1rem; font-weight: 500;}
+        .split-img { width: 100%; height: 80%; border-radius: 20px; object-fit: cover; border: 1px solid #334155; }
+
+        /* Warning Grid (Mitos/Descontinuados) */
+        .warning-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; width: 100%; margin-top: 20px;}
+        .warning-card { background: rgba(69, 10, 10, 0.4); border: 1px solid #7f1d1d; border-radius: 16px; padding: 25px; text-align: left; }
+        .warning-card h3 { color: #f87171; font-size: 1.5rem; margin-bottom: 8px; }
+        .warning-card .badge-red { background: #991b1b; color: white; padding: 3px 8px; border-radius: 5px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; margin-bottom: 10px; display: inline-block;}
+        .warning-card p { color: #fecaca; font-size: 1.1rem; line-height: 1.4;}
+
         /* End Screen & Socials */
         .end-screen i.fa-gift { font-size: 5rem; color: #fbbf24; margin-bottom: 20px; animation: bounce 2s infinite; }
         @keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-20px);} 60% {transform: translateY(-10px);} }
@@ -259,6 +275,9 @@
             h1 { font-size: 3rem; }
             h2.slide-title { font-size: 2.5rem; }
             .tiles-container, .icon-grid { grid-template-columns: 1fr; gap: 15px;}
+            .split-layout { grid-template-columns: 1fr; text-align: center; }
+            .split-img { display: none; }
+            .warning-grid { grid-template-columns: 1fr; gap: 15px; }
             .tile { display: flex; align-items: center; gap: 20px; padding: 15px; }
             .tile-img-wrapper { height: 100px; width: 100px; flex-shrink: 0; margin-bottom: 0;}
             .glass-table th, .glass-table td { padding: 12px; font-size: 1rem; }
@@ -377,12 +396,126 @@
                         <tr><td><strong>McDonald's</strong></td><td>1 Sundae gratis.</td><td>Cupón App en el mes.</td></tr>
                         <tr><td><strong>Burger King</strong></td><td>1 Whopper gratis.</td><td>Día exacto. App "Mi BK".</td></tr>
                         <tr><td><strong>Mamut</strong></td><td>30% Dcto + Copa helado.</td><td>Semana. Cupón App.</td></tr>
-                        <tr><td><strong>Doggis</strong></td><td>30% Dcto en total.</td><td>Semana. Carnet físico.</td></tr>
+                        <tr><td><strong>Doggis / Juan Maestro / Tommy Beans</strong></td><td>30% Dcto en total.</td><td>Semana/Mes. Carnet físico.</td></tr>
                     </tbody>
                 </table>
             </div>
 
-            <!-- Slide 4: Outro, Redes y Compartir -->
+            <!-- Slide 4: Cafeterías y Postres -->
+            <div class="swiper-slide">
+                <h2 class="slide-title">Para el <span class="text-cyan">Postre</span></h2>
+                <div class="tiles-container">
+                    <div class="tile">
+                        <div class="tile-img-wrapper">
+                            <img src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?q=80&w=800&auto=format&fit=crop" alt="Café">
+                        </div>
+                        <div>
+                            <h3>Starbucks</h3>
+                            <p><strong>Bebida (Tall) gratis.</strong><br>Válido todo el mes. Requiere Rewards con 5 estrellas previas.</p>
+                        </div>
+                    </div>
+                    <div class="tile">
+                        <div class="tile-img-wrapper">
+                            <img src="https://images.unsplash.com/photo-1548907040-4baa42d10919?q=80&w=800&auto=format&fit=crop" alt="Chocolates">
+                        </div>
+                        <div>
+                            <h3>La Fête</h3>
+                            <p><strong>Caja bombones 100g.</strong><br>Hasta 30 días post-cumple. Exclusivo socios "Le Club".</p>
+                        </div>
+                    </div>
+                    <div class="tile">
+                        <div class="tile-img-wrapper">
+                            <img src="https://images.unsplash.com/photo-1621303837174-89787a7d4729?q=80&w=800&auto=format&fit=crop" alt="Torta">
+                        </div>
+                        <div>
+                            <h3>Versluys / Jumbo</h3>
+                            <p><strong>30% a 50% Dcto en Tortas.</strong><br>Versluys carnet. Jumbo puntos Cencosud activos.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 5: Shopping -->
+            <div class="swiper-slide">
+                <div class="w-full" style="margin-bottom: 20px;">
+                    <h2 class="slide-title" style="margin-bottom: 0;">Shopping & <span class="text-gold">Skin Care</span></h2>
+                    <p class="text-muted" style="font-size: 1.2rem; text-align: left;">Beneficios exclusivos en Mallplaza Trébol y Centro.</p>
+                </div>
+                
+                <div class="icon-grid">
+                    <div class="icon-card">
+                        <div class="icon-card-header">
+                            <div><div class="title">Blush-Bar</div><div class="tag">Mes del Cumple</div></div>
+                            <div class="icon-circle"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                        </div>
+                        <p>Sesión de maquillaje gratis (20 min). Exige registro, compra previa y agendar hora.</p>
+                    </div>
+                    <div class="icon-card">
+                        <div class="icon-card-header">
+                            <div><div class="title">L'Occitane</div><div class="tag">Mes del Cumple</div></div>
+                            <div class="icon-circle"><i class="fa-solid fa-leaf"></i></div>
+                        </div>
+                        <p>50% de descuento en la compra de un producto. Debes estar en el Club Provenzal.</p>
+                    </div>
+                    <div class="icon-card">
+                        <div class="icon-card-header">
+                            <div><div class="title">CasaIdeas</div><div class="tag">Mes del Cumple</div></div>
+                            <div class="icon-circle"><i class="fa-solid fa-house"></i></div>
+                        </div>
+                        <p>15% de descuento en el total de tu boleta. Presentar carnet o pagar con CMR.</p>
+                    </div>
+                    <div class="icon-card">
+                        <div class="icon-card-header">
+                            <div><div class="title">Nike / Adidas</div><div class="tag">Día o Mes</div></div>
+                            <div class="icon-circle"><i class="fa-solid fa-shoe-prints"></i></div>
+                        </div>
+                        <p>20% de descuento en vestuario/calzado. Presentar carnet o app de fidelidad.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 6: The Hack (Letra Chica) -->
+            <div class="swiper-slide">
+                <div class="split-layout">
+                    <div class="split-text">
+                        <h2>El Secreto para <br><span class="text-cyan">Cobrar</span></h2>
+                        <p>Las marcas adoran dar regalos, pero tienen reglas de seguridad. No vayas a exigir tu premio sin prepararte.</p>
+                        <p><strong>1. El factor tiempo:</strong> Para apps (Starbucks, Dominó, BK), el registro debe ser idealmente un mes antes de la fecha. Bajar la app el mismo día no funcionará.</p>
+                        <div class="alert-box">
+                            <p><i class="fa-solid fa-id-card text-cyan" style="margin-right: 10px;"></i> Tu Cédula debe estar vigente y física. No sirven fotos.</p>
+                        </div>
+                    </div>
+                    <img class="split-img" src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=800&auto=format&fit=crop" alt="Smartphone Neon">
+                </div>
+            </div>
+
+            <!-- Slide 7: Mitos y Banderas Rojas (Sesgo Negativo) -->
+            <div class="swiper-slide">
+                <div class="w-full" style="margin-bottom: 10px;">
+                    <h2 class="slide-title" style="margin-bottom: 0;">Mitos y <span style="color: #f87171;">Banderas Rojas</span></h2>
+                    <p class="text-muted" style="font-size: 1.2rem; text-align: left;">Lugares virales que NO aplican en Concepción. Te ahorramos el mal rato.</p>
+                </div>
+                
+                <div class="warning-grid">
+                    <div class="warning-card">
+                        <span class="badge-red">Exclusivo RM</span>
+                        <h3>Insert Coin Bar</h3>
+                        <p>Súper viral en TikTok, pero sus sucursales operan solo en Santiago (Providencia y Ñuñoa). En Conce no existen.</p>
+                    </div>
+                    <div class="warning-card">
+                        <span class="badge-red">Exclusivo RM</span>
+                        <h3>Little Caesars</h3>
+                        <p>El hack de los "Crazy Bread" gratis por tu cumpleaños está vigente únicamente en los locales de la Región Metropolitana.</p>
+                    </div>
+                    <div class="warning-card">
+                        <span class="badge-red">Descontinuado</span>
+                        <h3>Cinépolis / Hoyts</h3>
+                        <p>Solían dar entradas gratis, pero la cadena ya no tiene salas activas acá. El monopolio local lo tienen Cinemark y Cineplanet.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 8: Outro, Redes y Compartir -->
             <div class="swiper-slide">
                 <div class="flex-center end-screen">
                     <i class="fa-solid fa-gift"></i>
