@@ -52,16 +52,16 @@
             color: #e2e8f0;
         }
         .live-dot {
-            width: 10px;
-            height: 10px;
-            background-color: #ef4444;
+            width: 12px;
+            height: 12px;
+            background-color: #10b981; /* Verde esmeralda vivo */
             border-radius: 50%;
-            animation: pulse-red 1.5s infinite;
+            animation: pulse-green 1.5s infinite;
         }
-        @keyframes pulse-red {
-            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-            70% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
         }
 
         /* --- Custom Toast Notification --- */
@@ -614,19 +614,29 @@
         const modalLogin = document.getElementById('modal-login');
         const modalDashboard = document.getElementById('modal-dashboard');
         
-        // Estado Local (Fallback por si se ejecuta en GitHub Pages sin configurar DB)
+        // Estado Local y Memoria del Navegador
+        const STORAGE_KEY = 'social_links_conce_memoria';
         let currentLinks = {
             ig: "https://instagram.com/soytome",
             tk: "https://tiktok.com/@soytome",
             yt: "https://youtube.com/@soytome",
             fb: "https://facebook.com/soytome"
         };
+        
+        // Cargar desde memoria local si existe
+        const savedLinks = localStorage.getItem(STORAGE_KEY);
+        if (savedLinks) {
+            try { currentLinks = JSON.parse(savedLinks); } catch(e) {}
+        }
+
         let isFirebaseActive = false;
         let dbRef = null;
 
-        // Función para inyectar links en la UI
+        // Función para inyectar links en la UI y guardar en memoria
         function renderLinks(links) {
             currentLinks = links;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(links)); // Memoria persistente
+            
             document.getElementById('btn-ig').href = links.ig || "#";
             document.getElementById('btn-tk').href = links.tk || "#";
             document.getElementById('btn-yt').href = links.yt || "#";
@@ -716,13 +726,18 @@
 
             if (isFirebaseActive && dbRef) {
                 setDoc(dbRef, newLinks).then(() => {
-                    showToast("✅ Enlaces actualizados globalmente");
+                    renderLinks(newLinks);
+                    showToast("✅ Enlaces actualizados en la nube");
                     modalDashboard.classList.remove('active');
-                }).catch(() => showToast("❌ Error al guardar en la nube"));
+                }).catch(() => {
+                    renderLinks(newLinks);
+                    showToast("⚠️ Error de red. Guardado en memoria local.");
+                    modalDashboard.classList.remove('active');
+                });
             } else {
-                // Fallback Local
+                // Fallback Local 100% Funcional (LocalStorage)
                 renderLinks(newLinks);
-                showToast("⚠️ Guardado temporal. (Falta conectar Base de Datos)");
+                showToast("✅ Enlaces guardados en memoria exitosamente");
                 modalDashboard.classList.remove('active');
             }
         });
