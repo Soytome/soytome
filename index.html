@@ -4,9 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Soy Tomé | Ecosistema de Medios</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <script>
         tailwind.config = {
             theme: {
@@ -64,10 +67,9 @@
 </head>
 <body class="relative font-sans antialiased overflow-x-hidden flex flex-col items-center">
 
-    <!-- ESTADO DE CARGA GLOBAL -->
-    <div id="globalLoader" class="fixed inset-0 z-[200] bg-luxBlack flex flex-col items-center justify-center transition-opacity duration-500">
-        <div class="w-12 h-12 border-4 border-gray-800 border-t-luxGold rounded-full animate-spin mb-4"></div>
-        <p class="text-luxGold font-bold tracking-widest text-sm uppercase animate-pulse">Sincronizando Red</p>
+    <!-- BANNER DE ALERTA (Solo aparece si no configuras Firebase) -->
+    <div id="firebaseWarning" class="hidden w-full bg-red-600 text-white text-xs font-bold text-center py-2 z-[300] sticky top-0 shadow-lg">
+        <i class="fas fa-exclamation-triangle mr-2"></i> IAN: Faltan tus claves de Firebase en el código. Los cambios no se guardarán en la nube.
     </div>
 
     <!-- MODAL BIENVENIDA VIP (CANAL DIFUSIÓN) -->
@@ -87,7 +89,7 @@
     </div>
 
     <!-- ÁREA CENTRAL -->
-    <main class="w-full max-w-lg mx-auto pt-10 pb-24 px-0 flex flex-col items-center z-10 min-h-screen relative">
+    <main class="w-full max-w-lg mx-auto pt-8 pb-24 px-0 flex flex-col items-center z-10 min-h-screen relative">
         
         <!-- Cabecera -->
         <div class="text-center mb-6 px-5">
@@ -106,16 +108,18 @@
         <!-- CINTA DE TEXTO INFINITA (MARQUEE) -->
         <div class="w-full bg-luxBlack/60 border-y border-luxGold/20 py-2.5 mb-8 overflow-hidden relative shadow-[0_0_15px_rgba(0,0,0,0.5)]">
             <div class="w-max flex animate-marquee items-center" id="marqueeContainer">
-                <!-- Se inyecta vía JS. Duplicado para efecto infinito suave -->
+                <!-- Render JS: Duplicado para efecto infinito suave -->
             </div>
         </div>
 
         <!-- CONTENEDOR BOTONES PRINCIPALES -->
-        <div id="linksContainer" class="w-full space-y-4 flex flex-col mb-4 px-5"></div>
+        <div id="linksContainer" class="w-full space-y-4 flex flex-col mb-4 px-5">
+            <!-- Render JS -->
+        </div>
 
         <!-- BOTÓN COMUNIDADES -->
         <div class="px-5 w-full">
-            <button onclick="toggleModal('communitiesModal')" class="w-full glass-solid border border-gray-800 rounded-2xl p-4 flex items-center justify-between hover:border-blue-500/50 transition-all group mb-4">
+            <button onclick="toggleModal('communitiesModal')" class="w-full glass-solid border border-gray-800 rounded-2xl p-4 flex items-center justify-between hover:border-blue-500/50 transition-all group mb-4 shadow-lg">
                 <div class="flex items-center gap-3">
                     <i class="fas fa-users text-xl text-blue-400 group-hover:scale-110 transition-transform"></i>
                     <span class="text-sm font-bold text-white">Nuestras Comunidades</span>
@@ -142,12 +146,12 @@
                 <button onclick="toggleModal('communitiesModal')" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
             </header>
             <div class="p-5 overflow-y-auto space-y-6" id="publicCommunitiesList">
-                <div>
-                    <h3 class="text-xs font-bold text-green-500 uppercase tracking-wider mb-3 flex items-center gap-2"><i class="fab fa-whatsapp text-lg"></i> Grupos de WhatsApp</h3>
+                <div id="waSection">
+                    <h3 class="text-xs font-bold text-green-500 uppercase tracking-wider mb-3 flex items-center gap-2"><i class="fab fa-whatsapp text-lg"></i> WhatsApp</h3>
                     <div id="waCommsContainer" class="space-y-2"></div>
                 </div>
-                <div>
-                    <h3 class="text-xs font-bold text-blue-500 uppercase tracking-wider mb-3 flex items-center gap-2"><i class="fab fa-facebook text-lg"></i> Grupos de Facebook</h3>
+                <div id="fbSection">
+                    <h3 class="text-xs font-bold text-blue-500 uppercase tracking-wider mb-3 flex items-center gap-2"><i class="fab fa-facebook text-lg"></i> Facebook</h3>
                     <div id="fbCommsContainer" class="space-y-2"></div>
                 </div>
             </div>
@@ -164,7 +168,7 @@
                     <i class="fas fa-cloud-upload-alt text-blue-400 text-xl animate-pulse"></i>
                     <div>
                         <h2 class="text-xl font-bold text-white">Panel CEO</h2>
-                        <p class="text-green-400 text-xs font-mono mt-0.5">Sincronizado en la Nube</p>
+                        <p id="ceoStatus" class="text-green-400 text-xs font-mono mt-0.5">Conectado a la Nube</p>
                     </div>
                 </div>
                 <button onclick="cerrarCEO()" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
@@ -216,7 +220,7 @@
                             <input type="hidden" id="editLinkId">
                             <input type="text" id="newTitle" placeholder="Título" class="w-full bg-black border border-gray-700 rounded px-2 py-1.5 text-sm text-white mb-2">
                             <input type="text" id="newSub" placeholder="Subtítulo" class="w-full bg-black border border-gray-700 rounded px-2 py-1.5 text-sm text-white mb-2">
-                            <input type="text" id="newUrl" placeholder="URL" class="w-full bg-black border border-gray-700 rounded px-2 py-1.5 text-sm text-white mb-2">
+                            <input type="text" id="newUrl" placeholder="URL (# o https://)" class="w-full bg-black border border-gray-700 rounded px-2 py-1.5 text-sm text-white mb-2">
                             <div class="flex gap-2 items-center mb-3">
                                 <select id="newIcon" class="bg-black border border-gray-700 rounded px-2 py-1.5 text-sm text-gray-300 flex-1">
                                     <option value="fas fa-star">⭐ Estrella</option>
@@ -229,7 +233,7 @@
                                 </select>
                                 <label class="text-xs text-gray-300 flex items-center gap-1"><input type="checkbox" id="newPremium"> VIP</label>
                             </div>
-                            <button onclick="saveLink()" id="saveBtnLinks" class="w-full bg-blue-600 text-white font-bold py-1.5 rounded text-sm">Subir a la Nube</button>
+                            <button onclick="saveLink()" id="saveBtnLinks" class="w-full bg-blue-600 text-white font-bold py-1.5 rounded text-sm">Guardar Botón</button>
                         </div>
                     </div>
                 </details>
@@ -251,7 +255,7 @@
                                 <option value="wa">WhatsApp Group (Verde)</option>
                                 <option value="fb">Facebook Group (Azul)</option>
                             </select>
-                            <button onclick="saveComm()" id="saveBtnComm" class="w-full bg-blue-600 text-white font-bold py-1.5 rounded text-sm">Subir a la Nube</button>
+                            <button onclick="saveComm()" id="saveBtnComm" class="w-full bg-blue-600 text-white font-bold py-1.5 rounded text-sm">Guardar Grupo</button>
                         </div>
                     </div>
                 </details>
@@ -260,41 +264,42 @@
         </div>
     </div>
 
-    <!-- FIREBASE Y LÓGICA CORE -->
+    <!-- FIREBASE MODULES -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, onSnapshot, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // ==============================================================================
-        // ⚠️ IAN: ¡ESTO ES VITAL!
-        // Al subir a GitHub, pega el código de configuración de Firebase de tu proyecto 
-        // dentro de las llaves {} que dicen "TU_CONFIGURACION_AQUI".
-        // Sin esto, la página no podrá guardar ni leer nada para tus usuarios.
+        // ⚠️ IAN: TAREA CRÍTICA PARA QUE GUARDE EN LA NUBE DESDE GITHUB PAGES
+        // Reemplaza los valores vacíos ("") con los datos de tu proyecto de Firebase.
         // ==============================================================================
-        const defaultFirebaseConfig = {
-            /* TU_CONFIGURACION_AQUI */
+        const userFirebaseConfig = {
+            apiKey: "",            // <-- PEGA AQUÍ TU API KEY
+            authDomain: "",        // <-- PEGA AQUÍ TU AUTH DOMAIN
+            projectId: "",         // <-- PEGA AQUÍ TU PROJECT ID
+            storageBucket: "",
+            messagingSenderId: "",
+            appId: ""              // <-- PEGA AQUÍ TU APP ID
         };
 
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : defaultFirebaseConfig;
+        // Lógica para detectar si estamos en el previsualizador (donde se inyecta la config) o en GitHub Pages
+        const isPreviewEnv = typeof __firebase_config !== 'undefined';
+        const finalConfig = isPreviewEnv ? JSON.parse(__firebase_config) : userFirebaseConfig;
         
-        // Prevención de cuelgues si no hay firebase config insertada.
-        let isFirebaseActive = Object.keys(firebaseConfig).length > 0;
-        let app, auth, db;
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'soytomelux-prod';
+        // Verifica si realmente pusiste las credenciales
+        const isFirebaseConfigured = finalConfig.apiKey && finalConfig.apiKey !== "";
 
-        if (isFirebaseActive) {
-            app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-        } else {
-            console.warn("⚠️ MODO LOCAL ACTIVO: Firebase no configurado. Los cambios se perderán al cambiar de dispositivo.");
-            document.getElementById('globalLoader').classList.add('hidden'); // Ocultar cargador si no hay DB
+        if (!isFirebaseConfigured && !isPreviewEnv) {
+            document.getElementById('firebaseWarning').classList.remove('hidden');
         }
 
-        let userObj = null;
+        let app, auth, db;
+        const appIdStr = typeof __app_id !== 'undefined' ? __app_id : 'soytomelux-prod';
 
-        // ESTRUCTURA DE DATOS
+        // ==========================================
+        // ESTADO GLOBAL DE LA APLICACIÓN
+        // ==========================================
         window.appData = {
             marqueeText: "Red de medios en Tomé: Comercio Tomé • Galaxia Tomé • Salud Tomé • Delivery Tomé • Deporte Tomé",
             socials: { wa: "https://wa.me/56900000000", ig: "https://instagram.com/soytome", fb: "", x: "", tk: "", yt: "", sp: "" },
@@ -302,92 +307,21 @@
                 { id: '1', title: 'Suma tu Negocio', subtitle: 'Postula a la red Soy Tomé Lux', url: '#unete', icon: 'fas fa-rocket', isPremium: true, order: 0 },
                 { id: '2', title: 'Sitio Web Oficial', subtitle: 'Explorar directorio web', url: '#directorio', icon: 'fas fa-globe', isPremium: false, order: 1 }
             ],
-            comms: []
+            comms: [
+                { id: 'c1', name: 'Comercio Tomé', url: '#', type: 'wa' },
+                { id: 'c2', name: 'Feria Tomé', url: '#', type: 'fb' }
+            ]
         };
-
-        // INICIALIZACIÓN
-        if (isFirebaseActive) {
-            const initAuth = async () => {
-                try {
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
-                } catch (error) { console.error("Auth Error", error); }
-            };
-
-            onAuthStateChanged(auth, (user) => {
-                userObj = user;
-                if (user) setupRealtimeListeners();
-            });
-
-            initAuth();
-        } else {
-            // Render de emergencia si Firebase no está listo
-            window.renderAll();
-        }
-
-        // LISTENERS CLOUD
-        function setupRealtimeListeners() {
-            if (!userObj) return;
-
-            // Escuchar UI Config (Marquee)
-            onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'ui_config', 'settings'), (docSnap) => {
-                if (docSnap.exists() && docSnap.data().marqueeText) {
-                    window.appData.marqueeText = docSnap.data().marqueeText;
-                }
-                window.renderMarquee();
-                document.getElementById('globalLoader').classList.add('hidden'); // Ocultar loader al recibir datos
-            });
-
-            // Escuchar Botones
-            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'lux_links'), (snapshot) => {
-                if(!snapshot.empty) {
-                    window.appData.links = snapshot.docs.map(d => ({id: d.id, ...d.data()})).sort((a, b) => a.order - b.order);
-                }
-                window.renderPublicLinks();
-                if(!document.getElementById('ceoModal').classList.contains('hidden')) window.renderAdminLinks();
-            });
-
-            // Escuchar Redes
-            onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'lux_socials', 'config'), (docSnap) => {
-                if(docSnap.exists()) {
-                    window.appData.socials = docSnap.data();
-                }
-                window.renderSocials();
-            });
-
-            // Escuchar Comunidades
-            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'lux_comms'), (snapshot) => {
-                window.appData.comms = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
-                window.renderPublicComms();
-                if(!document.getElementById('ceoModal').classList.contains('hidden')) window.renderAdminComms();
-            });
-        }
 
         // ==========================================
         // FUNCIONES DE RENDERIZADO VISUAL
         // ==========================================
-        window.renderAll = () => {
-            window.renderMarquee();
-            window.renderPublicLinks();
-            window.renderSocials();
-            window.renderPublicComms();
-        }
-
         window.renderMarquee = () => {
             const container = document.getElementById('marqueeContainer');
-            // Formatear texto (Reemplazar guiones o bullets por el diseño premium)
             let formattedText = window.appData.marqueeText.replace(/-/g, '•');
-            
-            // Renderizamos un span y lo repetimos para crear el efecto de loop sin cortes
             const spanHtml = `<span class="text-luxGold text-xs font-bold tracking-[0.2em] uppercase mx-8 drop-shadow-[0_0_5px_rgba(212,175,55,0.5)]">${formattedText}</span>`;
-            
-            // Agregamos múltiples copias para asegurar que llene la pantalla ancha y haga el loop
-            container.innerHTML = spanHtml + spanHtml + spanHtml + spanHtml;
-            
-            // Llenar el input del CEO panel
+            // Repetimos para asegurar el loop infinito sin saltos
+            container.innerHTML = spanHtml + spanHtml + spanHtml + spanHtml + spanHtml;
             document.getElementById('marqueeInput').value = window.appData.marqueeText;
         };
 
@@ -441,9 +375,90 @@
                 if(comm.type === 'wa') waC.innerHTML += el; else fbC.innerHTML += el;
             });
             
-            waC.parentElement.style.display = waC.innerHTML === '' ? 'none' : 'block';
-            fbC.parentElement.style.display = fbC.innerHTML === '' ? 'none' : 'block';
+            document.getElementById('waSection').style.display = waC.innerHTML === '' ? 'none' : 'block';
+            document.getElementById('fbSection').style.display = fbC.innerHTML === '' ? 'none' : 'block';
         };
+
+        // Renderizado Inmediato (Optimistic UI) para que la página jamás se vea vacía al cargar
+        window.renderAll = () => {
+            window.renderMarquee();
+            window.renderPublicLinks();
+            window.renderSocials();
+            window.renderPublicComms();
+        };
+
+        // Ejecutar render inicial al instante
+        window.renderAll();
+
+        // ==========================================
+        // INICIALIZAR FIREBASE (SI ESTÁ CONFIGURADO)
+        // ==========================================
+        let userObj = null;
+
+        if (isFirebaseConfigured) {
+            app = initializeApp(finalConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+
+            const initAuth = async () => {
+                try {
+                    if (isPreviewEnv && typeof __initial_auth_token !== 'undefined') {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                } catch (error) { console.error("Auth Error", error); }
+            };
+
+            onAuthStateChanged(auth, (user) => {
+                userObj = user;
+                if (user) setupRealtimeListeners();
+            });
+
+            initAuth();
+        }
+
+        // ==========================================
+        // LISTENERS EN TIEMPO REAL (NUBE -> UI)
+        // ==========================================
+        function setupRealtimeListeners() {
+            if (!userObj) return;
+
+            // Escuchar Cinta Marquee
+            onSnapshot(doc(db, 'artifacts', appIdStr, 'public', 'data', 'ui_config', 'settings'), (docSnap) => {
+                if (docSnap.exists() && docSnap.data().marqueeText) {
+                    window.appData.marqueeText = docSnap.data().marqueeText;
+                    window.renderMarquee();
+                }
+            });
+
+            // Escuchar Botones
+            onSnapshot(collection(db, 'artifacts', appIdStr, 'public', 'data', 'lux_links'), (snapshot) => {
+                if(!snapshot.empty) {
+                    window.appData.links = snapshot.docs.map(d => ({id: d.id, ...d.data()})).sort((a, b) => a.order - b.order);
+                    window.renderPublicLinks();
+                    if(!document.getElementById('ceoModal').classList.contains('hidden')) window.renderAdminLinks();
+                }
+            });
+
+            // Escuchar Redes
+            onSnapshot(doc(db, 'artifacts', appIdStr, 'public', 'data', 'lux_socials', 'config'), (docSnap) => {
+                if(docSnap.exists()) {
+                    window.appData.socials = docSnap.data();
+                    window.renderSocials();
+                }
+            });
+
+            // Escuchar Comunidades
+            onSnapshot(collection(db, 'artifacts', appIdStr, 'public', 'data', 'lux_comms'), (snapshot) => {
+                if(!snapshot.empty) {
+                    window.appData.comms = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
+                    window.renderPublicComms();
+                    if(!document.getElementById('ceoModal').classList.contains('hidden')) window.renderAdminComms();
+                }
+            });
+        }
+
 
         // ==========================================
         // UTILIDADES Y MODALES
@@ -464,13 +479,23 @@
         };
 
         // ==========================================
-        // FUNCIONES PANEL CEO (CRUD)
+        // FUNCIONES PANEL CEO (CRUD EN LA NUBE)
         // ==========================================
         window.intentarLoginCEO = () => {
             const pass = prompt("Acceso CEO. Contraseña:");
             if (pass === "Ian2026@") {
-                if(!isFirebaseActive) alert("Advertencia: Firebase no está configurado en el código fuente. Los cambios no se guardarán en la nube.");
                 window.toggleModal('ceoModal');
+                
+                // Actualizar UI del panel según conexión
+                const statusEl = document.getElementById('ceoStatus');
+                if(!isFirebaseConfigured) {
+                    statusEl.innerText = "Error: Sin Base de Datos";
+                    statusEl.className = "text-red-400 text-xs font-mono mt-0.5";
+                } else {
+                    statusEl.innerText = "Conectado a la Nube";
+                    statusEl.className = "text-green-400 text-xs font-mono mt-0.5";
+                }
+
                 window.loadCeoData();
             } else if (pass !== null) alert("Acceso denegado.");
         };
@@ -491,20 +516,18 @@
         };
 
         window.saveMarquee = async () => {
+            if(!isFirebaseConfigured) return alert("Debes configurar Firebase en el código para guardar en la nube.");
             const text = document.getElementById('marqueeInput').value;
-            if(!isFirebaseActive) return alert("Firebase no configurado. Cambio cancelado.");
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'ui_config', 'settings'), { marqueeText: text }, { merge: true });
-            alert("Cinta actualizada en toda la red.");
+            await setDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'ui_config', 'settings'), { marqueeText: text }, { merge: true });
         };
 
         window.saveSocials = async () => {
-            if(!isFirebaseActive) return;
+            if(!isFirebaseConfigured) return alert("Debes configurar Firebase en el código para guardar en la nube.");
             const data = {
                 wa: document.getElementById('socWa').value, ig: document.getElementById('socIg').value, fb: document.getElementById('socFb').value,
                 x: document.getElementById('socX').value, tk: document.getElementById('socTk').value, yt: document.getElementById('socYt').value, sp: document.getElementById('socSp').value
             };
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'lux_socials', 'config'), data);
-            alert("Redes sincronizadas.");
+            await setDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'lux_socials', 'config'), data);
         };
 
         window.renderAdminLinks = () => {
@@ -527,7 +550,7 @@
         };
 
         window.moveLink = async (id, dir) => {
-            if(!isFirebaseActive) return;
+            if(!isFirebaseConfigured) return alert("Debes configurar Firebase.");
             const idx = window.appData.links.findIndex(x => x.id === id);
             if(idx+dir < 0 || idx+dir >= window.appData.links.length) return;
             
@@ -535,8 +558,8 @@
             window.appData.links[idx].order = window.appData.links[idx+dir].order;
             window.appData.links[idx+dir].order = tempOrder;
             
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'lux_links', window.appData.links[idx].id), window.appData.links[idx]);
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'lux_links', window.appData.links[idx+dir].id), window.appData.links[idx+dir]);
+            await setDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'lux_links', window.appData.links[idx].id), window.appData.links[idx]);
+            await setDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'lux_links', window.appData.links[idx+dir].id), window.appData.links[idx+dir]);
         };
 
         window.editLink = (id) => {
@@ -547,11 +570,11 @@
             document.getElementById('newUrl').value = l.url;
             document.getElementById('newIcon').value = l.icon;
             document.getElementById('newPremium').checked = l.isPremium;
-            document.getElementById('saveBtnLinks').innerText = "Actualizar en la Nube";
+            document.getElementById('saveBtnLinks').innerText = "Actualizar Nube";
         };
 
         window.saveLink = async () => {
-            if(!isFirebaseActive) return alert("Firebase off.");
+            if(!isFirebaseConfigured) return alert("Debes configurar Firebase.");
             const t = document.getElementById('newTitle').value;
             if(!t) return;
             
@@ -565,15 +588,15 @@
                 icon: document.getElementById('newIcon').value, isPremium: document.getElementById('newPremium').checked, order: order
             };
             
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'lux_links', id), data);
+            await setDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'lux_links', id), data);
             
             document.getElementById('editLinkId').value = ''; document.getElementById('newTitle').value = ''; document.getElementById('newSub').value = ''; document.getElementById('newUrl').value = '';
-            document.getElementById('saveBtnLinks').innerText = "Subir a la Nube";
+            document.getElementById('saveBtnLinks').innerText = "Guardar Botón";
         };
 
         window.deleteLink = async (id) => {
-            if(!isFirebaseActive) return;
-            if(confirm("¿Eliminar definitivamente de la red?")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'lux_links', id));
+            if(!isFirebaseConfigured) return alert("Debes configurar Firebase.");
+            if(confirm("¿Eliminar definitivamente de la red?")) await deleteDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'lux_links', id));
         };
 
         window.renderAdminComms = () => {
@@ -599,19 +622,19 @@
         };
 
         window.saveComm = async () => {
-            if(!isFirebaseActive) return;
+            if(!isFirebaseConfigured) return alert("Debes configurar Firebase.");
             const n = document.getElementById('commName').value;
             if(!n) return;
             let id = document.getElementById('editCommId').value || Date.now().toString();
             const data = { id: id, name: n, url: document.getElementById('commUrl').value || '#', type: document.getElementById('commType').value };
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'lux_comms', id), data);
+            await setDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'lux_comms', id), data);
             document.getElementById('editCommId').value = ''; document.getElementById('commName').value = ''; document.getElementById('commUrl').value = '';
-            document.getElementById('saveBtnComm').innerText = "Subir a la Nube";
+            document.getElementById('saveBtnComm').innerText = "Guardar Grupo";
         };
 
         window.deleteComm = async (id) => {
-            if(!isFirebaseActive) return;
-            if(confirm("¿Eliminar comunidad de la red?")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'lux_comms', id));
+            if(!isFirebaseConfigured) return alert("Debes configurar Firebase.");
+            if(confirm("¿Eliminar comunidad de la red?")) await deleteDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'lux_comms', id));
         };
     </script>
 </body>
