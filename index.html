@@ -6,6 +6,8 @@
     <title>Soy Tomé Lux | Ecosistema Digital</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- FontAwesome para el ícono de X -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
         tailwind.config = {
             theme: {
@@ -89,7 +91,7 @@
         </div>
 
         <!-- REDES SOCIALES DINÁMICAS -->
-        <div id="socialContainer" class="flex items-center justify-center gap-5 mb-6 w-full">
+        <div id="socialContainer" class="flex flex-wrap items-center justify-center gap-4 mb-6 w-full">
             <!-- Iconos renderizados vía JS -->
         </div>
 
@@ -238,8 +240,10 @@
                         <div class="flex items-center gap-3"><i class="fab fa-whatsapp text-green-500 w-5 text-center"></i> <input type="text" id="socWa" placeholder="Link WhatsApp" class="flex-1 bg-black border border-gray-700 rounded px-3 py-1.5 text-sm text-white"></div>
                         <div class="flex items-center gap-3"><i class="fab fa-instagram text-pink-500 w-5 text-center"></i> <input type="text" id="socIg" placeholder="Link Instagram" class="flex-1 bg-black border border-gray-700 rounded px-3 py-1.5 text-sm text-white"></div>
                         <div class="flex items-center gap-3"><i class="fab fa-facebook text-blue-500 w-5 text-center"></i> <input type="text" id="socFb" placeholder="Link Facebook" class="flex-1 bg-black border border-gray-700 rounded px-3 py-1.5 text-sm text-white"></div>
+                        <div class="flex items-center gap-3"><i class="fa-brands fa-x-twitter text-white w-5 text-center"></i> <input type="text" id="socX" placeholder="Link X (Twitter)" class="flex-1 bg-black border border-gray-700 rounded px-3 py-1.5 text-sm text-white"></div>
                         <div class="flex items-center gap-3"><i class="fab fa-tiktok text-white w-5 text-center"></i> <input type="text" id="socTk" placeholder="Link TikTok" class="flex-1 bg-black border border-gray-700 rounded px-3 py-1.5 text-sm text-white"></div>
                         <div class="flex items-center gap-3"><i class="fab fa-youtube text-red-500 w-5 text-center"></i> <input type="text" id="socYt" placeholder="Link YouTube" class="flex-1 bg-black border border-gray-700 rounded px-3 py-1.5 text-sm text-white"></div>
+                        <div class="flex items-center gap-3"><i class="fab fa-spotify text-green-400 w-5 text-center"></i> <input type="text" id="socSp" placeholder="Link Spotify / Podcast" class="flex-1 bg-black border border-gray-700 rounded px-3 py-1.5 text-sm text-white"></div>
                         <button onclick="saveSocials()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded text-sm mt-2">Guardar Redes</button>
                     </div>
                 </details>
@@ -264,6 +268,9 @@
                                     <option value="fas fa-rocket">🚀 Cohete</option>
                                     <option value="fas fa-search-location">📍 Ubicación</option>
                                     <option value="fas fa-fire">🔥 Fuego</option>
+                                    <option value="fas fa-globe">🌐 Web</option>
+                                    <option value="fas fa-utensils">🍔 Comida</option>
+                                    <option value="fas fa-shopping-bag">🛍️ Tienda</option>
                                 </select>
                                 <label class="text-xs text-gray-300 flex items-center gap-1"><input type="checkbox" id="newPremium"> VIP</label>
                             </div>
@@ -308,8 +315,7 @@
 
         // 1. CONFIGURACIÓN FIREBASE (Base de Datos en la Nube)
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-            // IAN: Si sacas este código de la plataforma y lo llevas a tu propio Netlify/GitHub, 
-            // necesitarás pegar aquí las credenciales de tu propio proyecto Firebase.
+            // IAN: Al llevar a producción, pega aquí las credenciales de tu proyecto Firebase si no usas el entorno inyectado.
         };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -319,10 +325,10 @@
 
         // Estado Local (se alimenta de la nube)
         let linksData = [];
-        let socialsData = { wa: "", ig: "", fb: "", tk: "", yt: "" };
+        let socialsData = { wa: "", ig: "", fb: "", x: "", tk: "", yt: "", sp: "" };
         let commsData = [];
 
-        // 2. AUTENTICACIÓN (Regla de oro antes de leer/escribir datos)
+        // 2. AUTENTICACIÓN
         const initAuth = async () => {
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -352,7 +358,7 @@
                     linksData = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
                     linksData.sort((a, b) => a.order - b.order); // Ordenar por peso
                 } else {
-                    // Carga inicial por defecto si la base de datos está vacía (Blindaje)
+                    // BLINDAJE DE SEGURIDAD: Carga inicial por defecto
                     linksData = [
                         { id: '1', title: 'Suma tu Negocio', subtitle: 'Postula a la red Soy Tomé Lux', url: '#unete', icon: 'fas fa-rocket', isPremium: true, order: 0 },
                         { id: '2', title: 'Sitio Web Oficial', subtitle: 'Explorar directorio web', url: '#directorio', icon: 'fas fa-globe', isPremium: false, order: 1 },
@@ -369,8 +375,8 @@
                     socialsData = snapshot.docs[0].data();
                     window.renderSocials();
                 } else {
-                    // Carga inicial por defecto si está vacío
-                    socialsData = { wa: "https://wa.me/56900000000", ig: "https://instagram.com", fb: "", tk: "", yt: "" };
+                    // Carga inicial por defecto con WhatsApp e IG de ejemplo
+                    socialsData = { wa: "https://wa.me/56900000000", ig: "https://instagram.com/soytome", fb: "", x: "", tk: "", yt: "", sp: "" };
                     window.renderSocials();
                 }
             }, (err) => console.error(err));
@@ -409,8 +415,10 @@
                 ${socialsData.wa ? `<a href="${socialsData.wa}" target="_blank" class="w-12 h-12 rounded-full glass-solid flex items-center justify-center hover:bg-green-600 transition-colors shadow-lg group"><i class="fab fa-whatsapp text-2xl text-green-500 group-hover:text-white"></i></a>` : ''}
                 ${socialsData.ig ? `<a href="${socialsData.ig}" target="_blank" class="w-12 h-12 rounded-full glass-solid flex items-center justify-center hover:bg-pink-600 transition-colors shadow-lg group"><i class="fab fa-instagram text-2xl text-pink-500 group-hover:text-white"></i></a>` : ''}
                 ${socialsData.fb ? `<a href="${socialsData.fb}" target="_blank" class="w-12 h-12 rounded-full glass-solid flex items-center justify-center hover:bg-blue-600 transition-colors shadow-lg group"><i class="fab fa-facebook text-2xl text-blue-500 group-hover:text-white"></i></a>` : ''}
+                ${socialsData.x ? `<a href="${socialsData.x}" target="_blank" class="w-12 h-12 rounded-full glass-solid flex items-center justify-center hover:bg-gray-800 transition-colors shadow-lg group"><i class="fa-brands fa-x-twitter text-2xl text-white"></i></a>` : ''}
                 ${socialsData.tk ? `<a href="${socialsData.tk}" target="_blank" class="w-12 h-12 rounded-full glass-solid flex items-center justify-center hover:bg-gray-800 transition-colors shadow-lg group"><i class="fab fa-tiktok text-2xl text-white"></i></a>` : ''}
                 ${socialsData.yt ? `<a href="${socialsData.yt}" target="_blank" class="w-12 h-12 rounded-full glass-solid flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg group"><i class="fab fa-youtube text-2xl text-red-500 group-hover:text-white"></i></a>` : ''}
+                ${socialsData.sp ? `<a href="${socialsData.sp}" target="_blank" class="w-12 h-12 rounded-full glass-solid flex items-center justify-center hover:bg-green-500 transition-colors shadow-lg group"><i class="fab fa-spotify text-2xl text-green-400 group-hover:text-black"></i></a>` : ''}
             `;
         };
 
@@ -473,8 +481,10 @@
             document.getElementById('socWa').value = socialsData.wa || "";
             document.getElementById('socIg').value = socialsData.ig || "";
             document.getElementById('socFb').value = socialsData.fb || "";
+            document.getElementById('socX').value = socialsData.x || "";
             document.getElementById('socTk').value = socialsData.tk || "";
             document.getElementById('socYt').value = socialsData.yt || "";
+            document.getElementById('socSp').value = socialsData.sp || "";
             window.renderAdminLinks();
             window.renderAdminComms();
         };
@@ -485,8 +495,10 @@
                 wa: document.getElementById('socWa').value,
                 ig: document.getElementById('socIg').value,
                 fb: document.getElementById('socFb').value,
+                x: document.getElementById('socX').value,
                 tk: document.getElementById('socTk').value,
-                yt: document.getElementById('socYt').value
+                yt: document.getElementById('socYt').value,
+                sp: document.getElementById('socSp').value
             };
             await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'lux_socials', 'config'), data);
             alert("Redes guardadas en la nube.");
