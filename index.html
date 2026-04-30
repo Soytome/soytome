@@ -15,14 +15,13 @@
                         luxDark: '#171717',
                         luxGold: '#d4af37',
                         luxGoldHover: '#b5952f',
-                        luxBlue: '#001a33' /* Azul premium oscuro */
+                        luxBlue: '#001a33'
                     }
                 }
             }
         }
     </script>
     <style>
-        /* FONDO ANIMADO PREMIUM (NEGRO A AZUL PROFUNDO) */
         body { 
             background: linear-gradient(-45deg, #0a0a0a, #050b14, #00122e, #0a0a0a);
             background-size: 400% 400%;
@@ -37,12 +36,10 @@
             100% { background-position: 0% 50%; }
         }
         
-        /* Efectos de cristal para el navbar y tarjetas */
         .glass { background: rgba(23, 23, 23, 0.4); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05); }
         .glass-solid { background: rgba(20, 20, 25, 0.7); backdrop-filter: blur(12px); }
         .glass-modal { background: rgba(10, 10, 12, 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(212,175,55,0.2); }
         
-        /* Animaciones del Modal */
         .modal-enter { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .modal-exit { animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         
@@ -55,7 +52,6 @@
             to { transform: translateY(100%) scale(0.95); opacity: 0; }
         }
 
-        /* Scrollbar Personalizado */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #d4af37; border-radius: 3px; }
@@ -63,24 +59,20 @@
 </head>
 <body class="relative font-sans antialiased overflow-x-hidden flex flex-col items-center">
 
-    <!-- ÁREA CENTRAL: EL HUB DE ENLACES -->
+    <!-- ÁREA CENTRAL: HUB DE ENLACES -->
     <main class="w-full max-w-lg mx-auto pt-12 pb-24 px-5 flex flex-col items-center z-10 min-h-screen relative">
         
-        <!-- Perfil / Cabecera -->
         <div class="text-center mb-8">
             <div class="w-24 h-24 mx-auto rounded-full glass border-2 border-luxGold flex items-center justify-center mb-4 shadow-[0_0_20px_rgba(212,175,55,0.2)]">
                 <i class="fas fa-crown text-4xl text-luxGold drop-shadow-[0_0_8px_rgba(212,175,55,0.8)]"></i>
             </div>
             <h1 class="text-3xl font-extrabold text-white tracking-tight">SoyTomé<span class="text-luxGold">Lux</span></h1>
-            <p class="text-gray-400 text-sm mt-2 font-medium">El Directorio Premium y Red de Negocios de Tomé.</p>
+            <p class="text-gray-400 text-sm mt-2 font-medium">El Directorio Premium y Red de Negocios.</p>
         </div>
 
         <!-- CONTENEDOR DINÁMICO DE ENLACES -->
-        <div id="linksContainer" class="w-full space-y-4 flex flex-col">
-            <!-- Los botones se renderizan aquí vía JavaScript -->
-        </div>
+        <div id="linksContainer" class="w-full space-y-4 flex flex-col"></div>
 
-        <!-- Fila de Contacto Fija (Mitad y Mitad) -->
         <div class="w-full grid grid-cols-2 gap-4 pt-4 mt-2">
             <a href="#whatsapp" class="glass-solid border border-gray-800 rounded-2xl p-4 flex flex-col items-center justify-center text-center hover:border-green-500/50 transition-all">
                 <i class="fab fa-whatsapp text-2xl text-green-500 mb-2"></i>
@@ -92,13 +84,12 @@
             </a>
         </div>
 
-        <!-- Trigger Alternativo para la IA -->
         <button onclick="toggleModal('ayudaLuxModal')" class="w-full mt-4 glass border border-dashed border-luxGold/40 rounded-2xl p-4 flex items-center justify-center gap-3 hover:bg-luxBlack hover:border-luxGold transition-all group">
             <i class="fas fa-robot text-luxGold group-hover:rotate-12 transition-transform"></i>
             <span class="text-sm font-bold text-luxGold">Herramientas IA para Socios</span>
         </button>
 
-        <!-- BOTÓN ACCESO CEO (Oculto a simple vista, premium) -->
+        <!-- BOTÓN ACCESO CEO -->
         <div class="mt-12 mb-4">
             <button onclick="intentarLoginCEO()" class="flex items-center gap-2 text-xs text-gray-600 hover:text-luxGold transition-colors">
                 <i class="fas fa-lock text-[10px]"></i>
@@ -107,65 +98,68 @@
         </div>
     </main>
 
-    <!-- ========================================== -->
-    <!-- BOTÓN FLOTANTE: TRIGGER DE AYUDA LUX -->
-    <!-- ========================================== -->
+    <!-- BOTÓN FLOTANTE IA -->
     <button onclick="toggleModal('ayudaLuxModal')" class="fixed bottom-6 right-6 z-40 bg-gradient-to-r from-luxGold to-yellow-600 text-black px-5 py-3 rounded-full font-bold shadow-[0_0_20px_rgba(212,175,55,0.4)] hover:scale-105 hover:shadow-[0_0_30px_rgba(212,175,55,0.6)] transition-all flex items-center gap-2 group hidden sm:flex border border-yellow-300">
         <i class="fas fa-magic text-black group-hover:rotate-12 transition-transform"></i>
         <span>Ayuda Lux IA</span>
     </button>
 
-    <!-- ========================================== -->
-    <!-- MODAL DE AYUDA LUX (IA) -->
-    <!-- ========================================== -->
+    <!-- MODAL AYUDA LUX (IA MEJORADA) -->
     <div id="ayudaLuxModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 sm:p-6">
         <div class="absolute inset-0 bg-black/80 backdrop-blur-md cursor-pointer" onclick="toggleModal('ayudaLuxModal')"></div>
         <div id="ayudaLuxContent" class="relative w-full max-w-2xl glass-modal rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <header class="p-5 border-b border-luxGold/20 flex justify-between items-center bg-luxDark/80 sticky top-0 z-10 backdrop-blur-md">
                 <div>
                     <h2 class="text-2xl font-bold tracking-tight text-white">Ayuda <span class="text-luxGold">Lux</span> ✨</h2>
-                    <p class="text-gray-400 text-xs mt-1">Potencia tu negocio con Inteligencia Artificial.</p>
+                    <p class="text-gray-400 text-xs mt-1">Estrategias de agencia para tu negocio.</p>
                 </div>
                 <button onclick="toggleModal('ayudaLuxModal')" class="text-gray-400 hover:text-white bg-luxBlack/50 hover:bg-red-500/20 rounded-full w-8 h-8 flex items-center justify-center transition-colors">
                     <i class="fas fa-times"></i>
                 </button>
             </header>
 
-            <div class="p-6 space-y-6 overflow-y-auto">
+            <div class="p-6 space-y-5 overflow-y-auto">
                 <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-1">Nombre de tu Negocio</label>
-                        <input type="text" id="bizName" placeholder="Ej. Sushi Tomé Center" class="w-full bg-luxBlack/50 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-luxGold transition-colors">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-luxGold mb-1 uppercase tracking-wide">1. Tu Negocio</label>
+                            <input type="text" id="bizName" placeholder="Ej. Sushi Tomé Center" class="w-full bg-luxBlack/50 border border-gray-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:border-luxGold transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-luxGold mb-1 uppercase tracking-wide">2. Meta Estratégica</label>
+                            <input type="text" id="bizGoal" placeholder="Ej. Atraer universitarios, vender stock..." class="w-full bg-luxBlack/50 border border-gray-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:border-luxGold transition-colors">
+                        </div>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-1">¿Qué haces o qué vendes?</label>
-                        <textarea id="bizDesc" rows="2" placeholder="Ej. Vendemos rolls premium con entrega a domicilio." class="w-full bg-luxBlack/50 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-luxGold transition-colors resize-none"></textarea>
+                        <label class="block text-xs font-bold text-luxGold mb-1 uppercase tracking-wide">3. ¿Qué vendes y qué te hace único?</label>
+                        <textarea id="bizDesc" rows="2" placeholder="Ej. Vendemos rolls premium. Destacamos por el tamaño de las piezas y entrega en 20 min." class="w-full bg-luxBlack/50 border border-gray-700 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:border-luxGold transition-colors resize-none"></textarea>
                     </div>
                 </div>
 
                 <div>
-                    <p class="text-xs font-medium text-gray-400 mb-3 uppercase tracking-wider text-center">Selecciona una herramienta estratégica</p>
+                    <p class="text-xs font-medium text-gray-400 mb-3 uppercase tracking-wider text-center border-t border-gray-800 pt-4">Ejecutar Herramienta</p>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <button onclick="generateContent('copy')" class="flex flex-col items-center justify-center p-3 rounded-xl glass-solid border border-gray-700 hover:border-luxGold transition-all group">
+                        <button onclick="generateContent('copy')" class="flex flex-col items-center justify-center p-3 rounded-xl glass-solid border border-gray-700 hover:border-luxGold hover:shadow-[0_0_15px_rgba(212,175,55,0.2)] transition-all group">
                             <i class="fas fa-pen-nib text-luxGold text-lg mb-1 group-hover:scale-110 transition-transform"></i>
-                            <span class="text-xs font-semibold text-white">Redactar Perfil</span>
+                            <span class="text-xs font-semibold text-white">Copy Magnético</span>
                         </button>
-                        <button onclick="generateContent('offers')" class="flex flex-col items-center justify-center p-3 rounded-xl glass-solid border border-gray-700 hover:border-luxGold transition-all group">
+                        <button onclick="generateContent('offers')" class="flex flex-col items-center justify-center p-3 rounded-xl glass-solid border border-gray-700 hover:border-luxGold hover:shadow-[0_0_15px_rgba(212,175,55,0.2)] transition-all group">
                             <i class="fas fa-bolt text-luxGold text-lg mb-1 group-hover:scale-110 transition-transform"></i>
-                            <span class="text-xs font-semibold text-white">Crear Ofertas</span>
+                            <span class="text-xs font-semibold text-white">Ofertas & ROI</span>
                         </button>
-                        <button onclick="generateContent('seo')" class="flex flex-col items-center justify-center p-3 rounded-xl glass-solid border border-gray-700 hover:border-luxGold transition-all group">
-                            <i class="fas fa-hashtag text-luxGold text-lg mb-1 group-hover:scale-110 transition-transform"></i>
-                            <span class="text-xs font-semibold text-white">SEO Local</span>
+                        <button onclick="generateContent('brand')" class="flex flex-col items-center justify-center p-3 rounded-xl glass-solid border border-gray-700 hover:border-luxGold hover:shadow-[0_0_15px_rgba(212,175,55,0.2)] transition-all group">
+                            <i class="fas fa-chess-knight text-luxGold text-lg mb-1 group-hover:scale-110 transition-transform"></i>
+                            <span class="text-xs font-semibold text-white">Tips de Marca</span>
                         </button>
                     </div>
                 </div>
 
+                <!-- Resultados IA -->
                 <div id="resultArea" class="hidden mt-4">
                     <div class="h-px w-full bg-gradient-to-r from-transparent via-luxGold/50 to-transparent mb-4"></div>
                     <div id="loadingState" class="hidden flex-col items-center justify-center py-6 text-center">
                         <div class="w-8 h-8 border-4 border-gray-700 border-t-luxGold rounded-full animate-spin mb-3"></div>
-                        <p class="text-luxGold text-sm font-medium">Procesando estrategia con IA...</p>
+                        <p class="text-luxGold text-sm font-medium">Arquitectando estrategia...</p>
                     </div>
                     <div id="errorState" class="hidden bg-red-900/20 border border-red-500/50 rounded-lg p-3 flex items-start space-x-3">
                         <i class="fas fa-exclamation-triangle text-red-400 mt-0.5"></i>
@@ -173,21 +167,19 @@
                     </div>
                     <div id="successState" class="hidden flex-col">
                         <div class="flex justify-between items-center mb-2">
-                            <h3 class="text-xs font-bold text-luxGold uppercase tracking-wider">Resultado</h3>
+                            <h3 class="text-xs font-bold text-luxGold uppercase tracking-wider">Plan de Acción</h3>
                             <button onclick="copyToClipboard()" class="text-xs glass hover:bg-gray-700 text-white px-3 py-1 rounded border border-gray-600 transition-colors flex items-center gap-1">
                                 <i class="fas fa-copy"></i> Copiar
                             </button>
                         </div>
-                        <div id="generatedText" class="glass-solid border border-luxGold/30 rounded-lg p-4 text-gray-200 text-sm leading-relaxed whitespace-pre-wrap"></div>
+                        <div id="generatedText" class="glass-solid border border-luxGold/30 rounded-lg p-5 text-gray-200 text-sm leading-relaxed whitespace-pre-wrap font-medium"></div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- MODAL PANEL CEO (GESTIÓN DE BOTONES) -->
-    <!-- ========================================== -->
+    <!-- MODAL PANEL CEO (CRUD COMPLETO) -->
     <div id="ceoModal" class="fixed inset-0 z-[60] hidden items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/90 backdrop-blur-xl" onclick="toggleModal('ceoModal')"></div>
         <div id="ceoContent" class="relative w-full max-w-lg glass-modal border border-blue-500/30 rounded-2xl shadow-[0_0_40px_rgba(0,100,255,0.15)] overflow-hidden flex flex-col max-h-[90vh]">
@@ -197,27 +189,35 @@
                     <i class="fas fa-user-shield text-blue-400 text-xl"></i>
                     <div>
                         <h2 class="text-xl font-bold tracking-tight text-white">Panel CEO</h2>
-                        <p class="text-green-400 text-xs font-mono mt-0.5" id="ceoWelcome">Verificando...</p>
+                        <p class="text-green-400 text-xs font-mono mt-0.5" id="ceoWelcome">Gestión de Ecosistema</p>
                     </div>
                 </div>
-                <button onclick="toggleModal('ceoModal')" class="text-gray-400 hover:text-white">
+                <button onclick="cerrarCEO()" class="text-gray-400 hover:text-white">
                     <i class="fas fa-times"></i>
                 </button>
             </header>
 
             <div class="p-5 overflow-y-auto space-y-6">
-                <!-- Lista de Botones Actuales -->
+                <!-- Lista Editable de Botones -->
                 <div>
-                    <h3 class="text-sm font-bold text-gray-300 mb-3 border-b border-gray-800 pb-2">Botones Activos</h3>
+                    <div class="flex justify-between items-end mb-3 border-b border-gray-800 pb-2">
+                        <h3 class="text-sm font-bold text-gray-300">Botones Activos</h3>
+                        <span class="text-[10px] text-gray-500">Usa las flechas para ordenar</span>
+                    </div>
                     <div id="adminLinksList" class="space-y-2">
                         <!-- Renderizados vía JS -->
                     </div>
                 </div>
 
-                <!-- Formulario Añadir Botón -->
-                <div class="bg-gray-900/50 p-4 rounded-xl border border-gray-800">
-                    <h3 class="text-sm font-bold text-luxGold mb-3"><i class="fas fa-plus-circle mr-1"></i> Añadir Nuevo Botón</h3>
+                <!-- Formulario Añadir/Editar Botón -->
+                <div class="bg-gray-900/50 p-4 rounded-xl border border-gray-800 transition-all" id="formContainer">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-sm font-bold text-luxGold" id="formTitle"><i class="fas fa-plus-circle mr-1"></i> Añadir Nuevo Botón</h3>
+                        <button onclick="resetForm()" class="text-xs text-gray-400 hover:text-white hidden" id="cancelEditBtn">Cancelar Edición</button>
+                    </div>
+                    
                     <div class="space-y-3">
+                        <input type="hidden" id="editLinkId" value="">
                         <input type="text" id="newTitle" placeholder="Título (Ej. Menú Digital)" class="w-full bg-black border border-gray-700 rounded px-3 py-2 text-sm text-white focus:border-luxGold outline-none">
                         <input type="text" id="newSub" placeholder="Subtítulo (Opcional)" class="w-full bg-black border border-gray-700 rounded px-3 py-2 text-sm text-white focus:border-luxGold outline-none">
                         <input type="text" id="newUrl" placeholder="URL o Enlace (#link)" class="w-full bg-black border border-gray-700 rounded px-3 py-2 text-sm text-white focus:border-luxGold outline-none">
@@ -225,18 +225,20 @@
                         <div class="flex gap-2 items-center">
                             <select id="newIcon" class="bg-black border border-gray-700 rounded px-3 py-2 text-sm text-gray-300 flex-1 outline-none">
                                 <option value="fas fa-star">⭐ Estrella</option>
+                                <option value="fas fa-rocket">🚀 Cohete</option>
                                 <option value="fas fa-utensils">🍔 Comida</option>
-                                <option value="fas fa-home">🏠 Casa/Arriendo</option>
+                                <option value="fas fa-home">🏠 Arriendo</option>
                                 <option value="fas fa-shopping-bag">🛍️ Tienda</option>
-                                <option value="fas fa-ticket-alt">🎟️ Ticket</option>
+                                <option value="fas fa-fire">🔥 Fuego</option>
+                                <option value="fas fa-search-location">📍 Ubicación</option>
                                 <option value="fas fa-link">🔗 Link</option>
                             </select>
-                            <label class="flex items-center gap-2 text-sm text-gray-300">
-                                <input type="checkbox" id="newPremium" class="accent-luxGold w-4 h-4">
-                                Premium (Dorado)
+                            <label class="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
+                                <input type="checkbox" id="newPremium" class="accent-luxGold w-4 h-4 cursor-pointer">
+                                Premium
                             </label>
                         </div>
-                        <button onclick="addNewLink()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded transition-colors text-sm">
+                        <button onclick="saveLink()" id="saveBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded transition-colors text-sm shadow-lg">
                             Guardar Botón
                         </button>
                     </div>
@@ -245,30 +247,35 @@
         </div>
     </div>
 
-    <!-- SCRIPTS -->
     <script>
         // ==========================================
-        // ESTADO DE LA APLICACIÓN (BOTONES DINÁMICOS)
+        // ESTADO Y PERSISTENCIA (LOCAL STORAGE)
         // ==========================================
-        let linksData = [
+        const defaultLinks = [
             { id: 1, title: 'Suma tu Negocio', subtitle: 'Postula a la red Soy Tomé Lux', url: '#unete', icon: 'fas fa-rocket', isPremium: true },
             { id: 2, title: 'Explorar Directorio', subtitle: 'Comida, arriendos y servicios', url: '#directorio', icon: 'fas fa-search-location', isPremium: false },
-            { id: 3, title: 'Ofertas Flash 🔥', subtitle: 'Descuentos exclusivos hoy', url: '#ofertas', icon: 'fas fa-fire text-orange-500', isPremium: false }
+            { id: 3, title: 'Ofertas Flash 🔥', subtitle: 'Descuentos exclusivos hoy', url: '#ofertas', icon: 'fas fa-fire', isPremium: false }
         ];
 
-        // Renderiza los botones en la vista pública
+        // Cargar desde memoria, si no hay, usar por defecto
+        let linksData = JSON.parse(localStorage.getItem('luxLinksData')) || defaultLinks;
+
+        function saveToStorage() {
+            localStorage.setItem('luxLinksData', JSON.stringify(linksData));
+        }
+
+        // ==========================================
+        // RENDER VISTA PÚBLICA
+        // ==========================================
         function renderPublicLinks() {
             const container = document.getElementById('linksContainer');
             container.innerHTML = '';
             
             linksData.forEach(link => {
-                const isPremium = link.isPremium;
-                
-                // Estructura visual dependiendo si es Premium (Dorado) o Normal (Cristal)
                 const a = document.createElement('a');
                 a.href = link.url;
                 
-                if (isPremium) {
+                if (link.isPremium) {
                     a.className = "w-full group relative overflow-hidden rounded-2xl bg-gradient-to-r from-luxGold to-yellow-600 p-[1px] transition-all hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(212,175,55,0.4)]";
                     a.innerHTML = `
                         <div class="flex items-center justify-between bg-luxBlack rounded-2xl p-5 w-full h-full group-hover:bg-opacity-90 transition-all">
@@ -300,41 +307,107 @@
         }
 
         // ==========================================
-        // LÓGICA DEL PANEL CEO
+        // LÓGICA DEL PANEL CEO (CRUD)
         // ==========================================
         function intentarLoginCEO() {
             const pass = prompt("Acceso Restringido. Ingrese contraseña de CEO:");
             if (pass === "Ian2026@") {
-                document.getElementById('ceoWelcome').innerText = "BIENVENIDO IAN. MODO DIOS ACTIVADO.";
                 toggleModal('ceoModal');
                 renderAdminLinks();
             } else if (pass !== null) {
-                alert("Acceso denegado. Contraseña incorrecta.");
+                alert("Acceso denegado.");
             }
         }
 
-        // Renderiza la lista de botones en el Panel CEO para editarlos
+        function cerrarCEO() {
+            resetForm();
+            toggleModal('ceoModal');
+        }
+
         function renderAdminLinks() {
             const list = document.getElementById('adminLinksList');
             list.innerHTML = '';
-            linksData.forEach(link => {
+            linksData.forEach((link, index) => {
                 const div = document.createElement('div');
-                div.className = "flex items-center justify-between bg-black border border-gray-800 p-3 rounded-lg";
+                div.className = "flex items-center justify-between bg-black border border-gray-800 p-2 rounded-lg gap-2";
+                
+                // Botones de Orden
+                const isFirst = index === 0;
+                const isLast = index === linksData.length - 1;
+                
                 div.innerHTML = `
-                    <div class="flex items-center gap-3">
+                    <div class="flex flex-col gap-1 pr-2 border-r border-gray-800">
+                        <button onclick="moveLink(${index}, -1)" class="text-gray-500 hover:text-white disabled:opacity-30" ${isFirst ? 'disabled' : ''}><i class="fas fa-chevron-up text-xs"></i></button>
+                        <button onclick="moveLink(${index}, 1)" class="text-gray-500 hover:text-white disabled:opacity-30" ${isLast ? 'disabled' : ''}><i class="fas fa-chevron-down text-xs"></i></button>
+                    </div>
+                    
+                    <div class="flex items-center gap-3 flex-1 min-w-0 pl-1">
                         <i class="${link.icon} text-gray-400"></i>
-                        <div>
-                            <p class="text-sm font-bold text-white leading-tight">${link.title} ${link.isPremium ? '🌟' : ''}</p>
-                            <p class="text-[10px] text-gray-500 truncate w-32">${link.url}</p>
+                        <div class="truncate">
+                            <p class="text-sm font-bold text-white leading-tight truncate">${link.title} ${link.isPremium ? '🌟' : ''}</p>
+                            <p class="text-[10px] text-gray-500 truncate">${link.url}</p>
                         </div>
                     </div>
-                    <button onclick="deleteLink(${link.id})" class="text-red-500 hover:text-red-400 p-2"><i class="fas fa-trash"></i></button>
+                    
+                    <div class="flex items-center gap-1">
+                        <button onclick="editLink(${link.id})" class="text-blue-400 hover:text-blue-300 p-2 bg-blue-900/20 rounded"><i class="fas fa-pen text-xs"></i></button>
+                        <button onclick="deleteLink(${link.id})" class="text-red-500 hover:text-red-400 p-2 bg-red-900/20 rounded"><i class="fas fa-trash text-xs"></i></button>
+                    </div>
                 `;
                 list.appendChild(div);
             });
         }
 
-        function addNewLink() {
+        function moveLink(index, direction) {
+            const newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= linksData.length) return;
+            
+            // Swap
+            const temp = linksData[index];
+            linksData[index] = linksData[newIndex];
+            linksData[newIndex] = temp;
+            
+            saveToStorage();
+            renderAdminLinks();
+            renderPublicLinks();
+        }
+
+        function editLink(id) {
+            const link = linksData.find(l => l.id === id);
+            if(!link) return;
+            
+            document.getElementById('formTitle').innerHTML = '<i class="fas fa-pen mr-1"></i> Editando Botón';
+            document.getElementById('cancelEditBtn').classList.remove('hidden');
+            document.getElementById('saveBtn').innerText = 'Actualizar Botón';
+            document.getElementById('saveBtn').className = "w-full bg-luxGold hover:bg-yellow-500 text-black font-bold py-2 rounded transition-colors text-sm shadow-lg";
+            
+            document.getElementById('editLinkId').value = link.id;
+            document.getElementById('newTitle').value = link.title;
+            document.getElementById('newSub').value = link.subtitle;
+            document.getElementById('newUrl').value = link.url;
+            document.getElementById('newIcon').value = link.icon;
+            document.getElementById('newPremium').checked = link.isPremium;
+            
+            // Scroll to form
+            document.getElementById('formContainer').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function resetForm() {
+            document.getElementById('formTitle').innerHTML = '<i class="fas fa-plus-circle mr-1"></i> Añadir Nuevo Botón';
+            document.getElementById('cancelEditBtn').classList.add('hidden');
+            document.getElementById('saveBtn').innerText = 'Guardar Botón';
+            document.getElementById('saveBtn').className = "w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded transition-colors text-sm shadow-lg";
+            
+            document.getElementById('editLinkId').value = '';
+            document.getElementById('newTitle').value = '';
+            document.getElementById('newSub').value = '';
+            document.getElementById('newUrl').value = '';
+            document.getElementById('newIcon').value = 'fas fa-star';
+            document.getElementById('newPremium').checked = false;
+        }
+
+        function saveLink() {
+            const id = document.getElementById('editLinkId').value;
             const title = document.getElementById('newTitle').value;
             const sub = document.getElementById('newSub').value;
             const url = document.getElementById('newUrl').value || '#';
@@ -343,33 +416,38 @@
 
             if (!title) return alert("El título es obligatorio.");
 
-            const newId = linksData.length > 0 ? Math.max(...linksData.map(l => l.id)) + 1 : 1;
-            linksData.push({ id: newId, title, subtitle: sub, url, icon, isPremium });
+            if (id) {
+                // Actualizar existente
+                const index = linksData.findIndex(l => l.id == id);
+                if(index !== -1) {
+                    linksData[index] = { id: parseInt(id), title, subtitle: sub, url, icon, isPremium };
+                }
+            } else {
+                // Crear nuevo
+                const newId = linksData.length > 0 ? Math.max(...linksData.map(l => l.id)) + 1 : 1;
+                linksData.push({ id: newId, title, subtitle: sub, url, icon, isPremium });
+            }
             
-            // Limpiar inputs
-            document.getElementById('newTitle').value = '';
-            document.getElementById('newSub').value = '';
-            document.getElementById('newUrl').value = '';
-            document.getElementById('newPremium').checked = false;
-
+            saveToStorage();
+            resetForm();
             renderAdminLinks();
             renderPublicLinks();
         }
 
         function deleteLink(id) {
-            if(confirm("¿Seguro que deseas eliminar este botón?")) {
+            if(confirm("¿Seguro que deseas eliminar este botón permanentemente?")) {
                 linksData = linksData.filter(l => l.id !== id);
+                saveToStorage();
                 renderAdminLinks();
                 renderPublicLinks();
             }
         }
 
-        // Inicializar vista al cargar
         window.onload = renderPublicLinks;
 
 
         // ==========================================
-        // UTILIDADES DE MODALES
+        // UTILIDADES Y MODALES
         // ==========================================
         function toggleModal(modalID) {
             const modal = document.getElementById(modalID);
@@ -391,49 +469,50 @@
         }
 
         // ==========================================
-        // LÓGICA DE LA IA GEMINI (CON MODO SIMULACIÓN)
+        // IA GEMINI (VERSION AGENCIA PROFESIONAL)
         // ==========================================
-        
-        // IAN: AQUÍ DEBES PONER TU API KEY REAL PARA PRODUCCIÓN.
-        // Mientras esté vacía (""), el sistema usará el Modo Simulación para que no de error.
-        const apiKey = ""; 
-
-        const prompts = {
-            'copy': "Redactando perfil magnético...",
-            'offers': "Creando estrategias de venta...",
-            'seo': "Analizando SEO Local Tomé..."
-        };
+        const apiKey = ""; // <--- IAN: PON TU API KEY AQUÍ PARA PRODUCCIÓN.
 
         async function generateContent(toolType) {
             const name = document.getElementById('bizName').value.trim();
+            const goal = document.getElementById('bizGoal').value.trim() || 'Aumentar visibilidad y ventas generales';
             const desc = document.getElementById('bizDesc').value.trim();
 
             if (!name || !desc) {
-                return alert("Ian, dile a tus clientes que ingresen el nombre y descripción del negocio primero.");
+                return alert("Para resultados profesionales, necesitamos conocer el nombre y lo que hace tu negocio.");
             }
 
             showUIState('loading');
 
-            // --- MODO SIMULACIÓN ---
-            // Si la API key está vacía, entregamos un resultado simulado de alta calidad
-            // para que la herramienta nunca se vea rota ante los clientes o durante tus pruebas.
+            // --- MODO SIMULACIÓN PROFESIONAL ---
             if (!apiKey || apiKey === "") {
                 setTimeout(() => {
                     let mockResult = "";
-                    if(toolType === 'copy') mockResult = `**Perfil Premium Generado:**\n\nBienvenidos a **${name}**, el nuevo estándar en Tomé. \nNos especializamos en ofrecer una experiencia única: ${desc}.\n\n🔹 Calidad garantizada\n🔹 Atención de primera\n🔹 Ubicados en el corazón del Biobío\n\n**¡Visítanos hoy y vive la experiencia!**`;
-                    if(toolType === 'offers') mockResult = `**Estrategias Flash para ${name}:**\n\n🔥 **Oferta 1: Hora Feliz Biobío**\n20% de descuento en la próxima hora mostrando este pantallazo.\n\n⚡ **Oferta 2: Combo Tomé**\nLleva el doble por solo $2.000 extra hoy.\n\n💎 **Oferta 3: Socio Lux**\nEtiquétanos y participa por una atención gratis este viernes.`;
-                    if(toolType === 'seo') mockResult = `**Paquete SEO Local Tomé:**\n\n**Keywords:**\n- Mejores locales en Tomé\n- ${name} Biobío\n- Dónde ir en Tomé\n\n**Hashtags:**\n#SoyTome #TomeChile #BioBio #Concepcion #ComercioLocal #EmprendedoresBiobio`;
+                    if(toolType === 'copy') {
+                        mockResult = `**PERFIL MAGNÉTICO PARA SOY TOMÉ LUX**\n\nBienvenido a **${name}**, el nuevo referente de calidad en Tomé. \n\nSabemos que buscas algo diferente: ${desc}. Por eso, hemos diseñado una experiencia pensada estratégicamente para **${goal.toLowerCase()}**.\n\n**¿Por qué elegirnos hoy?**\n🔹 **Estándar Premium:** Seleccionamos cada detalle.\n🔹 **Conexión Local:** Entendemos lo que el Biobío necesita.\n🔹 **Respuesta Rápida:** Atención garantizada sin fricciones.\n\n📍 *Visítanos o agenda tu experiencia hoy mismo. La exclusividad te espera.*`;
+                    }
+                    if(toolType === 'offers') {
+                        mockResult = `**ESTRATEGIA DE OFERTAS & ROI PARA ${name}**\n\n*Objetivo detectado: ${goal}*\n\n🔥 **1. Oferta "Flash Biobío" (Urgencia)**\n*Estructura:* "Sólo por las próximas 3 horas, muestra esta historia y llévate un 20% OFF en tu compra."\n*Por qué funciona:* Genera tráfico peatonal o digital inmediato. Ideal para horas valle.\n\n💎 **2. Ticket Elevado (Cross-selling)**\n*Estructura:* "Con tu compra principal, agrega [Producto Complementario] por sólo $3.000 extra."\n*Por qué funciona:* Aumenta tu ticket promedio sin bajar el precio de tu producto estrella.\n\n🤝 **3. Fidelización Lux (Retención)**\n*Estructura:* "Sube una foto de tu pedido, etiquétanos y tu próxima visita tiene regalo seguro."\n*Por qué funciona:* Convierte a tus clientes en embajadores de marca gratis.`;
+                    }
+                    if(toolType === 'brand') {
+                        mockResult = `**AUDITORÍA Y TIPS DE MARCA (NIVEL AGENCIA)**\n\nPara posicionar **${name}** y lograr: *${goal}*, aplica esto esta misma semana:\n\n**1. Identidad Visual (Feed de Instagram):**\nDeja de subir flyers saturados. Usa la regla 80/20: 80% fotos reales de alta calidad (iluminación natural, detrás de escena) y 20% venta directa. El cliente compra con los ojos.\n\n**2. Experiencia del Usuario (Fricción Cero):**\nSi el cliente tiene que preguntar "Precio" en los comentarios, estás perdiendo dinero. Pon los precios claros o ten un link directo a tu catálogo/WhatsApp en tu bio.\n\n**3. Autoridad Local:**\nColabora con otras marcas del ecosistema Soy Tomé. Haz un sorteo cruzado. El networking es el nuevo SEO.`;
+                    }
                     
                     document.getElementById('generatedText').innerHTML = formatResult(mockResult);
                     showUIState('success');
-                }, 2000); // Simulamos 2 segundos de "pensamiento"
+                }, 2000);
                 return;
             }
             // --- FIN MODO SIMULACIÓN ---
 
+            // PROMPTS REALES NIVEL AGENCIA
+            const prompts = {
+                'copy': `Actúa como un Copywriter de Alta Conversión especializado en marketing B2B/B2C. Redacta un perfil para un negocio que estará en un directorio premium. Debe sonar exclusivo, resolver el problema del cliente y estar enfocado en lograr esta meta: "${goal}". Usa un tono ejecutivo, persuasivo y viñetas.`,
+                'offers': `Actúa como un Estratega de Growth Marketing. Crea 3 ofertas reales y aplicables diseñadas para aumentar el ROI (Retorno de Inversión) de este negocio y lograr su meta específica: "${goal}". Cada oferta debe explicar: 1. Qué es. 2. Cómo se aplica. 3. Por qué funciona (psicología de ventas). No sugieras "2x1" genéricos. Crea ofertas basadas en escasez, ticket cruzado o fidelización.`,
+                'brand': `Actúa como Director Creativo y Consultor de Negocios. Dale a este emprendedor 3 tips accionables e inmediatos para mejorar el branding y posicionamiento de su marca en su ciudad local, alineados con su meta: "${goal}". Habla sobre identidad visual moderna, experiencia de usuario y autoridad. Tono directo, profesional y sin rodeos.`
+            };
 
-            // MODO PRODUCCIÓN (Cuando agregues tu API Key real)
-            const userQuery = `Negocio: ${name}\nDescripción: ${desc}`;
+            const userQuery = `Nombre: ${name}\nQué hace: ${desc}\nMeta comercial: ${goal}`;
             const payload = {
                 contents: [{ parts: [{ text: userQuery }] }],
                 systemInstruction: { parts: [{ text: prompts[toolType] }] }
@@ -446,15 +525,14 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                if (!response.ok) throw new Error("Error de API");
+                if (!response.ok) throw new Error("API Error");
                 const data = await response.json();
                 const text = data.candidates[0].content.parts[0].text;
                 
                 document.getElementById('generatedText').innerHTML = formatResult(text);
                 showUIState('success');
             } catch (error) {
-                // Si la API falla (ej. límite de uso), avisamos elegantemente.
-                document.getElementById('errorMessage').innerText = "Nuestros servidores están al máximo de capacidad. Por favor, intenta en unos minutos.";
+                document.getElementById('errorMessage').innerText = "Servidores procesando alta demanda. Intenta nuevamente.";
                 showUIState('error');
             }
         }
@@ -487,7 +565,7 @@
             
             const btn = document.querySelector('#successState button');
             const html = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-check text-green-400"></i>';
+            btn.innerHTML = '<i class="fas fa-check text-green-400"></i> Copiado';
             setTimeout(() => btn.innerHTML = html, 2000);
         }
     </script>
