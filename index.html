@@ -43,7 +43,7 @@
         
         @keyframes slideUp { from { transform: translateY(100%) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
         @keyframes slideDown { from { transform: translateY(0) scale(1); opacity: 1; } to { transform: translateY(100%) scale(0.95); opacity: 0; } }
-        @keyframes zoomIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes zoomIn { from { transform: scale(0.9); opacity: 0; filter: blur(10px); } to { transform: scale(1); opacity: 1; filter: blur(0); } }
 
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -60,18 +60,17 @@
     <!-- MODAL BIENVENIDA VIP (CANAL DIFUSIÓN) -->
     <!-- ========================================== -->
     <div id="welcomeModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/90 backdrop-blur-md"></div>
-        <div class="relative w-full max-w-sm glass-modal border border-green-500/30 rounded-[2rem] shadow-[0_0_50px_rgba(34,197,94,0.15)] overflow-hidden flex flex-col p-8 text-center" id="welcomeContent">
-            <div class="w-20 h-20 mx-auto rounded-full bg-green-500/10 border border-green-500/50 flex items-center justify-center mb-5 shadow-[0_0_30px_rgba(34,197,94,0.3)]">
-                <i class="fab fa-whatsapp text-4xl text-green-400"></i>
-            </div>
-            <h2 class="text-2xl font-extrabold text-white mb-2 tracking-tight">Noticias antes que nadie.</h2>
-            <p class="text-sm text-gray-300 mb-8 leading-relaxed">Únete al círculo cero de Soy Tomé. Alertas, avisos y ofertas directamente en tu WhatsApp, sin spam.</p>
-            <a href="https://whatsapp.com/channel/0029VaVhbfG4dTnMRjnrs81i" target="_blank" onclick="closeWelcome()" class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-bold py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(34,197,94,0.3)] hover:scale-[1.02] flex items-center justify-center gap-3">
-                <span>Unirme al Canal VIP</span>
-                <i class="fas fa-arrow-right"></i>
+        <div class="absolute inset-0 bg-black/90 backdrop-blur-xl"></div>
+        <div class="relative w-full max-w-sm glass-modal border border-luxGold/30 rounded-[2rem] shadow-[0_0_40px_rgba(212,175,55,0.15)] overflow-hidden flex flex-col p-8 text-center" id="welcomeContent">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-luxGold to-transparent"></div>
+            <i class="fab fa-whatsapp text-4xl text-green-400 mb-4 animate-pulse drop-shadow-[0_0_10px_rgba(34,197,94,0.5)]"></i>
+            <h2 class="text-2xl font-extrabold text-white mb-2 tracking-tight">Alertas Soy Tomé</h2>
+            <p class="text-sm text-gray-300 mb-8 leading-relaxed">Noticias, ofertas y oportunidades de negocio en la comuna. Directo a tu WhatsApp. Sin spam.</p>
+            <a href="https://whatsapp.com/channel/0029VaVhbfG4dTnMRjnrs81i" target="_blank" onclick="window.closeWelcome()" class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-bold py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(34,197,94,0.3)] hover:scale-[1.02] flex items-center justify-center gap-3">
+                <i class="fas fa-bell text-xl"></i>
+                <span>Unirme al Canal</span>
             </a>
-            <button onclick="closeWelcome()" class="mt-5 text-xs font-medium text-gray-500 hover:text-white transition-colors">Quizás más tarde</button>
+            <button onclick="window.closeWelcome()" class="mt-5 text-[10px] uppercase tracking-widest font-medium text-gray-500 hover:text-white transition-colors">Cerrar</button>
         </div>
     </div>
 
@@ -125,14 +124,30 @@
     <!-- MODAL COMUNIDADES (LISTA DE GRUPOS) -->
     <!-- ========================================== -->
     <div id="communitiesModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/80 backdrop-blur-md cursor-pointer" onclick="toggleModal('communitiesModal')"></div>
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-md cursor-pointer" onclick="window.toggleModal('communitiesModal')"></div>
         <div id="communitiesContent" class="relative w-full max-w-sm glass-modal rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
             <header class="p-5 border-b border-gray-800 flex justify-between items-center bg-luxDark/80">
                 <h2 class="text-lg font-bold text-white"><i class="fas fa-users text-blue-400 mr-2"></i>Comunidades</h2>
-                <button onclick="toggleModal('communitiesModal')" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
+                <button onclick="window.toggleModal('communitiesModal')" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
             </header>
-            <div class="p-5 overflow-y-auto space-y-3" id="publicCommunitiesList">
-                <!-- Grupos renderizados vía JS -->
+            <div class="p-5 overflow-y-auto space-y-6" id="publicCommunitiesList">
+                
+                <!-- Categoría WhatsApp -->
+                <div>
+                    <h3 class="text-xs font-bold text-green-500 uppercase tracking-wider mb-3 flex items-center gap-2"><i class="fab fa-whatsapp text-lg"></i> Grupos de WhatsApp</h3>
+                    <div id="waCommsContainer" class="space-y-2">
+                        <!-- Grupos de WA renderizados vía JS -->
+                    </div>
+                </div>
+                
+                <!-- Categoría Facebook -->
+                <div>
+                    <h3 class="text-xs font-bold text-blue-500 uppercase tracking-wider mb-3 flex items-center gap-2"><i class="fab fa-facebook text-lg"></i> Grupos de Facebook</h3>
+                    <div id="fbCommsContainer" class="space-y-2">
+                        <!-- Grupos de FB renderizados vía JS -->
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -286,43 +301,92 @@
     <!-- ========================================== -->
     <!-- LOGICA DEL ECOSISTEMA (JS) -->
     <!-- ========================================== -->
-    <script>
-        // --------------------------------------------
-        // 1. GESTIÓN DE DATOS (LOCAL STORAGE)
-        // --------------------------------------------
-        const defaultLinks = [
-            { id: 1, title: 'Suma tu Negocio', subtitle: 'Postula a la red Soy Tomé Lux', url: '#unete', icon: 'fas fa-rocket', isPremium: true },
-            { id: 2, title: 'Explorar Directorio', subtitle: 'Comida, arriendos y servicios', url: '#directorio', icon: 'fas fa-search-location', isPremium: false },
-            { id: 3, title: 'Ofertas Flash 🔥', subtitle: 'Descuentos exclusivos hoy', url: '#ofertas', icon: 'fas fa-fire', isPremium: false }
-        ];
-        const defaultSocials = {
-            wa: "https://wa.me/56900000000", ig: "https://instagram.com/soytome", fb: "https://facebook.com/soytome", tk: "https://tiktok.com/@soytome", yt: "https://youtube.com/@soytome"
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // 1. CONFIGURACIÓN FIREBASE (Base de Datos en la Nube)
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            // IAN: Si sacas este código de la plataforma y lo llevas a tu propio Netlify/GitHub, 
+            // necesitarás pegar aquí las credenciales de tu propio proyecto Firebase.
         };
-        const defaultComms = [
-            { id: 1, name: "Avisos Tomé (WhatsApp)", url: "#", type: "wa" },
-            { id: 2, name: "Feria de las Pulgas (FB)", url: "#", type: "fb" }
-        ];
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'soytomelux-app';
+        let userObj = null;
 
-        let linksData = JSON.parse(localStorage.getItem('luxLinks')) || defaultLinks;
-        let socialsData = JSON.parse(localStorage.getItem('luxSocials')) || defaultSocials;
-        let commsData = JSON.parse(localStorage.getItem('luxComms')) || defaultComms;
+        // Estado Local (se alimenta de la nube)
+        let linksData = [];
+        let socialsData = { wa: "", ig: "", fb: "", tk: "", yt: "" };
+        let commsData = [];
 
-        function saveToStorage() {
-            localStorage.setItem('luxLinks', JSON.stringify(linksData));
-            localStorage.setItem('luxSocials', JSON.stringify(socialsData));
-            localStorage.setItem('luxComms', JSON.stringify(commsData));
+        // 2. AUTENTICACIÓN (Regla de oro antes de leer/escribir datos)
+        const initAuth = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Error de autenticación:", error);
+            }
+        };
+
+        onAuthStateChanged(auth, (user) => {
+            userObj = user;
+            if (user) setupRealtimeListeners();
+        });
+
+        initAuth();
+
+        // 3. LISTENERS EN TIEMPO REAL (Sincronización Cloud)
+        function setupRealtimeListeners() {
+            if (!userObj) return;
+            
+            // Escuchar Botones
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'lux_links'), (snapshot) => {
+                if(!snapshot.empty) {
+                    linksData = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+                    linksData.sort((a, b) => a.order - b.order); // Ordenar por peso
+                } else {
+                    // Carga inicial por defecto si la base de datos está vacía (Blindaje)
+                    linksData = [
+                        { id: '1', title: 'Suma tu Negocio', subtitle: 'Postula a la red Soy Tomé Lux', url: '#unete', icon: 'fas fa-rocket', isPremium: true, order: 0 },
+                        { id: '2', title: 'Sitio Web Oficial', subtitle: 'Explorar directorio web', url: '#directorio', icon: 'fas fa-globe', isPremium: false, order: 1 },
+                        { id: '3', title: 'Ofertas Flash 🔥', subtitle: 'Descuentos exclusivos hoy', url: '#ofertas', icon: 'fas fa-fire', isPremium: false, order: 2 }
+                    ];
+                }
+                window.renderPublicLinks();
+                if(!document.getElementById('ceoModal').classList.contains('hidden')) window.renderAdminLinks();
+            }, (err) => console.error(err));
+
+            // Escuchar Redes
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'lux_socials'), (snapshot) => {
+                if(!snapshot.empty) {
+                    socialsData = snapshot.docs[0].data();
+                    window.renderSocials();
+                } else {
+                    // Carga inicial por defecto si está vacío
+                    socialsData = { wa: "https://wa.me/56900000000", ig: "https://instagram.com", fb: "", tk: "", yt: "" };
+                    window.renderSocials();
+                }
+            }, (err) => console.error(err));
+
+            // Escuchar Comunidades
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'lux_comms'), (snapshot) => {
+                commsData = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+                window.renderPublicComms();
+                if(!document.getElementById('ceoModal').classList.contains('hidden')) window.renderAdminComms();
+            }, (err) => console.error(err));
         }
 
-        // --------------------------------------------
-        // 2. RENDERIZADO VISTA PÚBLICA
-        // --------------------------------------------
-        function renderAll() {
-            renderPublicLinks();
-            renderSocials();
-            renderPublicComms();
-        }
-
-        function renderPublicLinks() {
+        // ==========================================
+        // RENDERIZADO VISTA PÚBLICA
+        // ==========================================
+        window.renderPublicLinks = () => {
             const container = document.getElementById('linksContainer');
             container.innerHTML = '';
             linksData.forEach(link => {
@@ -337,9 +401,9 @@
                 }
                 container.appendChild(a);
             });
-        }
+        };
 
-        function renderSocials() {
+        window.renderSocials = () => {
             const c = document.getElementById('socialContainer');
             c.innerHTML = `
                 ${socialsData.wa ? `<a href="${socialsData.wa}" target="_blank" class="w-12 h-12 rounded-full glass-solid flex items-center justify-center hover:bg-green-600 transition-colors shadow-lg group"><i class="fab fa-whatsapp text-2xl text-green-500 group-hover:text-white"></i></a>` : ''}
@@ -348,31 +412,35 @@
                 ${socialsData.tk ? `<a href="${socialsData.tk}" target="_blank" class="w-12 h-12 rounded-full glass-solid flex items-center justify-center hover:bg-gray-800 transition-colors shadow-lg group"><i class="fab fa-tiktok text-2xl text-white"></i></a>` : ''}
                 ${socialsData.yt ? `<a href="${socialsData.yt}" target="_blank" class="w-12 h-12 rounded-full glass-solid flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg group"><i class="fab fa-youtube text-2xl text-red-500 group-hover:text-white"></i></a>` : ''}
             `;
-        }
+        };
 
-        function renderPublicComms() {
-            const c = document.getElementById('publicCommunitiesList');
-            c.innerHTML = '';
+        window.renderPublicComms = () => {
+            const waC = document.getElementById('waCommsContainer');
+            const fbC = document.getElementById('fbCommsContainer');
+            waC.innerHTML = ''; fbC.innerHTML = '';
+            
             commsData.forEach(comm => {
                 const iconClass = comm.type === 'wa' ? 'fab fa-whatsapp text-green-500' : 'fab fa-facebook text-blue-500';
-                c.innerHTML += `
+                const el = `
                     <a href="${comm.url}" target="_blank" class="flex items-center justify-between bg-black/50 border border-gray-800 p-4 rounded-xl hover:border-gray-600 transition-colors">
                         <div class="flex items-center gap-3">
-                            <i class="${iconClass} text-2xl"></i>
+                            <i class="${iconClass} text-xl"></i>
                             <span class="font-bold text-white text-sm">${comm.name}</span>
                         </div>
                         <i class="fas fa-external-link-alt text-xs text-gray-500"></i>
                     </a>
                 `;
+                if(comm.type === 'wa') waC.innerHTML += el;
+                else fbC.innerHTML += el;
             });
-        }
+            
+            // Ocultar cabeceras si están vacíos
+            waC.parentElement.style.display = waC.innerHTML === '' ? 'none' : 'block';
+            fbC.parentElement.style.display = fbC.innerHTML === '' ? 'none' : 'block';
+        };
 
-        // --------------------------------------------
-        // 3. LÓGICA DE INICIO (POPUP VIP)
-        // --------------------------------------------
+        // Lógica Inicial VIP
         window.onload = () => {
-            renderAll();
-            // Pop-up Bienvenida (Solo 1 vez por sesión)
             if(!sessionStorage.getItem('welcomeShown')) {
                 setTimeout(() => {
                     document.getElementById('welcomeModal').classList.remove('hidden');
@@ -383,74 +451,83 @@
             }
         };
 
-        function closeWelcome() {
+        window.closeWelcome = () => {
             document.getElementById('welcomeModal').classList.add('hidden');
             document.getElementById('welcomeModal').classList.remove('flex');
-        }
+        };
 
-        // --------------------------------------------
-        // 4. PANEL CEO (ADMINISTRACIÓN)
-        // --------------------------------------------
-        function intentarLoginCEO() {
+        // ==========================================
+        // PANEL CEO Y BASE DE DATOS (NUBE)
+        // ==========================================
+        window.intentarLoginCEO = () => {
             const pass = prompt("Acceso CEO. Contraseña:");
             if (pass === "Ian2026@") {
-                toggleModal('ceoModal');
-                loadCeoData();
+                window.toggleModal('ceoModal');
+                window.loadCeoData();
             } else if (pass !== null) alert("Acceso denegado.");
-        }
-        function cerrarCEO() { toggleModal('ceoModal'); }
+        };
 
-        function loadCeoData() {
-            // Cargar Redes
-            document.getElementById('socWa').value = socialsData.wa;
-            document.getElementById('socIg').value = socialsData.ig;
-            document.getElementById('socFb').value = socialsData.fb;
-            document.getElementById('socTk').value = socialsData.tk;
-            document.getElementById('socYt').value = socialsData.yt;
-            
-            // Cargar Listas
-            renderAdminLinks();
-            renderAdminComms();
-        }
+        window.cerrarCEO = () => { window.toggleModal('ceoModal'); };
 
-        function saveSocials() {
-            socialsData = {
+        window.loadCeoData = () => {
+            document.getElementById('socWa').value = socialsData.wa || "";
+            document.getElementById('socIg').value = socialsData.ig || "";
+            document.getElementById('socFb').value = socialsData.fb || "";
+            document.getElementById('socTk').value = socialsData.tk || "";
+            document.getElementById('socYt').value = socialsData.yt || "";
+            window.renderAdminLinks();
+            window.renderAdminComms();
+        };
+
+        window.saveSocials = async () => {
+            if (!userObj) return;
+            const data = {
                 wa: document.getElementById('socWa').value,
                 ig: document.getElementById('socIg').value,
                 fb: document.getElementById('socFb').value,
                 tk: document.getElementById('socTk').value,
                 yt: document.getElementById('socYt').value
             };
-            saveToStorage();
-            renderSocials();
-            alert("Redes Sociales actualizadas.");
-        }
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'lux_socials', 'config'), data);
+            alert("Redes guardadas en la nube.");
+        };
 
-        // CRUD Botones Principales
-        function renderAdminLinks() {
+        // CRUD Botones
+        window.renderAdminLinks = () => {
             const list = document.getElementById('adminLinksList');
             list.innerHTML = '';
             linksData.forEach((l, i) => {
                 list.innerHTML += `
                     <div class="flex items-center justify-between bg-black p-2 rounded gap-2 border border-gray-800">
                         <div class="flex flex-col gap-1 pr-2 border-r border-gray-800">
-                            <button onclick="moveLink(${i}, -1)" class="text-gray-500 hover:text-white" ${i===0?'disabled':''}><i class="fas fa-chevron-up text-[10px]"></i></button>
-                            <button onclick="moveLink(${i}, 1)" class="text-gray-500 hover:text-white" ${i===linksData.length-1?'disabled':''}><i class="fas fa-chevron-down text-[10px]"></i></button>
+                            <button onclick="window.moveLink('${l.id}', -1)" class="text-gray-500 hover:text-white" ${i===0?'disabled':''}><i class="fas fa-chevron-up text-[10px]"></i></button>
+                            <button onclick="window.moveLink('${l.id}', 1)" class="text-gray-500 hover:text-white" ${i===linksData.length-1?'disabled':''}><i class="fas fa-chevron-down text-[10px]"></i></button>
                         </div>
                         <div class="flex-1 truncate text-xs text-white font-bold">${l.title} ${l.isPremium?'🌟':''}</div>
                         <div class="flex gap-1">
-                            <button onclick="editLink(${l.id})" class="text-blue-400 p-1"><i class="fas fa-pen"></i></button>
-                            <button onclick="deleteLink(${l.id})" class="text-red-500 p-1"><i class="fas fa-trash"></i></button>
+                            <button onclick="window.editLink('${l.id}')" class="text-blue-400 p-1"><i class="fas fa-pen"></i></button>
+                            <button onclick="window.deleteLink('${l.id}')" class="text-red-500 p-1"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>`;
             });
-        }
-        function moveLink(i, dir) {
-            if(i+dir < 0 || i+dir >= linksData.length) return;
-            [linksData[i], linksData[i+dir]] = [linksData[i+dir], linksData[i]];
-            saveToStorage(); renderAdminLinks(); renderPublicLinks();
-        }
-        function editLink(id) {
+        };
+
+        window.moveLink = async (id, dir) => {
+            if (!userObj) return;
+            const idx = linksData.findIndex(x => x.id === id);
+            if(idx+dir < 0 || idx+dir >= linksData.length) return;
+            
+            // Swap orders
+            const tempOrder = linksData[idx].order;
+            linksData[idx].order = linksData[idx+dir].order;
+            linksData[idx+dir].order = tempOrder;
+            
+            // Update both in DB
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'lux_links', linksData[idx].id), linksData[idx]);
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'lux_links', linksData[idx+dir].id), linksData[idx+dir]);
+        };
+
+        window.editLink = (id) => {
             const l = linksData.find(x => x.id === id);
             document.getElementById('editLinkId').value = l.id;
             document.getElementById('newTitle').value = l.title;
@@ -458,28 +535,49 @@
             document.getElementById('newUrl').value = l.url;
             document.getElementById('newIcon').value = l.icon;
             document.getElementById('newPremium').checked = l.isPremium;
-            document.getElementById('saveBtnLinks').innerText = "Actualizar Botón";
-            document.getElementById('saveBtnLinks').className = "w-full bg-luxGold text-black font-bold py-1.5 rounded text-sm";
-        }
-        function saveLink() {
-            const id = document.getElementById('editLinkId').value;
+            document.getElementById('saveBtnLinks').innerText = "Actualizar Nube";
+        };
+
+        window.saveLink = async () => {
+            if (!userObj) return;
             const t = document.getElementById('newTitle').value;
             if(!t) return;
-            const data = { id: id ? parseInt(id) : Date.now(), title: t, subtitle: document.getElementById('newSub').value, url: document.getElementById('newUrl').value, icon: document.getElementById('newIcon').value, isPremium: document.getElementById('newPremium').checked };
             
-            if(id) linksData[linksData.findIndex(x => x.id == id)] = data;
-            else linksData.push(data);
+            let id = document.getElementById('editLinkId').value;
+            let order = linksData.length;
             
-            saveToStorage(); renderAdminLinks(); renderPublicLinks();
+            if(!id) {
+                id = Date.now().toString(); // New document ID
+            } else {
+                order = linksData.find(x => x.id === id).order; // Keep order
+            }
+
+            const data = { 
+                id: id,
+                title: t, 
+                subtitle: document.getElementById('newSub').value, 
+                url: document.getElementById('newUrl').value || '#', 
+                icon: document.getElementById('newIcon').value, 
+                isPremium: document.getElementById('newPremium').checked,
+                order: order
+            };
             
-            // Reset
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'lux_links', id), data);
+            
+            // Reset form
             document.getElementById('editLinkId').value = ''; document.getElementById('newTitle').value = ''; document.getElementById('newSub').value = ''; document.getElementById('newUrl').value = '';
-            document.getElementById('saveBtnLinks').innerText = "Guardar Botón"; document.getElementById('saveBtnLinks').className = "w-full bg-blue-600 text-white font-bold py-1.5 rounded text-sm";
-        }
-        function deleteLink(id) { if(confirm("¿Borrar?")) { linksData = linksData.filter(x => x.id !== id); saveToStorage(); renderAdminLinks(); renderPublicLinks(); } }
+            document.getElementById('saveBtnLinks').innerText = "Guardar Botón";
+        };
+
+        window.deleteLink = async (id) => {
+            if (!userObj) return;
+            if(confirm("¿Eliminar definitivamente de la nube?")) {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'lux_links', id));
+            }
+        };
 
         // CRUD Comunidades
-        function renderAdminComms() {
+        window.renderAdminComms = () => {
             const list = document.getElementById('adminCommList');
             list.innerHTML = '';
             commsData.forEach((c) => {
@@ -488,66 +586,135 @@
                         <i class="${c.type==='wa'?'fab fa-whatsapp text-green-500':'fab fa-facebook text-blue-500'}"></i>
                         <div class="flex-1 truncate text-xs text-white font-bold">${c.name}</div>
                         <div class="flex gap-1">
-                            <button onclick="editComm(${c.id})" class="text-blue-400 p-1"><i class="fas fa-pen"></i></button>
-                            <button onclick="deleteComm(${c.id})" class="text-red-500 p-1"><i class="fas fa-trash"></i></button>
+                            <button onclick="window.editComm('${c.id}')" class="text-blue-400 p-1"><i class="fas fa-pen"></i></button>
+                            <button onclick="window.deleteComm('${c.id}')" class="text-red-500 p-1"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>`;
             });
-        }
-        function editComm(id) {
+        };
+
+        window.editComm = (id) => {
             const c = commsData.find(x => x.id === id);
             document.getElementById('editCommId').value = c.id;
             document.getElementById('commName').value = c.name;
             document.getElementById('commUrl').value = c.url;
             document.getElementById('commType').value = c.type;
             document.getElementById('saveBtnComm').innerText = "Actualizar Grupo";
-        }
-        function saveComm() {
-            const id = document.getElementById('editCommId').value;
+        };
+
+        window.saveComm = async () => {
+            if (!userObj) return;
             const n = document.getElementById('commName').value;
             if(!n) return;
-            const data = { id: id ? parseInt(id) : Date.now(), name: n, url: document.getElementById('commUrl').value, type: document.getElementById('commType').value };
+
+            let id = document.getElementById('editCommId').value || Date.now().toString();
+            const data = { 
+                id: id,
+                name: n, 
+                url: document.getElementById('commUrl').value || '#', 
+                type: document.getElementById('commType').value 
+            };
             
-            if(id) commsData[commsData.findIndex(x => x.id == id)] = data;
-            else commsData.push(data);
-            
-            saveToStorage(); renderAdminComms(); renderPublicComms();
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'lux_comms', id), data);
             
             document.getElementById('editCommId').value = ''; document.getElementById('commName').value = ''; document.getElementById('commUrl').value = '';
             document.getElementById('saveBtnComm').innerText = "Guardar Grupo";
-        }
-        function deleteComm(id) { if(confirm("¿Borrar grupo?")) { commsData = commsData.filter(x => x.id !== id); saveToStorage(); renderAdminComms(); renderPublicComms(); } }
+        };
+
+        window.deleteComm = async (id) => {
+            if (!userObj) return;
+            if(confirm("¿Eliminar grupo de la nube?")) { 
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'lux_comms', id));
+            }
+        };
 
 
-        // --------------------------------------------
-        // 5. MODALES Y UTILIDADES IA (SIN CAMBIOS)
-        // --------------------------------------------
-        function toggleModal(modalID) {
+        // ==========================================
+        // HERRAMIENTAS IA (CONEXIÓN REAL A GEMINI)
+        // ==========================================
+        window.toggleModal = (modalID) => {
             const m = document.getElementById(modalID);
             const c = m.querySelector('div[id$="Content"]');
             if(m.classList.contains('hidden')){ m.classList.remove('hidden'); m.classList.add('flex'); c.classList.remove('modal-exit'); c.classList.add('modal-enter'); }
             else { c.classList.remove('modal-enter'); c.classList.add('modal-exit'); setTimeout(() => { m.classList.add('hidden'); m.classList.remove('flex'); }, 300); }
-        }
+        };
 
-        const apiKey = ""; // <--- IAN: PON TU API KEY AQUÍ PARA IA REAL.
-        async function generateContent(toolType) {
-            const n = document.getElementById('bizName').value; const g = document.getElementById('bizGoal').value || 'Aumentar ventas'; const d = document.getElementById('bizDesc').value;
-            if(!n || !d) return alert("Completa negocio y descripción.");
+        // IAN: Al exportar el archivo y publicarlo en tu propio hosting, deberás insertar tu Key aquí.
+        const apiKey = ""; 
+
+        window.generateContent = async (toolType) => {
+            const n = document.getElementById('bizName').value; 
+            const g = document.getElementById('bizGoal').value || 'Aumentar ventas'; 
+            const d = document.getElementById('bizDesc').value;
+            
+            if(!n || !d) return alert("Completa tu negocio y descripción para arrancar la IA.");
             
             document.getElementById('resultArea').classList.remove('hidden');
             document.getElementById('loadingState').classList.remove('hidden'); document.getElementById('loadingState').classList.add('flex','flex-col');
             document.getElementById('errorState').classList.add('hidden'); document.getElementById('successState').classList.add('hidden');
             
-            if(!apiKey) {
-                setTimeout(() => {
-                    document.getElementById('loadingState').classList.add('hidden');
-                    document.getElementById('generatedText').innerHTML = `<span class="text-luxGold font-bold">ESTRATEGIA GENERADA (MODO SIMULACIÓN)</span><br><br>Para <em>${n}</em> con meta: <em>${g}</em>.<br><br>💡 Conecta la API Key de Gemini en el código fuente para obtener respuestas reales de Inteligencia Artificial para tus socios de Soy Tomé.`;
-                    document.getElementById('successState').classList.remove('hidden'); document.getElementById('successState').classList.add('flex','flex-col');
-                }, 1500); return;
+            const prompts = {
+                'copy': `Actúa como un Copywriter de Alta Conversión especializado en marketing B2B/B2C. Redacta un perfil para un negocio que estará en un directorio premium. Debe sonar exclusivo, resolver el problema del cliente y estar enfocado en lograr esta meta: "${g}". Usa un tono ejecutivo, persuasivo y viñetas.`,
+                'offers': `Actúa como un Estratega de Growth Marketing. Crea 3 ofertas reales y aplicables diseñadas para aumentar el ROI de este negocio y lograr su meta: "${g}". Cada oferta debe explicar: 1. Qué es. 2. Cómo se aplica. 3. Por qué funciona (psicología de ventas).`,
+                'brand': `Actúa como Director Creativo. Dale a este emprendedor 3 tips accionables e inmediatos para mejorar el branding y posicionamiento de su marca en su ciudad, alineados con su meta: "${g}". Habla sobre identidad visual moderna, experiencia de usuario y autoridad. Tono directo, profesional y sin rodeos.`
+            };
+
+            const payload = {
+                contents: [{ parts: [{ text: `Negocio: ${n}\nDescripción: ${d}\nMeta: ${g}` }] }],
+                systemInstruction: { parts: [{ text: prompts[toolType] }] }
+            };
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+            // Sistema de Reintentos (Backoff Exponencial)
+            const delays = [1000, 2000, 4000, 8000, 16000];
+            let resultText = "";
+            let success = false;
+
+            for (let i = 0; i < 5; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    const data = await response.json();
+                    resultText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if(resultText) { success = true; break; }
+                } catch (error) {
+                    if (i === 4) break;
+                    await new Promise(resolve => setTimeout(resolve, delays[i]));
+                }
             }
-            // ... (Lógica fetch real omitida por brevedad en este MVP, pero lista para conectar usando el código anterior)
-        }
-        function copyToClipboard() { /* ... */ }
+
+            document.getElementById('loadingState').classList.add('hidden');
+            
+            if (success) {
+                // Formateo simple de Markdown a HTML
+                const formatted = resultText.replace(/\*\*(.*?)\*\*/g, '<span class="text-luxGold font-bold">$1</span>').replace(/\*(.*?)\*/g, '<em>$1</em>').replace(/\n/g, '<br>');
+                document.getElementById('generatedText').innerHTML = formatted;
+                document.getElementById('successState').classList.remove('hidden'); document.getElementById('successState').classList.add('flex','flex-col');
+            } else {
+                document.getElementById('errorMessage').innerText = "La IA está sobrecargada. Inténtalo en un momento.";
+                document.getElementById('errorState').classList.remove('hidden'); document.getElementById('errorState').classList.add('flex');
+            }
+        };
+
+        window.copyToClipboard = () => {
+            const textToCopy = document.getElementById('generatedText').innerText;
+            const temp = document.createElement("textarea");
+            temp.value = textToCopy;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+            
+            const btn = document.querySelector('#successState button');
+            const html = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check text-green-400"></i> Copiado';
+            setTimeout(() => btn.innerHTML = html, 2000);
+        };
     </script>
 </body>
 </html>
