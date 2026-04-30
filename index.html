@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Soy Tomé | Ecosistema de Medios</title>
-    <!-- Tailwind CSS CDN -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -67,12 +67,12 @@
 </head>
 <body class="relative font-sans antialiased overflow-x-hidden flex flex-col items-center">
 
-    <!-- BANNER DE ALERTA (Solo aparece si no configuras Firebase) -->
+    <!-- BANNER DE SEGURIDAD (Solo visible si faltan las claves) -->
     <div id="firebaseWarning" class="hidden w-full bg-red-600 text-white text-xs font-bold text-center py-2 z-[300] sticky top-0 shadow-lg">
         <i class="fas fa-exclamation-triangle mr-2"></i> IAN: Faltan tus claves de Firebase en el código. Los cambios no se guardarán en la nube.
     </div>
 
-    <!-- MODAL BIENVENIDA VIP (CANAL DIFUSIÓN) -->
+    <!-- MODAL DE ALERTAS VIP (Canal de Difusión) -->
     <div id="welcomeModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/90 backdrop-blur-xl"></div>
         <div class="relative w-full max-w-sm glass-modal border border-luxGold/30 rounded-[2rem] shadow-[0_0_40px_rgba(212,175,55,0.15)] overflow-hidden flex flex-col p-8 text-center" id="welcomeContent">
@@ -88,10 +88,10 @@
         </div>
     </div>
 
-    <!-- ÁREA CENTRAL -->
+    <!-- ÁREA CENTRAL DEL ECOSISTEMA -->
     <main class="w-full max-w-lg mx-auto pt-8 pb-24 px-0 flex flex-col items-center z-10 min-h-screen relative">
         
-        <!-- Cabecera -->
+        <!-- Cabecera y Autoridad -->
         <div class="text-center mb-6 px-5">
             <div class="w-24 h-24 mx-auto rounded-full glass border-2 border-luxGold flex items-center justify-center mb-4 shadow-[0_0_20px_rgba(212,175,55,0.2)]">
                 <i class="fas fa-crown text-4xl text-luxGold drop-shadow-[0_0_8px_rgba(212,175,55,0.8)]"></i>
@@ -100,24 +100,24 @@
             <p class="text-gray-400 text-sm mt-1 font-medium">Red de Medios & Directorio Premium</p>
         </div>
 
-        <!-- REDES SOCIALES DINÁMICAS -->
+        <!-- Redes Sociales Dinámicas -->
         <div id="socialContainer" class="flex flex-wrap items-center justify-center gap-4 mb-6 w-full px-5">
-            <!-- Render JS -->
+            <!-- Renderizado vía JS -->
         </div>
 
-        <!-- CINTA DE TEXTO INFINITA (MARQUEE) -->
+        <!-- Cinta de Noticias Infinita -->
         <div class="w-full bg-luxBlack/60 border-y border-luxGold/20 py-2.5 mb-8 overflow-hidden relative shadow-[0_0_15px_rgba(0,0,0,0.5)]">
             <div class="w-max flex animate-marquee items-center" id="marqueeContainer">
-                <!-- Render JS: Duplicado para efecto infinito suave -->
+                <!-- Renderizado vía JS (Efecto loop infinito) -->
             </div>
         </div>
 
-        <!-- CONTENEDOR BOTONES PRINCIPALES -->
+        <!-- Enlaces Principales de Conversión -->
         <div id="linksContainer" class="w-full space-y-4 flex flex-col mb-4 px-5">
-            <!-- Render JS -->
+            <!-- Renderizado vía JS -->
         </div>
 
-        <!-- BOTÓN COMUNIDADES -->
+        <!-- Botón a Comunidades -->
         <div class="px-5 w-full">
             <button onclick="toggleModal('communitiesModal')" class="w-full glass-solid border border-gray-800 rounded-2xl p-4 flex items-center justify-between hover:border-blue-500/50 transition-all group mb-4 shadow-lg">
                 <div class="flex items-center gap-3">
@@ -128,7 +128,7 @@
             </button>
         </div>
 
-        <!-- BOTÓN ACCESO CEO -->
+        <!-- Candado de Acceso CEO -->
         <div class="mt-12 mb-4 px-5">
             <button onclick="intentarLoginCEO()" class="flex items-center gap-2 text-xs text-gray-600 hover:text-luxGold transition-colors">
                 <i class="fas fa-lock text-[10px]"></i>
@@ -137,7 +137,7 @@
         </div>
     </main>
 
-    <!-- MODAL COMUNIDADES (LISTA DE GRUPOS) -->
+    <!-- MODAL DE COMUNIDADES -->
     <div id="communitiesModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/80 backdrop-blur-md cursor-pointer" onclick="toggleModal('communitiesModal')"></div>
         <div id="communitiesContent" class="relative w-full max-w-sm glass-modal rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
@@ -158,7 +158,7 @@
         </div>
     </div>
 
-    <!-- MODAL PANEL CEO (CRUD EN LA NUBE) -->
+    <!-- MODAL PANEL CEO (CRUD) -->
     <div id="ceoModal" class="fixed inset-0 z-[60] hidden items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/95 backdrop-blur-xl" onclick="toggleModal('ceoModal')"></div>
         <div id="ceoContent" class="relative w-full max-w-lg glass-modal border border-blue-500/30 rounded-2xl shadow-[0_0_40px_rgba(0,100,255,0.15)] overflow-hidden flex flex-col max-h-[90vh]">
@@ -176,7 +176,7 @@
 
             <div class="p-4 overflow-y-auto space-y-4">
                 
-                <!-- SECCIÓN: CINTA INFINITA -->
+                <!-- Gestión: Cinta Infinita -->
                 <details class="bg-gray-900/50 rounded-xl border border-gray-800 group overflow-hidden">
                     <summary class="p-4 font-bold text-white cursor-pointer flex justify-between items-center hover:bg-gray-800/50 transition-colors">
                         <span><i class="fas fa-bullhorn text-yellow-500 w-6"></i> Cinta de Noticias</span>
@@ -189,7 +189,7 @@
                     </div>
                 </details>
 
-                <!-- SECCIÓN: REDES SOCIALES -->
+                <!-- Gestión: Redes Sociales -->
                 <details class="bg-gray-900/50 rounded-xl border border-gray-800 group overflow-hidden">
                     <summary class="p-4 font-bold text-white cursor-pointer flex justify-between items-center hover:bg-gray-800/50 transition-colors">
                         <span><i class="fas fa-share-alt text-pink-500 w-6"></i> Redes Sociales</span>
@@ -207,7 +207,7 @@
                     </div>
                 </details>
 
-                <!-- SECCIÓN: BOTONES PRINCIPALES -->
+                <!-- Gestión: Botones de Conversión -->
                 <details class="bg-gray-900/50 rounded-xl border border-gray-800 group overflow-hidden" open>
                     <summary class="p-4 font-bold text-white cursor-pointer flex justify-between items-center hover:bg-gray-800/50 transition-colors">
                         <span><i class="fas fa-layer-group text-luxGold w-6"></i> Botones Principales</span>
@@ -238,7 +238,7 @@
                     </div>
                 </details>
 
-                <!-- SECCIÓN: COMUNIDADES -->
+                <!-- Gestión: Comunidades -->
                 <details class="bg-gray-900/50 rounded-xl border border-gray-800 group overflow-hidden">
                     <summary class="p-4 font-bold text-white cursor-pointer flex justify-between items-center hover:bg-gray-800/50 transition-colors">
                         <span><i class="fas fa-users text-blue-400 w-6"></i> Comunidades (Grupos)</span>
@@ -264,41 +264,33 @@
         </div>
     </div>
 
-    <!-- FIREBASE MODULES -->
+    <!-- CORE JAVASCRIPT & FIREBASE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // ==============================================================================
-        // ⚠️ IAN: TAREA CRÍTICA PARA QUE GUARDE EN LA NUBE DESDE GITHUB PAGES
-        // Reemplaza los valores vacíos ("") con los datos de tu proyecto de Firebase.
+        // 🔑 TUS CREDENCIALES DE FIREBASE
         // ==============================================================================
         const userFirebaseConfig = {
-            apiKey: "",            // <-- PEGA AQUÍ TU API KEY
-            authDomain: "",        // <-- PEGA AQUÍ TU AUTH DOMAIN
-            projectId: "",         // <-- PEGA AQUÍ TU PROJECT ID
-            storageBucket: "",
-            messagingSenderId: "",
-            appId: ""              // <-- PEGA AQUÍ TU APP ID
+            apiKey: "AIzaSyCYQHwLpWXqxYj8Lk7gLAQT3c2_YaFs8Ew",
+            authDomain: "soy-tome.firebaseapp.com",
+            databaseURL: "https://soy-tome-default-rtdb.firebaseio.com",
+            projectId: "soy-tome",
+            storageBucket: "soy-tome.firebasestorage.app",
+            messagingSenderId: "381653906684",
+            appId: "1:381653906684:web:1c0a213ab4364fbed81379",
+            measurementId: "G-6YGWLM475M"
         };
 
-        // Lógica para detectar si estamos en el previsualizador (donde se inyecta la config) o en GitHub Pages
-        const isPreviewEnv = typeof __firebase_config !== 'undefined';
-        const finalConfig = isPreviewEnv ? JSON.parse(__firebase_config) : userFirebaseConfig;
-        
-        // Verifica si realmente pusiste las credenciales
-        const isFirebaseConfigured = finalConfig.apiKey && finalConfig.apiKey !== "";
-
-        if (!isFirebaseConfigured && !isPreviewEnv) {
-            document.getElementById('firebaseWarning').classList.remove('hidden');
-        }
-
+        const finalConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : userFirebaseConfig;
+        const isFirebaseConfigured = true;
         let app, auth, db;
-        const appIdStr = typeof __app_id !== 'undefined' ? __app_id : 'soytomelux-prod';
+        const appIdStr = typeof __app_id !== 'undefined' ? __app_id : 'soytomelux-prod'; 
 
         // ==========================================
-        // ESTADO GLOBAL DE LA APLICACIÓN
+        // 🧠 ESTADO GLOBAL DE DATOS (Optimistic Load)
         // ==========================================
         window.appData = {
             marqueeText: "Red de medios en Tomé: Comercio Tomé • Galaxia Tomé • Salud Tomé • Delivery Tomé • Deporte Tomé",
@@ -314,13 +306,13 @@
         };
 
         // ==========================================
-        // FUNCIONES DE RENDERIZADO VISUAL
+        // 🎨 FUNCIONES DE RENDERIZADO VISUAL
         // ==========================================
         window.renderMarquee = () => {
             const container = document.getElementById('marqueeContainer');
             let formattedText = window.appData.marqueeText.replace(/-/g, '•');
             const spanHtml = `<span class="text-luxGold text-xs font-bold tracking-[0.2em] uppercase mx-8 drop-shadow-[0_0_5px_rgba(212,175,55,0.5)]">${formattedText}</span>`;
-            // Repetimos para asegurar el loop infinito sin saltos
+            // Loop visual sin cortes
             container.innerHTML = spanHtml + spanHtml + spanHtml + spanHtml + spanHtml;
             document.getElementById('marqueeInput').value = window.appData.marqueeText;
         };
@@ -379,7 +371,6 @@
             document.getElementById('fbSection').style.display = fbC.innerHTML === '' ? 'none' : 'block';
         };
 
-        // Renderizado Inmediato (Optimistic UI) para que la página jamás se vea vacía al cargar
         window.renderAll = () => {
             window.renderMarquee();
             window.renderPublicLinks();
@@ -387,40 +378,37 @@
             window.renderPublicComms();
         };
 
-        // Ejecutar render inicial al instante
+        // Renderizado Optimista Inmediato
         window.renderAll();
 
         // ==========================================
-        // INICIALIZAR FIREBASE (SI ESTÁ CONFIGURADO)
+        // ⚡ INICIALIZAR FIREBASE Y SINCRONIZACIÓN
         // ==========================================
         let userObj = null;
 
-        if (isFirebaseConfigured) {
-            app = initializeApp(finalConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
+        app = initializeApp(finalConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
 
-            const initAuth = async () => {
-                try {
-                    if (isPreviewEnv && typeof __initial_auth_token !== 'undefined') {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
-                } catch (error) { console.error("Auth Error", error); }
-            };
+        const initAuth = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) { 
+                console.warn("Aviso de Auth:", error.message); 
+            }
+        };
 
-            onAuthStateChanged(auth, (user) => {
-                userObj = user;
-                if (user) setupRealtimeListeners();
-            });
+        onAuthStateChanged(auth, (user) => {
+            userObj = user;
+            if (user) setupRealtimeListeners();
+        });
 
-            initAuth();
-        }
+        initAuth();
 
-        // ==========================================
-        // LISTENERS EN TIEMPO REAL (NUBE -> UI)
-        // ==========================================
         function setupRealtimeListeners() {
             if (!userObj) return;
 
@@ -459,9 +447,8 @@
             });
         }
 
-
         // ==========================================
-        // UTILIDADES Y MODALES
+        // 🧰 UTILIDADES Y MODALES
         // ==========================================
         window.toggleModal = (modalID) => {
             const m = document.getElementById(modalID);
@@ -479,23 +466,12 @@
         };
 
         // ==========================================
-        // FUNCIONES PANEL CEO (CRUD EN LA NUBE)
+        // 👑 FUNCIONES PANEL CEO (CRUD)
         // ==========================================
         window.intentarLoginCEO = () => {
             const pass = prompt("Acceso CEO. Contraseña:");
             if (pass === "Ian2026@") {
                 window.toggleModal('ceoModal');
-                
-                // Actualizar UI del panel según conexión
-                const statusEl = document.getElementById('ceoStatus');
-                if(!isFirebaseConfigured) {
-                    statusEl.innerText = "Error: Sin Base de Datos";
-                    statusEl.className = "text-red-400 text-xs font-mono mt-0.5";
-                } else {
-                    statusEl.innerText = "Conectado a la Nube";
-                    statusEl.className = "text-green-400 text-xs font-mono mt-0.5";
-                }
-
                 window.loadCeoData();
             } else if (pass !== null) alert("Acceso denegado.");
         };
@@ -516,13 +492,11 @@
         };
 
         window.saveMarquee = async () => {
-            if(!isFirebaseConfigured) return alert("Debes configurar Firebase en el código para guardar en la nube.");
             const text = document.getElementById('marqueeInput').value;
             await setDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'ui_config', 'settings'), { marqueeText: text }, { merge: true });
         };
 
         window.saveSocials = async () => {
-            if(!isFirebaseConfigured) return alert("Debes configurar Firebase en el código para guardar en la nube.");
             const data = {
                 wa: document.getElementById('socWa').value, ig: document.getElementById('socIg').value, fb: document.getElementById('socFb').value,
                 x: document.getElementById('socX').value, tk: document.getElementById('socTk').value, yt: document.getElementById('socYt').value, sp: document.getElementById('socSp').value
@@ -550,7 +524,6 @@
         };
 
         window.moveLink = async (id, dir) => {
-            if(!isFirebaseConfigured) return alert("Debes configurar Firebase.");
             const idx = window.appData.links.findIndex(x => x.id === id);
             if(idx+dir < 0 || idx+dir >= window.appData.links.length) return;
             
@@ -574,7 +547,6 @@
         };
 
         window.saveLink = async () => {
-            if(!isFirebaseConfigured) return alert("Debes configurar Firebase.");
             const t = document.getElementById('newTitle').value;
             if(!t) return;
             
@@ -595,7 +567,6 @@
         };
 
         window.deleteLink = async (id) => {
-            if(!isFirebaseConfigured) return alert("Debes configurar Firebase.");
             if(confirm("¿Eliminar definitivamente de la red?")) await deleteDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'lux_links', id));
         };
 
@@ -622,7 +593,6 @@
         };
 
         window.saveComm = async () => {
-            if(!isFirebaseConfigured) return alert("Debes configurar Firebase.");
             const n = document.getElementById('commName').value;
             if(!n) return;
             let id = document.getElementById('editCommId').value || Date.now().toString();
@@ -633,7 +603,6 @@
         };
 
         window.deleteComm = async (id) => {
-            if(!isFirebaseConfigured) return alert("Debes configurar Firebase.");
             if(confirm("¿Eliminar comunidad de la red?")) await deleteDoc(doc(db, 'artifacts', appIdStr, 'public', 'data', 'lux_comms', id));
         };
     </script>
