@@ -5,29 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Soy Tomé Lux | Exclusive</title>
     
-    <!-- Fonts & Icons -->
+    <!-- Fonts: Cinzel (Lujo) & Montserrat (Minimalismo Funcional) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <style>
         /* --- Reset & Variables --- */
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Urbanist', sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         
         :root {
-            --bg-color: #030303;
-            --glass-bg: rgba(15, 15, 15, 0.4);
-            --glass-border: rgba(255, 255, 255, 0.05);
-            --text-main: #f8fafc;
-            --text-muted: #64748b;
-            --accent-gold: #D4AF37;
-            --accent-gold-glow: rgba(212, 175, 55, 0.3);
+            --bg-base: #020202;
+            --glass-bg: rgba(20, 20, 20, 0.5);
+            --glass-border: rgba(212, 175, 55, 0.15);
+            --text-main: #fcfcfc;
+            --text-muted: #888;
+            --gold-primary: #D4AF37;
+            --gold-light: #F3E5AB;
+            --gold-glow: rgba(212, 175, 55, 0.4);
+            
+            --font-display: 'Cinzel', serif;
+            --font-ui: 'Montserrat', sans-serif;
         }
 
         body {
-            background-color: var(--bg-color);
+            background-color: var(--bg-base);
             color: var(--text-main);
+            font-family: var(--font-ui);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -36,179 +41,208 @@
             position: relative;
         }
 
-        /* --- Fondo Épico Animado (Lux Auroras) --- */
-        .epic-bg {
+        /* --- Fondo Premium Dinámico --- */
+        .luxury-bg {
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
-            background-color: #030303;
+            background: radial-gradient(circle at 50% 0%, #1a1710 0%, var(--bg-base) 70%);
             z-index: -2;
-            overflow: hidden;
         }
-        .orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.4;
-            animation: float 20s infinite ease-in-out alternate;
-        }
-        .orb-1 {
-            width: 400px; height: 400px;
-            background: radial-gradient(circle, var(--accent-gold-glow), transparent 70%);
-            top: -100px; left: -100px;
-        }
-        .orb-2 {
-            width: 500px; height: 500px;
-            background: radial-gradient(circle, rgba(34, 211, 238, 0.1), transparent 70%);
-            bottom: -150px; right: -100px;
-            animation-delay: -5s;
-        }
-        .noise-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
-            z-index: -1; pointer-events: none;
-        }
-
-        @keyframes float {
-            0% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(50px, 30px) scale(1.1); }
-            100% { transform: translate(-30px, 50px) scale(0.9); }
+        
+        /* Canvas para partículas doradas (polvo de estrellas) */
+        #stardust {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: -1;
+            pointer-events: none;
+            opacity: 0.6;
         }
 
         /* --- Layout --- */
         .container {
-            width: 100%; max-width: 450px; padding: 60px 20px 40px;
+            width: 100%; max-width: 480px; padding: 60px 20px 80px;
             display: flex; flex-direction: column; align-items: center; z-index: 1;
         }
 
-        /* --- Minimalist ST Logo --- */
-        .header { text-align: center; margin-bottom: 40px; }
+        /* --- ST Logo Typography --- */
+        .header { text-align: center; margin-bottom: 50px; animation: fadeInDown 1s ease-out; }
         .st-logo {
-            font-size: 4.5rem;
+            font-family: var(--font-display);
+            font-size: 5rem;
             font-weight: 900;
             line-height: 1;
-            letter-spacing: -2px;
-            margin-bottom: 10px;
-            background: linear-gradient(180deg, #ffffff 0%, var(--accent-gold) 100%);
+            letter-spacing: -3px;
+            margin-bottom: 5px;
+            background: linear-gradient(135deg, #ffffff 0%, var(--gold-light) 40%, var(--gold-primary) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0px 10px 15px rgba(212, 175, 55, 0.2));
-            display: inline-block;
+            filter: drop-shadow(0px 8px 20px rgba(212, 175, 55, 0.25));
         }
         .brand-subtitle {
-            font-size: 0.9rem;
+            font-family: var(--font-ui);
+            font-size: 0.85rem;
             text-transform: uppercase;
-            letter-spacing: 4px;
-            color: var(--text-muted);
-            font-weight: 700;
+            letter-spacing: 6px;
+            color: var(--gold-primary);
+            font-weight: 600;
+            opacity: 0.8;
         }
 
         /* --- Enlaces Dinámicos --- */
-        .links-wrapper { width: 100%; display: flex; flex-direction: column; gap: 16px; }
+        .links-wrapper { width: 100%; display: flex; flex-direction: column; gap: 18px; perspective: 1000px; }
         .link-btn {
             display: flex; align-items: center; justify-content: center;
-            width: 100%; padding: 20px;
+            width: 100%; padding: 22px;
             background: var(--glass-bg); border: 1px solid var(--glass-border);
-            border-radius: 16px; color: var(--text-main); text-decoration: none;
-            font-weight: 400; font-size: 1.1rem; letter-spacing: 0.5px;
-            backdrop-filter: blur(12px); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-radius: 12px; color: var(--text-main); text-decoration: none;
+            font-weight: 400; font-size: 1.05rem; letter-spacing: 1px;
+            backdrop-filter: blur(10px); 
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
             position: relative; overflow: hidden;
+            opacity: 0; transform: translateY(20px); animation: fadeInUp 0.6s forwards;
         }
-        .link-btn i { position: absolute; left: 24px; color: var(--accent-gold); font-size: 1.3rem; transition: transform 0.3s ease; }
+        
+        /* Retraso en cascada para los botones */
+        .link-btn:nth-child(1) { animation-delay: 0.1s; }
+        .link-btn:nth-child(2) { animation-delay: 0.2s; }
+        .link-btn:nth-child(3) { animation-delay: 0.3s; }
+        .link-btn:nth-child(4) { animation-delay: 0.4s; }
+
+        .link-btn i { position: absolute; left: 24px; color: var(--gold-primary); font-size: 1.4rem; transition: all 0.4s ease; }
+        
         .link-btn:hover {
-            border-color: rgba(212, 175, 55, 0.3); background: rgba(212, 175, 55, 0.05);
-            transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.6);
+            border-color: var(--gold-primary); 
+            background: rgba(212, 175, 55, 0.08);
+            transform: translateY(-4px) scale(1.02); 
+            box-shadow: 0 15px 30px rgba(0,0,0,0.8), 0 0 20px var(--gold-glow);
+            letter-spacing: 2px;
         }
-        .link-btn:hover i { transform: scale(1.2); }
+        .link-btn:hover i { transform: scale(1.2) rotate(5deg); text-shadow: 0 0 10px var(--gold-primary); }
+
+        /* Efecto Especial: Link Destacado (Negocios) */
+        .link-highlight {
+            border-color: var(--gold-primary);
+            box-shadow: 0 0 15px var(--gold-glow);
+            font-weight: 600;
+        }
+        .link-highlight::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255,255,255,0.3), transparent);
+            transform: skewX(-25deg);
+            animation: shimmer 3s infinite;
+        }
 
         /* --- Redes Sociales --- */
-        .social-icons { display: flex; gap: 25px; margin-top: 50px; }
-        .social-btn { color: var(--text-muted); font-size: 1.5rem; transition: all 0.3s ease; text-decoration: none; }
-        .social-btn:hover { color: var(--accent-gold); transform: translateY(-3px); filter: drop-shadow(0 5px 10px rgba(212,175,55,0.4)); }
+        .social-icons { display: flex; gap: 30px; margin-top: 60px; animation: fadeIn 1.5s forwards; }
+        .social-btn { color: var(--text-muted); font-size: 1.6rem; transition: all 0.3s ease; text-decoration: none; }
+        .social-btn:hover { color: var(--gold-light); transform: translateY(-5px); filter: drop-shadow(0 5px 15px var(--gold-glow)); }
 
-        /* --- Panel Admin UI --- */
-        .admin-trigger {
-            position: fixed; bottom: 20px; right: 20px; color: rgba(255,255,255,0.05);
-            font-size: 1.2rem; cursor: pointer; z-index: 100; transition: color 0.3s;
+        /* --- Controles Flotantes (CEO / Soporte) --- */
+        .floating-controls {
+            position: fixed; bottom: 25px; right: 25px;
+            display: flex; gap: 15px; z-index: 100;
         }
-        .admin-trigger:hover { color: var(--accent-gold); }
+        .admin-trigger {
+            background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-muted); padding: 10px 18px; border-radius: 30px;
+            font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+            cursor: pointer; backdrop-filter: blur(5px); transition: all 0.3s;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .admin-trigger i { font-size: 0.9rem; }
+        .admin-trigger:hover { color: var(--gold-primary); border-color: var(--gold-primary); box-shadow: 0 0 15px var(--gold-glow); }
 
+        /* --- Modales UI --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.9); backdrop-filter: blur(10px);
+            background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(15px);
             display: flex; justify-content: center; align-items: center;
-            z-index: 2000; opacity: 0; visibility: hidden; transition: all 0.3s;
+            z-index: 2000; opacity: 0; visibility: hidden; transition: all 0.4s ease;
         }
         .modal-overlay.active { opacity: 1; visibility: visible; }
         
         .modal-box {
-            background: #080808; border: 1px solid var(--glass-border); border-radius: 20px;
-            padding: 30px; width: 95%; max-width: 500px; box-shadow: 0 25px 50px rgba(0,0,0,1);
-            transform: translateY(20px); transition: transform 0.3s; max-height: 90vh; overflow-y: auto;
+            background: #050505; border: 1px solid var(--gold-primary); border-radius: 16px;
+            padding: 40px; width: 95%; max-width: 500px; box-shadow: 0 25px 60px rgba(0,0,0,1), 0 0 30px rgba(212,175,55,0.1) inset;
+            transform: scale(0.95); transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); max-height: 90vh; overflow-y: auto;
         }
-        .modal-overlay.active .modal-box { transform: translateY(0); }
-        .modal-box h3 { font-size: 1.5rem; color: var(--accent-gold); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; font-weight: 900;}
+        .modal-overlay.active .modal-box { transform: scale(1); }
         
-        .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; color: var(--text-muted); margin-bottom: 5px; font-size: 0.8rem; text-transform: uppercase; font-weight: 700;}
+        .modal-box h3 { font-family: var(--font-display); font-size: 1.8rem; color: var(--gold-light); margin-bottom: 25px; text-align: center; font-weight: 700;}
+        
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; color: var(--text-muted); margin-bottom: 8px; font-size: 0.75rem; text-transform: uppercase; font-weight: 600; letter-spacing: 1px;}
         .input-group input {
-            width: 100%; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.02);
-            border: 1px solid var(--glass-border); color: #fff; font-size: 0.95rem; outline: none; transition: border-color 0.3s;
+            width: 100%; padding: 15px; border-radius: 8px; background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 1rem; outline: none; transition: all 0.3s;
+            font-family: var(--font-ui);
         }
-        .input-group input:focus { border-color: var(--accent-gold); }
+        .input-group input:focus { border-color: var(--gold-primary); background: rgba(212,175,55,0.05); }
         
-        .btn-primary { width: 100%; padding: 14px; border-radius: 8px; border: none; background: var(--accent-gold); color: #000; font-weight: 800; cursor: pointer; margin-top: 10px; transition: background 0.2s;}
-        .btn-primary:hover { background: #fff; }
-        .btn-secondary { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: transparent; color: var(--text-main); font-weight: 700; cursor: pointer; margin-top: 10px; }
-        .btn-danger { background: rgba(220, 38, 38, 0.1); color: #ef4444; border: 1px solid rgba(220, 38, 38, 0.3); padding: 10px; border-radius: 8px; cursor: pointer; }
+        .btn-primary { width: 100%; padding: 16px; border-radius: 8px; border: none; background: linear-gradient(135deg, var(--gold-primary), #B8860B); color: #000; font-weight: 700; font-size: 1rem; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; margin-top: 15px; transition: transform 0.2s, box-shadow 0.2s;}
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px var(--gold-glow); }
+        .btn-secondary { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--gold-primary); background: transparent; color: var(--gold-light); font-weight: 600; cursor: pointer; margin-top: 10px; transition: all 0.3s;}
+        .btn-secondary:hover { background: rgba(212,175,55,0.1); }
         
-        .close-modal { color: var(--text-muted); text-align: center; display: block; margin-top: 20px; cursor: pointer; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;}
-        .close-modal:hover { color: #fff; }
+        .close-modal { color: var(--text-muted); text-align: center; display: block; margin-top: 25px; cursor: pointer; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; transition: color 0.3s;}
+        .close-modal:hover { color: var(--text-main); }
 
         /* Lista editable de links */
         .edit-link-card {
-            background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border);
-            border-radius: 12px; padding: 15px; margin-bottom: 15px;
-            display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center;
+            background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px; padding: 20px; margin-bottom: 15px;
+            position: relative; transition: border-color 0.3s;
         }
-        .edit-link-inputs { display: flex; flex-direction: column; gap: 10px; }
+        .edit-link-card:focus-within { border-color: var(--gold-primary); }
+        .edit-link-inputs { display: flex; flex-direction: column; gap: 12px; }
+        
+        .card-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); }
+        .toggle-highlight { display: flex; align-items: center; gap: 8px; color: var(--gold-light); font-size: 0.8rem; cursor: pointer; }
+        .toggle-highlight input { cursor: pointer; accent-color: var(--gold-primary); }
+        
+        .btn-danger { background: transparent; color: #ef4444; border: 1px solid #ef4444; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; transition: all 0.3s; }
+        .btn-danger:hover { background: #ef4444; color: #fff; }
 
         /* --- Toast --- */
         .toast {
-            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px);
-            background: #fff; color: #000; padding: 12px 24px; border-radius: 30px;
-            font-weight: 800; z-index: 3000; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 10px 25px rgba(255,255,255,0.2);
+            position: fixed; top: 30px; left: 50%; transform: translateX(-50%) translateY(-100px);
+            background: linear-gradient(135deg, #111, #000); color: var(--gold-light); 
+            border: 1px solid var(--gold-primary);
+            padding: 15px 30px; border-radius: 30px; text-transform: uppercase; letter-spacing: 2px;
+            font-weight: 600; font-size: 0.85rem; z-index: 3000; transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.8), 0 0 20px var(--gold-glow);
         }
         .toast.show { transform: translateX(-50%) translateY(0); }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: var(--bg-color); }
-        ::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
+        /* Animaciones Clave */
+        @keyframes shimmer { 0% { left: -100%; } 100% { left: 200%; } }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: var(--bg-base); }
+        ::-webkit-scrollbar-thumb { background: var(--gold-primary); }
     </style>
 </head>
 <body>
 
-    <!-- Animación de Fondo Lux -->
-    <div class="epic-bg">
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
-    </div>
-    <div class="noise-overlay"></div>
+    <!-- Fondo de Lujo -->
+    <div class="luxury-bg"></div>
+    <canvas id="stardust"></canvas>
 
-    <!-- Toast Notification -->
+    <!-- Notificación VIP -->
     <div id="toast" class="toast">Mensaje</div>
 
-    <!-- Interfaz Principal -->
+    <!-- UI Principal -->
     <div class="container">
         <header class="header">
             <div class="st-logo">ST</div>
             <div class="brand-subtitle">Soy Tomé Lux</div>
         </header>
 
-        <!-- Contenedor donde se inyectan los botones dinámicos -->
         <div class="links-wrapper" id="public-links-container">
-            <!-- Los links se generan por JS -->
+            <!-- Renderizado Dinámico -->
         </div>
 
         <div class="social-icons">
@@ -219,77 +253,110 @@
         </div>
     </div>
 
-    <!-- Trigger Admin Oculto -->
-    <div class="admin-trigger" id="btn-open-login">
-        <i class="fa-solid fa-key"></i>
+    <!-- Controles Flotantes -->
+    <div class="floating-controls">
+        <div class="admin-trigger" onclick="openLogin('Soporte')">
+            <i class="fa-solid fa-headset"></i> Soporte
+        </div>
+        <div class="admin-trigger" onclick="openLogin('CEO')">
+            <i class="fa-solid fa-crown"></i> CEO
+        </div>
     </div>
 
-    <!-- Modal Login Estricto -->
+    <!-- Modal Login -->
     <div class="modal-overlay" id="modal-login">
         <div class="modal-box">
-            <h3>Protocolo de Acceso</h3>
+            <h3 id="login-title">Acceso Restringido</h3>
             <div class="input-group">
-                <label>Usuario</label>
-                <input type="text" id="login-user" placeholder="Ingresa usuario">
+                <label>Clave de Autorización</label>
+                <input type="password" id="login-pass" placeholder="Ingresa credencial maestra">
             </div>
-            <div class="input-group">
-                <label>Contraseña</label>
-                <input type="password" id="login-pass" placeholder="••••••••">
-            </div>
-            <button class="btn-primary" id="btn-login">Autorizar</button>
-            <span class="close-modal" id="btn-close-login">Cancelar</span>
+            <button class="btn-primary" id="btn-login">Verificar</button>
+            <span class="close-modal" onclick="closeModals()">Cancelar</span>
         </div>
     </div>
 
-    <!-- Modal Dashboard (CMS) -->
+    <!-- Modal CMS -->
     <div class="modal-overlay" id="modal-dashboard">
-        <div class="modal-box" style="max-width: 600px;">
-            <h3>Panel Central</h3>
+        <div class="modal-box" style="max-width: 650px;">
+            <h3>Command Center</h3>
             
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h4 style="color: #fff;">Tus Botones</h4>
-                <button class="btn-secondary" id="btn-add-new" style="width: auto; margin: 0; padding: 6px 12px; font-size: 0.8rem;">+ Nuevo Enlace</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h4 style="color: var(--text-main); font-weight: 400; text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem;">Enlaces Activos</h4>
+                <button class="btn-secondary" id="btn-add-new" style="width: auto; margin: 0; padding: 8px 15px; font-size: 0.8rem;">+ Nuevo</button>
             </div>
 
-            <!-- Contenedor editable de botones -->
-            <div id="admin-links-container" style="margin-bottom: 30px;">
-                <!-- Inputs generados por JS -->
+            <div id="admin-links-container" style="margin-bottom: 40px;"></div>
+
+            <h4 style="color: var(--text-main); font-weight: 400; text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem; margin-bottom: 20px;">Redes Sociales</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="input-group">
+                    <label><i class="fa-brands fa-instagram"></i> Instagram</label>
+                    <input type="text" id="input-soc-ig">
+                </div>
+                <div class="input-group">
+                    <label><i class="fa-brands fa-tiktok"></i> TikTok</label>
+                    <input type="text" id="input-soc-tk">
+                </div>
+                <div class="input-group">
+                    <label><i class="fa-brands fa-facebook-f"></i> Facebook</label>
+                    <input type="text" id="input-soc-fb">
+                </div>
+                <div class="input-group">
+                    <label><i class="fa-brands fa-whatsapp"></i> WhatsApp</label>
+                    <input type="text" id="input-soc-wa">
+                </div>
             </div>
 
-            <hr style="border-color: var(--glass-border); margin: 20px 0;">
-
-            <h4 style="color: #fff; margin-bottom: 15px;">Redes Sociales</h4>
-            <div class="input-group">
-                <label>Instagram URL</label>
-                <input type="text" id="input-soc-ig">
-            </div>
-            <div class="input-group">
-                <label>TikTok URL</label>
-                <input type="text" id="input-soc-tk">
-            </div>
-            <div class="input-group">
-                <label>Facebook URL</label>
-                <input type="text" id="input-soc-fb">
-            </div>
-            <div class="input-group">
-                <label>WhatsApp URL</label>
-                <input type="text" id="input-soc-wa">
-            </div>
-
-            <button class="btn-primary" id="btn-save-all" style="margin-top: 20px;">Guardar Configuración General</button>
-            <span class="close-modal" id="btn-close-dashboard">Cerrar y Ver Cambios</span>
+            <button class="btn-primary" id="btn-save-all" style="margin-top: 30px;">Guardar y Publicar</button>
+            <span class="close-modal" onclick="closeModals()">Cerrar Sistema</span>
         </div>
     </div>
 
-    <!-- Motor JavaScript (CMS Nativo) -->
     <script>
-        const STORAGE_KEY = 'st_lux_dynamic_data';
+        // --- Animación de Partículas (Gold Dust) ---
+        const canvas = document.getElementById('stardust');
+        const ctx = canvas.getContext('2d');
+        let particlesArray = [];
 
-        // Estado Global por Defecto
+        function initCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            particlesArray = [];
+            for (let i = 0; i < 60; i++) {
+                let size = Math.random() * 2;
+                let x = Math.random() * innerWidth;
+                let y = Math.random() * innerHeight;
+                let speedY = (Math.random() * 0.5) + 0.1;
+                particlesArray.push({x, y, size, speedY});
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, innerWidth, innerHeight);
+            ctx.fillStyle = 'rgba(212, 175, 55, 0.8)';
+            for (let i = 0; i < particlesArray.length; i++) {
+                let p = particlesArray[i];
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+                p.y += p.speedY;
+                if (p.y > innerHeight) p.y = 0;
+            }
+            requestAnimationFrame(animateParticles);
+        }
+        window.addEventListener('resize', initCanvas);
+        initCanvas();
+        animateParticles();
+
+        // --- Core Application (CMS) ---
+        const STORAGE_KEY = 'st_lux_v2_data';
+        let currentRole = '';
+
         let appData = {
             links: [
-                { id: Date.now(), title: "Directorio Comercial", url: "https://soytomelux.cl", icon: "fa-store" },
-                { id: Date.now() + 1, title: "Anunciar mi Negocio", url: "https://soytomelux.cl/unirse", icon: "fa-bolt" }
+                { id: 1, title: "Directorio Comercial", url: "https://soytomelux.cl", icon: "fa-store", highlight: false },
+                { id: 2, title: "Anunciar mi Negocio", url: "https://soytomelux.cl/unirse", icon: "fa-bolt", highlight: true }
             ],
             socials: {
                 ig: "https://instagram.com/comercio.tome",
@@ -299,156 +366,147 @@
             }
         };
 
-        // UI Elements
         const publicContainer = document.getElementById('public-links-container');
         const adminContainer = document.getElementById('admin-links-container');
-        const toast = document.getElementById('toast');
 
-        // Función Principal: Cargar Memoria
         function initApp() {
             const savedData = localStorage.getItem(STORAGE_KEY);
             if (savedData) {
-                try { appData = JSON.parse(savedData); } catch (e) { console.error("Error leyendo datos"); }
+                try { appData = JSON.parse(savedData); } catch (e) {}
             }
             renderPublicView();
         }
 
-        // Renderizar Interfaz Pública
         function renderPublicView() {
-            // Limpiar
             publicContainer.innerHTML = '';
-            
-            // Inyectar Botones
-            appData.links.forEach(link => {
+            appData.links.forEach((link, index) => {
                 const a = document.createElement('a');
                 a.href = link.url || '#';
-                a.className = 'link-btn';
+                a.className = `link-btn ${link.highlight ? 'link-highlight' : ''}`;
                 a.target = '_blank';
+                // Añadimos delay para el efecto cascada
+                a.style.animationDelay = `${index * 0.1}s`;
                 a.innerHTML = `<i class="fa-solid ${link.icon || 'fa-link'}"></i> ${link.title}`;
                 publicContainer.appendChild(a);
             });
 
-            // Inyectar Redes Sociales
             document.getElementById('soc-ig').href = appData.socials.ig || '#';
             document.getElementById('soc-tk').href = appData.socials.tk || '#';
             document.getElementById('soc-fb').href = appData.socials.fb || '#';
             document.getElementById('soc-wa').href = appData.socials.wa || '#';
         }
 
-        // Renderizar Panel de Administración
         function renderAdminView() {
             adminContainer.innerHTML = '';
-            
-            // Renderizar Lista Editable
             appData.links.forEach(link => {
                 const card = document.createElement('div');
                 card.className = 'edit-link-card';
                 card.innerHTML = `
                     <div class="edit-link-inputs">
-                        <input type="text" class="link-edit-title" data-id="${link.id}" value="${link.title}" placeholder="Nombre del botón">
-                        <input type="text" class="link-edit-url" data-id="${link.id}" value="${link.url}" placeholder="URL (Ej: https://...)">
-                        <input type="text" class="link-edit-icon" data-id="${link.id}" value="${link.icon}" placeholder="Icono FontAwesome (Ej: fa-star)">
+                        <input type="text" class="link-edit-title" data-id="${link.id}" value="${link.title}" placeholder="Título del botón">
+                        <input type="text" class="link-edit-url" data-id="${link.id}" value="${link.url}" placeholder="URL de destino">
+                        <input type="text" class="link-edit-icon" data-id="${link.id}" value="${link.icon}" placeholder="Icono (Ej: fa-star)">
                     </div>
-                    <button class="btn-danger btn-delete-link" data-id="${link.id}"><i class="fa-solid fa-trash"></i></button>
+                    <div class="card-actions">
+                        <label class="toggle-highlight">
+                            <input type="checkbox" class="link-edit-highlight" data-id="${link.id}" ${link.highlight ? 'checked' : ''}>
+                            Destacar con brillo (Premium)
+                        </label>
+                        <button class="btn-danger btn-delete-link" data-id="${link.id}"><i class="fa-solid fa-trash"></i> Eliminar</button>
+                    </div>
                 `;
                 adminContainer.appendChild(card);
             });
 
-            // Setear Redes Sociales en inputs
             document.getElementById('input-soc-ig').value = appData.socials.ig || '';
             document.getElementById('input-soc-tk').value = appData.socials.tk || '';
             document.getElementById('input-soc-fb').value = appData.socials.fb || '';
             document.getElementById('input-soc-wa').value = appData.socials.wa || '';
 
-            // Eventos para Botones de Borrar
             document.querySelectorAll('.btn-delete-link').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const idToRemove = parseInt(e.currentTarget.getAttribute('data-id'));
                     appData.links = appData.links.filter(l => l.id !== idToRemove);
-                    renderAdminView(); // Recargar panel visualmente
+                    renderAdminView(); 
                 });
             });
         }
 
-        // Añadir Nuevo Enlace (Botón "+ Nuevo Enlace")
         document.getElementById('btn-add-new').addEventListener('click', () => {
-            appData.links.push({
-                id: Date.now(),
-                title: "Nuevo Enlace",
-                url: "https://",
-                icon: "fa-arrow-right"
-            });
+            appData.links.push({ id: Date.now(), title: "Nuevo Enlace", url: "", icon: "fa-arrow-right", highlight: false });
             renderAdminView();
         });
 
-        // Guardar Toda la Configuración
         document.getElementById('btn-save-all').addEventListener('click', () => {
-            // Actualizar arreglo de links iterando sobre los inputs generados
             const linkCards = document.querySelectorAll('.edit-link-card');
             let updatedLinks = [];
             
             linkCards.forEach(card => {
                 const titleInput = card.querySelector('.link-edit-title');
                 const id = parseInt(titleInput.getAttribute('data-id'));
-                
                 updatedLinks.push({
                     id: id,
                     title: titleInput.value,
                     url: card.querySelector('.link-edit-url').value,
-                    icon: card.querySelector('.link-edit-icon').value
+                    icon: card.querySelector('.link-edit-icon').value,
+                    highlight: card.querySelector('.link-edit-highlight').checked
                 });
             });
 
             appData.links = updatedLinks;
-
-            // Actualizar redes sociales
             appData.socials.ig = document.getElementById('input-soc-ig').value;
             appData.socials.tk = document.getElementById('input-soc-tk').value;
             appData.socials.fb = document.getElementById('input-soc-fb').value;
             appData.socials.wa = document.getElementById('input-soc-wa').value;
 
-            // Guardar en persistencia y actualizar frontend
             localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
             renderPublicView();
-            showToast("Plataforma Actualizada");
+            showToast("Plataforma Sincronizada");
+            closeModals();
         });
 
-        // Utilidad: Mostrar Notificación
         function showToast(msg) {
+            const toast = document.getElementById('toast');
             toast.innerText = msg;
             toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
+            setTimeout(() => toast.classList.remove('show'), 3500);
         }
 
-        // --- Lógica de Modales y Autenticación Fuerte ---
-        const modalLogin = document.getElementById('modal-login');
-        const modalDashboard = document.getElementById('modal-dashboard');
+        // --- Auth System ---
+        function openLogin(role) {
+            currentRole = role;
+            document.getElementById('login-title').innerText = `Acceso ${role}`;
+            document.getElementById('modal-login').classList.add('active');
+            setTimeout(() => document.getElementById('login-pass').focus(), 100);
+        }
 
-        document.getElementById('btn-open-login').addEventListener('click', () => modalLogin.classList.add('active'));
-        document.getElementById('btn-close-login').addEventListener('click', () => modalLogin.classList.remove('active'));
-        document.getElementById('btn-close-dashboard').addEventListener('click', () => modalDashboard.classList.remove('active'));
+        function closeModals() {
+            document.getElementById('modal-login').classList.remove('active');
+            document.getElementById('modal-dashboard').classList.remove('active');
+            document.getElementById('login-pass').value = "";
+        }
 
-        // Validador de Credenciales Exactas
         document.getElementById('btn-login').addEventListener('click', () => {
-            const u = document.getElementById('login-user').value;
             const p = document.getElementById('login-pass').value;
-            
-            if (u === "Hola Ian" && p === "Ian4964@") {
-                modalLogin.classList.remove('active');
-                document.getElementById('login-user').value = "";
+            if (p === "Ian123@") {
+                document.getElementById('modal-login').classList.remove('active');
                 document.getElementById('login-pass').value = "";
                 
-                // Preparar y mostrar Dashboard
+                showToast(`Bienvenido Ian (${currentRole})`);
                 renderAdminView();
-                setTimeout(() => modalDashboard.classList.add('active'), 300);
+                setTimeout(() => document.getElementById('modal-dashboard').classList.add('active'), 400);
             } else {
                 showToast("Acceso Denegado");
+                document.getElementById('login-pass').value = "";
             }
         });
 
-        // Ejecución Inicial
+        // Enter key to login
+        document.getElementById('login-pass').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') document.getElementById('btn-login').click();
+        });
+
         initApp();
     </script>
 </body>
 </html>
-```
