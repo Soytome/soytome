@@ -68,11 +68,11 @@
             <i class="fab fa-whatsapp text-4xl text-green-400 mb-4 animate-pulse drop-shadow-[0_0_10px_rgba(34,197,94,0.5)]"></i>
             <h2 class="text-2xl font-extrabold text-white mb-2 tracking-tight">Alertas Soy Tomé</h2>
             <p class="text-sm text-gray-300 mb-8 leading-relaxed">Noticias, ofertas y oportunidades de negocio en la comuna. Directo a tu WhatsApp. Sin spam.</p>
-            <a href="https://whatsapp.com/channel/0029VaVhbfG4dTnMRjnrs81i" target="_blank" onclick="window.closeWelcome()" class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-bold py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(34,197,94,0.3)] hover:scale-[1.02] flex items-center justify-center gap-3">
+            <a href="https://whatsapp.com/channel/0029VaVhbfG4dTnMRjnrs81i" target="_blank" onclick="closeWelcome()" class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-bold py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(34,197,94,0.3)] hover:scale-[1.02] flex items-center justify-center gap-3">
                 <i class="fas fa-bell text-xl"></i>
                 <span>Unirme al Canal</span>
             </a>
-            <button onclick="window.closeWelcome()" class="mt-5 text-[10px] uppercase tracking-widest font-medium text-gray-500 hover:text-white transition-colors">Cerrar</button>
+            <button onclick="closeWelcome()" class="mt-5 text-[10px] uppercase tracking-widest font-medium text-gray-500 hover:text-white transition-colors">Cerrar</button>
         </div>
     </div>
 
@@ -126,28 +126,24 @@
     <!-- MODAL COMUNIDADES (LISTA DE GRUPOS) -->
     <!-- ========================================== -->
     <div id="communitiesModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/80 backdrop-blur-md cursor-pointer" onclick="window.toggleModal('communitiesModal')"></div>
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-md cursor-pointer" onclick="toggleModal('communitiesModal')"></div>
         <div id="communitiesContent" class="relative w-full max-w-sm glass-modal rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
             <header class="p-5 border-b border-gray-800 flex justify-between items-center bg-luxDark/80">
                 <h2 class="text-lg font-bold text-white"><i class="fas fa-users text-blue-400 mr-2"></i>Comunidades</h2>
-                <button onclick="window.toggleModal('communitiesModal')" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
+                <button onclick="toggleModal('communitiesModal')" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
             </header>
             <div class="p-5 overflow-y-auto space-y-6" id="publicCommunitiesList">
                 
                 <!-- Categoría WhatsApp -->
                 <div>
                     <h3 class="text-xs font-bold text-green-500 uppercase tracking-wider mb-3 flex items-center gap-2"><i class="fab fa-whatsapp text-lg"></i> Grupos de WhatsApp</h3>
-                    <div id="waCommsContainer" class="space-y-2">
-                        <!-- Grupos de WA renderizados vía JS -->
-                    </div>
+                    <div id="waCommsContainer" class="space-y-2"></div>
                 </div>
                 
                 <!-- Categoría Facebook -->
                 <div>
                     <h3 class="text-xs font-bold text-blue-500 uppercase tracking-wider mb-3 flex items-center gap-2"><i class="fab fa-facebook text-lg"></i> Grupos de Facebook</h3>
-                    <div id="fbCommsContainer" class="space-y-2">
-                        <!-- Grupos de FB renderizados vía JS -->
-                    </div>
+                    <div id="fbCommsContainer" class="space-y-2"></div>
                 </div>
 
             </div>
@@ -222,7 +218,7 @@
                     <i class="fas fa-user-shield text-blue-400 text-xl"></i>
                     <div>
                         <h2 class="text-xl font-bold text-white">Panel CEO</h2>
-                        <p class="text-green-400 text-xs font-mono mt-0.5">Gestión Total</p>
+                        <p class="text-green-400 text-xs font-mono mt-0.5">Memoria Local Activa</p>
                     </div>
                 </div>
                 <button onclick="cerrarCEO()" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
@@ -306,96 +302,47 @@
     </div>
 
     <!-- ========================================== -->
-    <!-- LOGICA DEL ECOSISTEMA (JS) -->
+    <!-- LOGICA DEL ECOSISTEMA (JAVASCRIPT PURO / LOCALSTORAGE) -->
     <!-- ========================================== -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // 1. CONFIGURACIÓN FIREBASE (Base de Datos en la Nube)
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-            // IAN: Al llevar a producción, pega aquí las credenciales de tu proyecto Firebase si no usas el entorno inyectado.
+    <script>
+        // --------------------------------------------
+        // 1. GESTIÓN DE DATOS (LOCAL STORAGE)
+        // --------------------------------------------
+        // Valores por defecto blindados (siempre aparecerán si borras todo)
+        const defaultLinks = [
+            { id: 1, title: 'Suma tu Negocio', subtitle: 'Postula a la red Soy Tomé Lux', url: '#unete', icon: 'fas fa-rocket', isPremium: true, order: 0 },
+            { id: 2, title: 'Sitio Web Oficial', subtitle: 'Explorar directorio web', url: '#directorio', icon: 'fas fa-globe', isPremium: false, order: 1 },
+            { id: 3, title: 'Ofertas Flash 🔥', subtitle: 'Descuentos exclusivos hoy', url: '#ofertas', icon: 'fas fa-fire', isPremium: false, order: 2 }
+        ];
+        const defaultSocials = {
+            wa: "https://wa.me/56900000000", ig: "https://instagram.com/soytome", fb: "", x: "", tk: "", yt: "", sp: ""
         };
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'soytomelux-app';
-        let userObj = null;
+        const defaultComms = [];
 
-        // Estado Local (se alimenta de la nube)
-        let linksData = [];
-        let socialsData = { wa: "", ig: "", fb: "", x: "", tk: "", yt: "", sp: "" };
-        let commsData = [];
+        // Cargar desde la memoria del navegador
+        let linksData = JSON.parse(localStorage.getItem('luxLinks_v2')) || defaultLinks;
+        let socialsData = JSON.parse(localStorage.getItem('luxSocials_v2')) || defaultSocials;
+        let commsData = JSON.parse(localStorage.getItem('luxComms_v2')) || defaultComms;
 
-        // 2. AUTENTICACIÓN
-        const initAuth = async () => {
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch (error) {
-                console.error("Error de autenticación:", error);
-            }
-        };
-
-        onAuthStateChanged(auth, (user) => {
-            userObj = user;
-            if (user) setupRealtimeListeners();
-        });
-
-        initAuth();
-
-        // 3. LISTENERS EN TIEMPO REAL (Sincronización Cloud)
-        function setupRealtimeListeners() {
-            if (!userObj) return;
-            
-            // Escuchar Botones
-            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'lux_links'), (snapshot) => {
-                if(!snapshot.empty) {
-                    linksData = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
-                    linksData.sort((a, b) => a.order - b.order); // Ordenar por peso
-                } else {
-                    // BLINDAJE DE SEGURIDAD: Carga inicial por defecto
-                    linksData = [
-                        { id: '1', title: 'Suma tu Negocio', subtitle: 'Postula a la red Soy Tomé Lux', url: '#unete', icon: 'fas fa-rocket', isPremium: true, order: 0 },
-                        { id: '2', title: 'Sitio Web Oficial', subtitle: 'Explorar directorio web', url: '#directorio', icon: 'fas fa-globe', isPremium: false, order: 1 },
-                        { id: '3', title: 'Ofertas Flash 🔥', subtitle: 'Descuentos exclusivos hoy', url: '#ofertas', icon: 'fas fa-fire', isPremium: false, order: 2 }
-                    ];
-                }
-                window.renderPublicLinks();
-                if(!document.getElementById('ceoModal').classList.contains('hidden')) window.renderAdminLinks();
-            }, (err) => console.error(err));
-
-            // Escuchar Redes
-            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'lux_socials'), (snapshot) => {
-                if(!snapshot.empty) {
-                    socialsData = snapshot.docs[0].data();
-                    window.renderSocials();
-                } else {
-                    // Carga inicial por defecto con WhatsApp e IG de ejemplo
-                    socialsData = { wa: "https://wa.me/56900000000", ig: "https://instagram.com/soytome", fb: "", x: "", tk: "", yt: "", sp: "" };
-                    window.renderSocials();
-                }
-            }, (err) => console.error(err));
-
-            // Escuchar Comunidades
-            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'lux_comms'), (snapshot) => {
-                commsData = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
-                window.renderPublicComms();
-                if(!document.getElementById('ceoModal').classList.contains('hidden')) window.renderAdminComms();
-            }, (err) => console.error(err));
+        function saveToStorage() {
+            localStorage.setItem('luxLinks_v2', JSON.stringify(linksData));
+            localStorage.setItem('luxSocials_v2', JSON.stringify(socialsData));
+            localStorage.setItem('luxComms_v2', JSON.stringify(commsData));
         }
 
-        // ==========================================
-        // RENDERIZADO VISTA PÚBLICA
-        // ==========================================
-        window.renderPublicLinks = () => {
+        // --------------------------------------------
+        // 2. RENDERIZADO VISTA PÚBLICA
+        // --------------------------------------------
+        function renderAll() {
+            renderPublicLinks();
+            renderSocials();
+            renderPublicComms();
+        }
+
+        function renderPublicLinks() {
             const container = document.getElementById('linksContainer');
             container.innerHTML = '';
-            linksData.forEach(link => {
+            linksData.sort((a, b) => a.order - b.order).forEach(link => {
                 const a = document.createElement('a');
                 a.href = link.url;
                 if (link.isPremium) {
@@ -407,9 +354,9 @@
                 }
                 container.appendChild(a);
             });
-        };
+        }
 
-        window.renderSocials = () => {
+        function renderSocials() {
             const c = document.getElementById('socialContainer');
             c.innerHTML = `
                 ${socialsData.wa ? `<a href="${socialsData.wa}" target="_blank" class="w-12 h-12 rounded-full glass-solid flex items-center justify-center hover:bg-green-600 transition-colors shadow-lg group"><i class="fab fa-whatsapp text-2xl text-green-500 group-hover:text-white"></i></a>` : ''}
@@ -420,9 +367,9 @@
                 ${socialsData.yt ? `<a href="${socialsData.yt}" target="_blank" class="w-12 h-12 rounded-full glass-solid flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg group"><i class="fab fa-youtube text-2xl text-red-500 group-hover:text-white"></i></a>` : ''}
                 ${socialsData.sp ? `<a href="${socialsData.sp}" target="_blank" class="w-12 h-12 rounded-full glass-solid flex items-center justify-center hover:bg-green-500 transition-colors shadow-lg group"><i class="fab fa-spotify text-2xl text-green-400 group-hover:text-black"></i></a>` : ''}
             `;
-        };
+        }
 
-        window.renderPublicComms = () => {
+        function renderPublicComms() {
             const waC = document.getElementById('waCommsContainer');
             const fbC = document.getElementById('fbCommsContainer');
             waC.innerHTML = ''; fbC.innerHTML = '';
@@ -445,10 +392,14 @@
             // Ocultar cabeceras si están vacíos
             waC.parentElement.style.display = waC.innerHTML === '' ? 'none' : 'block';
             fbC.parentElement.style.display = fbC.innerHTML === '' ? 'none' : 'block';
-        };
+        }
 
-        // Lógica Inicial VIP
+        // --------------------------------------------
+        // 3. LÓGICA DE INICIO (POPUP VIP)
+        // --------------------------------------------
         window.onload = () => {
+            renderAll();
+            // Pop-up Bienvenida (Solo 1 vez por sesión)
             if(!sessionStorage.getItem('welcomeShown')) {
                 setTimeout(() => {
                     document.getElementById('welcomeModal').classList.remove('hidden');
@@ -459,25 +410,24 @@
             }
         };
 
-        window.closeWelcome = () => {
+        function closeWelcome() {
             document.getElementById('welcomeModal').classList.add('hidden');
             document.getElementById('welcomeModal').classList.remove('flex');
-        };
+        }
 
-        // ==========================================
-        // PANEL CEO Y BASE DE DATOS (NUBE)
-        // ==========================================
-        window.intentarLoginCEO = () => {
+        // --------------------------------------------
+        // 4. PANEL CEO (ADMINISTRACIÓN LOCAL)
+        // --------------------------------------------
+        function intentarLoginCEO() {
             const pass = prompt("Acceso CEO. Contraseña:");
             if (pass === "Ian2026@") {
-                window.toggleModal('ceoModal');
-                window.loadCeoData();
+                toggleModal('ceoModal');
+                loadCeoData();
             } else if (pass !== null) alert("Acceso denegado.");
-        };
+        }
+        function cerrarCEO() { toggleModal('ceoModal'); }
 
-        window.cerrarCEO = () => { window.toggleModal('ceoModal'); };
-
-        window.loadCeoData = () => {
+        function loadCeoData() {
             document.getElementById('socWa').value = socialsData.wa || "";
             document.getElementById('socIg').value = socialsData.ig || "";
             document.getElementById('socFb').value = socialsData.fb || "";
@@ -485,13 +435,12 @@
             document.getElementById('socTk').value = socialsData.tk || "";
             document.getElementById('socYt').value = socialsData.yt || "";
             document.getElementById('socSp').value = socialsData.sp || "";
-            window.renderAdminLinks();
-            window.renderAdminComms();
-        };
+            renderAdminLinks();
+            renderAdminComms();
+        }
 
-        window.saveSocials = async () => {
-            if (!userObj) return;
-            const data = {
+        function saveSocials() {
+            socialsData = {
                 wa: document.getElementById('socWa').value,
                 ig: document.getElementById('socIg').value,
                 fb: document.getElementById('socFb').value,
@@ -500,46 +449,38 @@
                 yt: document.getElementById('socYt').value,
                 sp: document.getElementById('socSp').value
             };
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'lux_socials', 'config'), data);
-            alert("Redes guardadas en la nube.");
-        };
+            saveToStorage();
+            renderSocials();
+            alert("Redes Sociales actualizadas.");
+        }
 
         // CRUD Botones
-        window.renderAdminLinks = () => {
+        function renderAdminLinks() {
             const list = document.getElementById('adminLinksList');
             list.innerHTML = '';
             linksData.forEach((l, i) => {
                 list.innerHTML += `
                     <div class="flex items-center justify-between bg-black p-2 rounded gap-2 border border-gray-800">
                         <div class="flex flex-col gap-1 pr-2 border-r border-gray-800">
-                            <button onclick="window.moveLink('${l.id}', -1)" class="text-gray-500 hover:text-white" ${i===0?'disabled':''}><i class="fas fa-chevron-up text-[10px]"></i></button>
-                            <button onclick="window.moveLink('${l.id}', 1)" class="text-gray-500 hover:text-white" ${i===linksData.length-1?'disabled':''}><i class="fas fa-chevron-down text-[10px]"></i></button>
+                            <button onclick="moveLink(${i}, -1)" class="text-gray-500 hover:text-white" ${i===0?'disabled':''}><i class="fas fa-chevron-up text-[10px]"></i></button>
+                            <button onclick="moveLink(${i}, 1)" class="text-gray-500 hover:text-white" ${i===linksData.length-1?'disabled':''}><i class="fas fa-chevron-down text-[10px]"></i></button>
                         </div>
                         <div class="flex-1 truncate text-xs text-white font-bold">${l.title} ${l.isPremium?'🌟':''}</div>
                         <div class="flex gap-1">
-                            <button onclick="window.editLink('${l.id}')" class="text-blue-400 p-1"><i class="fas fa-pen"></i></button>
-                            <button onclick="window.deleteLink('${l.id}')" class="text-red-500 p-1"><i class="fas fa-trash"></i></button>
+                            <button onclick="editLink(${l.id})" class="text-blue-400 p-1"><i class="fas fa-pen"></i></button>
+                            <button onclick="deleteLink(${l.id})" class="text-red-500 p-1"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>`;
             });
-        };
-
-        window.moveLink = async (id, dir) => {
-            if (!userObj) return;
-            const idx = linksData.findIndex(x => x.id === id);
-            if(idx+dir < 0 || idx+dir >= linksData.length) return;
-            
-            // Swap orders
-            const tempOrder = linksData[idx].order;
-            linksData[idx].order = linksData[idx+dir].order;
-            linksData[idx+dir].order = tempOrder;
-            
-            // Update both in DB
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'lux_links', linksData[idx].id), linksData[idx]);
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'lux_links', linksData[idx+dir].id), linksData[idx+dir]);
-        };
-
-        window.editLink = (id) => {
+        }
+        function moveLink(i, dir) {
+            if(i+dir < 0 || i+dir >= linksData.length) return;
+            [linksData[i], linksData[i+dir]] = [linksData[i+dir], linksData[i]];
+            // Actualizar el orden numérico
+            linksData.forEach((link, index) => link.order = index);
+            saveToStorage(); renderAdminLinks(); renderPublicLinks();
+        }
+        function editLink(id) {
             const l = linksData.find(x => x.id === id);
             document.getElementById('editLinkId').value = l.id;
             document.getElementById('newTitle').value = l.title;
@@ -547,49 +488,40 @@
             document.getElementById('newUrl').value = l.url;
             document.getElementById('newIcon').value = l.icon;
             document.getElementById('newPremium').checked = l.isPremium;
-            document.getElementById('saveBtnLinks').innerText = "Actualizar Nube";
-        };
-
-        window.saveLink = async () => {
-            if (!userObj) return;
+            document.getElementById('saveBtnLinks').innerText = "Actualizar Botón";
+        }
+        function saveLink() {
+            const id = document.getElementById('editLinkId').value;
             const t = document.getElementById('newTitle').value;
             if(!t) return;
-            
-            let id = document.getElementById('editLinkId').value;
-            let order = linksData.length;
-            
-            if(!id) {
-                id = Date.now().toString(); // New document ID
-            } else {
-                order = linksData.find(x => x.id === id).order; // Keep order
-            }
-
             const data = { 
-                id: id,
+                id: id ? parseInt(id) : Date.now(), 
                 title: t, 
                 subtitle: document.getElementById('newSub').value, 
                 url: document.getElementById('newUrl').value || '#', 
                 icon: document.getElementById('newIcon').value, 
                 isPremium: document.getElementById('newPremium').checked,
-                order: order
+                order: id ? linksData.find(x => x.id == id).order : linksData.length 
             };
             
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'lux_links', id), data);
+            if(id) linksData[linksData.findIndex(x => x.id == id)] = data;
+            else linksData.push(data);
             
-            // Reset form
+            saveToStorage(); renderAdminLinks(); renderPublicLinks();
+            
+            // Reset
             document.getElementById('editLinkId').value = ''; document.getElementById('newTitle').value = ''; document.getElementById('newSub').value = ''; document.getElementById('newUrl').value = '';
             document.getElementById('saveBtnLinks').innerText = "Guardar Botón";
-        };
-
-        window.deleteLink = async (id) => {
-            if (!userObj) return;
-            if(confirm("¿Eliminar definitivamente de la nube?")) {
-                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'lux_links', id));
-            }
-        };
+        }
+        function deleteLink(id) { 
+            if(confirm("¿Borrar permanentemente?")) { 
+                linksData = linksData.filter(x => x.id !== id); 
+                saveToStorage(); renderAdminLinks(); renderPublicLinks(); 
+            } 
+        }
 
         // CRUD Comunidades
-        window.renderAdminComms = () => {
+        function renderAdminComms() {
             const list = document.getElementById('adminCommList');
             list.innerHTML = '';
             commsData.forEach((c) => {
@@ -598,63 +530,51 @@
                         <i class="${c.type==='wa'?'fab fa-whatsapp text-green-500':'fab fa-facebook text-blue-500'}"></i>
                         <div class="flex-1 truncate text-xs text-white font-bold">${c.name}</div>
                         <div class="flex gap-1">
-                            <button onclick="window.editComm('${c.id}')" class="text-blue-400 p-1"><i class="fas fa-pen"></i></button>
-                            <button onclick="window.deleteComm('${c.id}')" class="text-red-500 p-1"><i class="fas fa-trash"></i></button>
+                            <button onclick="editComm(${c.id})" class="text-blue-400 p-1"><i class="fas fa-pen"></i></button>
+                            <button onclick="deleteComm(${c.id})" class="text-red-500 p-1"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>`;
             });
-        };
-
-        window.editComm = (id) => {
+        }
+        function editComm(id) {
             const c = commsData.find(x => x.id === id);
             document.getElementById('editCommId').value = c.id;
             document.getElementById('commName').value = c.name;
             document.getElementById('commUrl').value = c.url;
             document.getElementById('commType').value = c.type;
             document.getElementById('saveBtnComm').innerText = "Actualizar Grupo";
-        };
-
-        window.saveComm = async () => {
-            if (!userObj) return;
+        }
+        function saveComm() {
+            const id = document.getElementById('editCommId').value;
             const n = document.getElementById('commName').value;
             if(!n) return;
-
-            let id = document.getElementById('editCommId').value || Date.now().toString();
-            const data = { 
-                id: id,
-                name: n, 
-                url: document.getElementById('commUrl').value || '#', 
-                type: document.getElementById('commType').value 
-            };
+            const data = { id: id ? parseInt(id) : Date.now(), name: n, url: document.getElementById('commUrl').value || '#', type: document.getElementById('commType').value };
             
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'lux_comms', id), data);
+            if(id) commsData[commsData.findIndex(x => x.id == id)] = data;
+            else commsData.push(data);
+            
+            saveToStorage(); renderAdminComms(); renderPublicComms();
             
             document.getElementById('editCommId').value = ''; document.getElementById('commName').value = ''; document.getElementById('commUrl').value = '';
             document.getElementById('saveBtnComm').innerText = "Guardar Grupo";
-        };
-
-        window.deleteComm = async (id) => {
-            if (!userObj) return;
-            if(confirm("¿Eliminar grupo de la nube?")) { 
-                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'lux_comms', id));
-            }
-        };
+        }
+        function deleteComm(id) { if(confirm("¿Borrar grupo?")) { commsData = commsData.filter(x => x.id !== id); saveToStorage(); renderAdminComms(); renderPublicComms(); } }
 
 
-        // ==========================================
-        // HERRAMIENTAS IA (CONEXIÓN REAL A GEMINI)
-        // ==========================================
-        window.toggleModal = (modalID) => {
+        // --------------------------------------------
+        // 5. MODALES Y UTILIDADES IA
+        // --------------------------------------------
+        function toggleModal(modalID) {
             const m = document.getElementById(modalID);
             const c = m.querySelector('div[id$="Content"]');
             if(m.classList.contains('hidden')){ m.classList.remove('hidden'); m.classList.add('flex'); c.classList.remove('modal-exit'); c.classList.add('modal-enter'); }
             else { c.classList.remove('modal-enter'); c.classList.add('modal-exit'); setTimeout(() => { m.classList.add('hidden'); m.classList.remove('flex'); }, 300); }
-        };
+        }
 
         // IAN: Al exportar el archivo y publicarlo en tu propio hosting, deberás insertar tu Key aquí.
         const apiKey = ""; 
 
-        window.generateContent = async (toolType) => {
+        async function generateContent(toolType) {
             const n = document.getElementById('bizName').value; 
             const g = document.getElementById('bizGoal').value || 'Aumentar ventas'; 
             const d = document.getElementById('bizDesc').value;
@@ -665,6 +585,17 @@
             document.getElementById('loadingState').classList.remove('hidden'); document.getElementById('loadingState').classList.add('flex','flex-col');
             document.getElementById('errorState').classList.add('hidden'); document.getElementById('successState').classList.add('hidden');
             
+            // BLINDAJE IA: Si no hay API KEY, no lanzamos error, mostramos un ejemplo de valor.
+            if (!apiKey || apiKey === "") {
+                setTimeout(() => {
+                    document.getElementById('loadingState').classList.add('hidden');
+                    let mockResult = `<span class="text-luxGold font-bold">⚠️ MODO DEMOSTRACIÓN ACTIVO</span><br><br>Estrategia analizada para: <em>${n}</em>.<br>Objetivo: <em>${g}</em>.<br><br>💡 Para que la Inteligencia Artificial genere respuestas reales y completas para los negocios locales, necesitas insertar la API Key de Gemini en el código fuente de tu plataforma.`;
+                    document.getElementById('generatedText').innerHTML = mockResult;
+                    document.getElementById('successState').classList.remove('hidden'); document.getElementById('successState').classList.add('flex','flex-col');
+                }, 1500); 
+                return;
+            }
+
             const prompts = {
                 'copy': `Actúa como un Copywriter de Alta Conversión especializado en marketing B2B/B2C. Redacta un perfil para un negocio que estará en un directorio premium. Debe sonar exclusivo, resolver el problema del cliente y estar enfocado en lograr esta meta: "${g}". Usa un tono ejecutivo, persuasivo y viñetas.`,
                 'offers': `Actúa como un Estratega de Growth Marketing. Crea 3 ofertas reales y aplicables diseñadas para aumentar el ROI de este negocio y lograr su meta: "${g}". Cada oferta debe explicar: 1. Qué es. 2. Cómo se aplica. 3. Por qué funciona (psicología de ventas).`,
@@ -711,9 +642,9 @@
                 document.getElementById('errorMessage').innerText = "La IA está sobrecargada. Inténtalo en un momento.";
                 document.getElementById('errorState').classList.remove('hidden'); document.getElementById('errorState').classList.add('flex');
             }
-        };
+        }
 
-        window.copyToClipboard = () => {
+        function copyToClipboard() {
             const textToCopy = document.getElementById('generatedText').innerText;
             const temp = document.createElement("textarea");
             temp.value = textToCopy;
@@ -726,7 +657,7 @@
             const html = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-check text-green-400"></i> Copiado';
             setTimeout(() => btn.innerHTML = html, 2000);
-        };
+        }
     </script>
 </body>
 </html>
